@@ -170,25 +170,46 @@ class HomePage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
+        SizedBox(
+          height: 160,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             children: [
-              ArticleCard(
-                authorName: 'Arya Kamal',
-                authorSubtitle: 'Dipost oleh Arya Kecw • 19 Oct',
-                content:
-                    'Pentingnya nutrisi makanan bagi ibu hamil sangat penting untuk pertumbuhan janin. Nutrisi yang cukup membantu tubuh tumbuh sehat, menjaga energi, dan meningkatkan penyakit. Dengan makan makanan sehat, fokus, dan bahaya setiap hari loh!. dkk.',
-                onReadMore: () {},
-                onTap: () {},
+              SizedBox(
+                width: 320,
+                child: ArticleCard(
+                  authorName: 'Arya Kamal',
+                  authorSubtitle: 'Dipost oleh Arya Kecw • 19 Oct',
+                  content:
+                      'Pentingnya nutrisi makanan bagi ibu hamil sangat penting untuk pertumbuhan janin. Nutrisi yang cukup membantu tubuh tumbuh sehat, menjaga energi, dan meningkatkan penyakit. Dengan makan makanan sehat, fokus, dan bahaya setiap hari loh!. dkk.',
+                  onReadMore: () {},
+                  onTap: () {},
+                ),
               ),
-              ArticleCard(
-                authorName: 'Arya Kamal',
-                authorSubtitle: 'Dipost oleh Arya Kecw • 18 Oct',
-                content:
-                    'Tips olahraga ringan untuk ibu hamil trimester pertama. Olahraga yang tepat dapat membantu menjaga kesehatan ibu dan janin. Pastikan konsultasi dengan dokter sebelum memulai.',
-                onReadMore: () {},
-                onTap: () {},
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 320,
+                child: ArticleCard(
+                  authorName: 'Arya Kamal',
+                  authorSubtitle: 'Dipost oleh Arya Kecw • 18 Oct',
+                  content:
+                      'Tips olahraga ringan untuk ibu hamil trimester pertama. Olahraga yang tepat dapat membantu menjaga kesehatan ibu dan janin. Pastikan konsultasi dengan dokter sebelum memulai.',
+                  onReadMore: () {},
+                  onTap: () {},
+                ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 320,
+                child: ArticleCard(
+                  authorName: 'Dr. Sarah',
+                  authorSubtitle: 'Dipost oleh Dr. Sarah • 17 Oct',
+                  content:
+                      'Persiapan mental menghadapi persalinan sangat penting. Ikuti kelas prenatal, berbicara dengan dokter, dan jangan ragu untuk bertanya tentang proses persalinan.',
+                  onReadMore: () {},
+                  onTap: () {},
+                ),
               ),
             ],
           ),
