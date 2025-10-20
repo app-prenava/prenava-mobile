@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
-import '../widgets/profile_wave_painter.dart';
 
 class AccountPage extends ConsumerWidget {
   const AccountPage({super.key});
@@ -38,10 +37,11 @@ class AccountPage extends ConsumerWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        SizedBox(
-          height: 200,
-          child: CustomPaint(
-            painter: ProfileWavePainter(color: const Color(0xFFFA6978)),
+        ClipPath(
+          clipper: WaveClipper(),
+          child: Container(
+            height: 200,
+            color: const Color(0xFFFA6978),
             child: const SafeArea(
               child: Center(
                 child: Text(
@@ -235,5 +235,35 @@ class AccountPage extends ConsumerWidget {
       onTap: onTap,
     );
   }
+}
+
+// Custom Clipper for Wave Effect
+class WaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.lineTo(0, size.height - 40);
+
+    // Create smooth wave with quadratic bezier curves
+    path.quadraticBezierTo(
+      size.width / 4,
+      size.height - 60,
+      size.width / 2,
+      size.height - 40,
+    );
+    path.quadraticBezierTo(
+      3 * size.width / 4,
+      size.height - 20,
+      size.width,
+      size.height - 40,
+    );
+
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
 
