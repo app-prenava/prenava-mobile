@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class MenuGridItem extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String label;
   final Color? iconColor;
   final Color? backgroundColor;
@@ -9,7 +10,8 @@ class MenuGridItem extends StatelessWidget {
 
   const MenuGridItem({
     super.key,
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.label,
     this.iconColor,
     this.backgroundColor,
@@ -31,11 +33,24 @@ class MenuGridItem extends StatelessWidget {
               color: backgroundColor ?? const Color(0xFFFFE8EC),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: iconColor ?? const Color(0xFFFA6978),
-              size: 32,
-            ),
+            child: imagePath != null
+                ? Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Image.asset(
+                      imagePath!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.image_not_supported,
+                        color: iconColor ?? const Color(0xFFFA6978),
+                        size: 32,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    icon ?? Icons.apps,
+                    color: iconColor ?? const Color(0xFFFA6978),
+                    size: 32,
+                  ),
           ),
           const SizedBox(height: 8),
           Text(

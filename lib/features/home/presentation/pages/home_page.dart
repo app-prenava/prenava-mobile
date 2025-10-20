@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
-import '../widgets/promo_card.dart';
-import '../widgets/article_card.dart';
+import '../widgets/promo_banner.dart';
+import '../widgets/article_carousel.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -67,42 +67,42 @@ class HomePage extends ConsumerWidget {
         childAspectRatio: 0.85,
         children: [
           MenuGridItem(
-            icon: Icons.fitness_center,
+            imagePath: 'assets/images/yoga-instructor 1.png',
             label: 'Rekomendasi Olahraga',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.restaurant,
+            imagePath: 'assets/images/vegetables 1.png',
             label: 'Rekomendasi Makanan',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.medical_services_outlined,
+            imagePath: 'assets/images/anemia 1.png',
             label: 'Prediksi Anemia',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.pregnant_woman,
+            imagePath: 'assets/images/depression 1.png',
             label: 'Prediksi Depresi',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.calculate_outlined,
+            imagePath: 'assets/images/newborn (1) 1.png',
             label: 'Kalkulator HPL',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.healing,
+            imagePath: 'assets/images/newborn 1.png',
             label: 'Prediksi Persalinan',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.air,
+            imagePath: 'assets/images/air-quality 1.png',
             label: 'Cek Kualitas Udara',
             onTap: () {},
           ),
           MenuGridItem(
-            icon: Icons.grid_view,
+            imagePath: 'assets/images/lainnya.png',
             label: 'Lainnya',
             onTap: () {},
           ),
@@ -127,28 +127,13 @@ class HomePage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 140,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              PromoCard(
-                title: 'Promo Prenava',
-                onTap: () {},
-              ),
-              PromoCard(
-                title: 'Diskon Spesial',
-                backgroundColor: const Color(0xFFFFD6E0),
-                onTap: () {},
-              ),
-              PromoCard(
-                title: 'Gratis Ongkir',
-                backgroundColor: const Color(0xFFFFEBF0),
-                onTap: () {},
-              ),
-            ],
-          ),
+        const PromoBanner(
+          bannerImages: [
+            'assets/images/banner 1.png',
+            'assets/images/banner 2.png',
+            'assets/images/banner 3.png',
+            'assets/images/banner 4.png',
+          ],
         ),
       ],
     );
@@ -170,49 +155,27 @@ class HomePage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        SizedBox(
-          height: 160,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            children: [
-              SizedBox(
-                width: 320,
-                child: ArticleCard(
-                  authorName: 'Arya Kamal',
-                  authorSubtitle: 'Dipost oleh Arya Kecw • 19 Oct',
-                  content:
-                      'Pentingnya nutrisi makanan bagi ibu hamil sangat penting untuk pertumbuhan janin. Nutrisi yang cukup membantu tubuh tumbuh sehat, menjaga energi, dan meningkatkan penyakit. Dengan makan makanan sehat, fokus, dan bahaya setiap hari loh!. dkk.',
-                  onReadMore: () {},
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 320,
-                child: ArticleCard(
-                  authorName: 'Arya Kamal',
-                  authorSubtitle: 'Dipost oleh Arya Kecw • 18 Oct',
-                  content:
-                      'Tips olahraga ringan untuk ibu hamil trimester pertama. Olahraga yang tepat dapat membantu menjaga kesehatan ibu dan janin. Pastikan konsultasi dengan dokter sebelum memulai.',
-                  onReadMore: () {},
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: 320,
-                child: ArticleCard(
-                  authorName: 'Dr. Sarah',
-                  authorSubtitle: 'Dipost oleh Dr. Sarah • 17 Oct',
-                  content:
-                      'Persiapan mental menghadapi persalinan sangat penting. Ikuti kelas prenatal, berbicara dengan dokter, dan jangan ragu untuk bertanya tentang proses persalinan.',
-                  onReadMore: () {},
-                  onTap: () {},
-                ),
-              ),
-            ],
-          ),
+        ArticleCarousel(
+          articles: const [
+            ArticleData(
+              authorName: 'Arya Kamal',
+              authorSubtitle: 'Dipost oleh Arya Kecw • 19 Oct',
+              content:
+                  'Pentingnya nutrisi makanan bagi ibu hamil sangat penting untuk pertumbuhan janin. Nutrisi yang cukup membantu tubuh tumbuh sehat, menjaga energi, dan meningkatkan penyakit. Dengan makan makanan sehat, fokus, dan bahaya setiap hari loh!. dkk.',
+            ),
+            ArticleData(
+              authorName: 'Arya Kamal',
+              authorSubtitle: 'Dipost oleh Arya Kecw • 18 Oct',
+              content:
+                  'Tips olahraga ringan untuk ibu hamil trimester pertama. Olahraga yang tepat dapat membantu menjaga kesehatan ibu dan janin. Pastikan konsultasi dengan dokter sebelum memulai.',
+            ),
+            ArticleData(
+              authorName: 'Dr. Sarah',
+              authorSubtitle: 'Dipost oleh Dr. Sarah • 17 Oct',
+              content:
+                  'Persiapan mental menghadapi persalinan sangat penting. Ikuti kelas prenatal, berbicara dengan dokter, dan jangan ragu untuk bertanya tentang proses persalinan.',
+            ),
+          ],
         ),
       ],
     );
