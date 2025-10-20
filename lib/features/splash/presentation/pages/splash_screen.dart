@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/utils/shared_prefs_helper.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -74,9 +75,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted) return;
 
+    // If user is authenticated, go to home
     if (authState.isAuthenticated) {
       context.go('/home');
+      return;
+    }
+
+    // If not authenticated, check onboarding status
+    final prefsHelper = SharedPrefsHelper();
+    final onboardingDone = await prefsHelper.isOnboardingComplete();
+
+    if (!mounted) return;
+
+    if (onboardingDone) {
+      // User already saw onboarding, go to login
+      context.go('/login');
     } else {
+      // First time user, show onboarding
       context.go('/onboarding');
     }
   }

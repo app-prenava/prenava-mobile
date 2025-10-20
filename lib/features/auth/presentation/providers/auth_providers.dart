@@ -28,31 +28,37 @@ class AuthState {
   final bool isAuthenticated;
   final User? user;
   final bool isLoading;
+  final String? error;
 
   const AuthState({
     required this.isInitialized,
     required this.isAuthenticated,
     this.user,
     this.isLoading = false,
+    this.error,
   });
 
   const AuthState.initial()
       : isInitialized = false,
         isAuthenticated = false,
         user = null,
-        isLoading = false;
+        isLoading = false,
+        error = null;
 
   AuthState copyWith({
     bool? isInitialized,
     bool? isAuthenticated,
     User? user,
     bool? isLoading,
+    String? error,
+    bool clearError = false,
   }) {
     return AuthState(
       isInitialized: isInitialized ?? this.isInitialized,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
     );
   }
 }
@@ -92,13 +98,41 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> login(String email, String password) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.login(email, password);
+      
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
   Future<void> logout() async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.clearToken();
-    state = const AuthState(
-      isInitialized: true,
-      isAuthenticated: false,
-    );
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.logout();
+    } finally {
+      state = const AuthState(
+        isInitialized: true,
+        isAuthenticated: false,
+      );
+    }
   }
 }
 

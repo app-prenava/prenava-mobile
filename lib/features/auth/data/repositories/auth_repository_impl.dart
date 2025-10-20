@@ -14,6 +14,29 @@ class AuthRepositoryImpl implements AuthRepository {
         _secureStore = secureStore;
 
   @override
+  Future<User> login(String email, String password) async {
+    try {
+      final loginResponse = await _remoteDatasource.login(email, password);
+      await _secureStore.write('jwt_token', loginResponse.token);
+      return loginResponse.user;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> logout() async {
+    try {
+      final token = await _secureStore.read('jwt_token');
+      if (token != null) {
+        await _remoteDatasource.logout(token);
+      }
+    } finally {
+      await _secureStore.delete('jwt_token');
+    }
+  }
+
+  @override
   Future<bool> hasValidToken() async {
     try {
       final token = await _secureStore.read('jwt_token');
