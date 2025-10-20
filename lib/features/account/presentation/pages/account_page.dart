@@ -133,13 +133,6 @@ class AccountPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          '+62 851-2133-4300',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-          ),
-        ),
       ],
     );
   }
