@@ -173,7 +173,7 @@ class AccountPage extends ConsumerWidget {
         _buildMenuItem(
           icon: Icons.key_outlined,
           title: 'Reset Password',
-          onTap: () {},
+          onTap: () => context.push('/change-password'),
         ),
         const SizedBox(height: 24),
         Padding(
