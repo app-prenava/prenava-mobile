@@ -3,47 +3,62 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_providers.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends ConsumerStatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
+  ConsumerState<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage> {
+class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _passwordConfirmationController = TextEditingController();
   bool _obscurePassword = true;
-  bool _rememberMe = false;
+  bool _obscurePasswordConfirmation = true;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _passwordConfirmationController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
+    final passwordConfirmation = _passwordConfirmationController.text;
 
-    final success = await ref.read(authNotifierProvider.notifier).login(
-          email,
-          password,
+    final success = await ref.read(authNotifierProvider.notifier).register(
+          name: name,
+          email: email,
+          password: password,
+          passwordConfirmation: passwordConfirmation,
         );
 
     if (!mounted) return;
 
     if (success) {
-      context.go('/home');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Registrasi berhasil! Silakan login.'),
+          backgroundColor: Color(0xFFFC7286),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      context.go('/login');
     } else {
       final error = ref.read(authNotifierProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error ?? 'Login gagal'),
+          content: Text(error ?? 'Registrasi gagal'),
           backgroundColor: Colors.red,
         ),
       );
@@ -56,48 +71,43 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              _buildIllustration(),
-              const SizedBox(height: 32),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTitle(),
-                      const SizedBox(height: 32),
-                      _buildEmailField(),
-                      const SizedBox(height: 20),
-                      _buildPasswordField(),
-                      const SizedBox(height: 16),
-                      _buildRememberAndForgot(),
-                      const SizedBox(height: 32),
-                      _buildLoginButton(authState),
-                      const SizedBox(height: 24),
-                      _buildRegisterLink(),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF424242)),
+          onPressed: () => context.go('/login'),
         ),
       ),
-    );
-  }
-
-  Widget _buildIllustration() {
-    return Center(
-      child: Image.asset(
-        'assets/images/login.png',
-        height: 200,
-        fit: BoxFit.contain,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  _buildTitle(),
+                  const SizedBox(height: 32),
+                  _buildNameField(),
+                  const SizedBox(height: 20),
+                  _buildEmailField(),
+                  const SizedBox(height: 20),
+                  _buildPasswordField(),
+                  const SizedBox(height: 20),
+                  _buildPasswordConfirmationField(),
+                  const SizedBox(height: 32),
+                  _buildRegisterButton(authState),
+                  const SizedBox(height: 24),
+                  _buildLoginLink(),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -107,7 +117,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Masuk',
+          'Daftar',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -122,6 +132,58 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             color: const Color(0xFFFC7286),
             borderRadius: BorderRadius.circular(2),
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNameField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nama',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF424242),
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _nameController,
+          keyboardType: TextInputType.name,
+          textInputAction: TextInputAction.next,
+          decoration: InputDecoration(
+            hintText: 'Masukkan nama lengkap',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(Icons.person_outline, color: Colors.grey[400], size: 20),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Nama wajib diisi';
+            }
+            return null;
+          },
         ),
       ],
     );
@@ -143,6 +205,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         TextFormField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.next,
           decoration: InputDecoration(
             hintText: 'contoh@gmail.com',
             hintStyle: TextStyle(color: Colors.grey[400]),
@@ -197,8 +260,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         TextFormField(
           controller: _passwordController,
           obscureText: _obscurePassword,
+          textInputAction: TextInputAction.next,
           decoration: InputDecoration(
-            hintText: 'Masukkan sandi Anda',
+            hintText: 'Minimal 6 karakter',
             hintStyle: TextStyle(color: Colors.grey[400]),
             prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400], size: 20),
             suffixIcon: IconButton(
@@ -247,65 +311,79 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _buildRememberAndForgot() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildPasswordConfirmationField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: Checkbox(
-                value: _rememberMe,
-                onChanged: (value) {
-                  setState(() {
-                    _rememberMe = value ?? false;
-                  });
-                },
-                activeColor: const Color(0xFFFC7286),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Ingatkan saya',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF424242),
-              ),
-            ),
-          ],
+        const Text(
+          'Konfirmasi Kata Sandi',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF424242),
+          ),
         ),
-        TextButton(
-          onPressed: () {
-            // TODO: Navigate to forgot password
-          },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 0),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: const Text(
-            'Lupa kata sandi?',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFFFC7286),
-              fontWeight: FontWeight.w600,
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _passwordConfirmationController,
+          obscureText: _obscurePasswordConfirmation,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+            hintText: 'Masukkan ulang kata sandi',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400], size: 20),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePasswordConfirmation ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: Colors.grey[400],
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePasswordConfirmation = !_obscurePasswordConfirmation;
+                });
+              },
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red),
             ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Konfirmasi password wajib diisi';
+            }
+            if (value != _passwordController.text) {
+              return 'Password tidak sama';
+            }
+            return null;
+          },
         ),
       ],
     );
   }
 
-  Widget _buildLoginButton(AuthState authState) {
+  Widget _buildRegisterButton(AuthState authState) {
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: authState.isLoading ? null : _handleLogin,
+        onPressed: authState.isLoading ? null : _handleRegister,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFC7286),
           disabledBackgroundColor: const Color(0xFFFC7286).withValues(alpha: 0.6),
@@ -324,7 +402,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
               )
             : const Text(
-                'Masuk',
+                'Daftar',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
@@ -336,27 +414,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _buildRegisterLink() {
+  Widget _buildLoginLink() {
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Belum Punya Akun? ',
+            'Sudah Punya Akun? ',
             style: TextStyle(
               fontSize: 15,
               color: Colors.grey[700],
             ),
           ),
           TextButton(
-            onPressed: () => context.go('/register'),
+            onPressed: () => context.go('/login'),
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 0),
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
             child: const Text(
-              'Daftar',
+              'Masuk',
               style: TextStyle(
                 fontSize: 15,
                 color: Color(0xFFFC7286),

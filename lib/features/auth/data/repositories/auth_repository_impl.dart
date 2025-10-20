@@ -75,5 +75,24 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> clearToken() async {
     await _secureStore.delete('jwt_token');
   }
+
+  @override
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      await _remoteDatasource.register(
+        name: name,
+        email: email,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 

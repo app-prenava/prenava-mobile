@@ -90,5 +90,58 @@ class AuthRemoteDatasource {
       // Ignore logout errors
     }
   }
+
+  Future<void> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/auth/register',
+        data: {
+          'name': name,
+          'email': email,
+          'password': password,
+          'password_confirmation': passwordConfirmation,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return; // Success, user needs to login after registration
+      }
+
+      throw Exception('Registrasi gagal');
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      final data = e.response?.data;
+
+      // Handle validation errors (422)
+      if (statusCode == 422) {
+        String? message;
+        if (data is Map) {
+          if (data['message'] is String) {
+            message = data['message'] as String;
+          } else if (data['errors'] is Map) {
+            // Laravel validation errors format
+            final errors = data['errors'] as Map<String, dynamic>;
+            final firstError = errors.values.first;
+            if (firstError is List && firstError.isNotEmpty) {
+              message = firstError.first as String;
+            }
+          }
+        }
+        throw Exception(message ?? 'Data tidak valid. Mohon periksa kembali.');
+      }
+
+      // Handle other errors
+      String? message;
+      if (data is Map && data['message'] is String) {
+        message = data['message'] as String;
+      }
+      throw Exception(message ?? 'Gagal mendaftar. Silakan coba lagi.');
+    }
+  }
 }
 
