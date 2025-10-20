@@ -15,6 +15,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -57,61 +58,69 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 40),
-                _buildHeader(),
-                const SizedBox(height: 48),
-                _buildEmailField(),
-                const SizedBox(height: 16),
-                _buildPasswordField(),
-                const SizedBox(height: 32),
-                _buildLoginButton(authState),
-                const SizedBox(height: 16),
-                _buildRegisterLink(),
-              ],
-            ),
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
+              _buildIllustration(),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTitle(),
+                      const SizedBox(height: 32),
+                      _buildEmailField(),
+                      const SizedBox(height: 20),
+                      _buildPasswordField(),
+                      const SizedBox(height: 16),
+                      _buildRememberAndForgot(),
+                      const SizedBox(height: 32),
+                      _buildLoginButton(authState),
+                      const SizedBox(height: 24),
+                      _buildRegisterLink(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildIllustration() {
+    return Center(
+      child: Image.asset(
+        'assets/images/login.png',
+        height: 200,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  Widget _buildTitle() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Text(
+          'Masuk',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF424242),
+          ),
+        ),
+        const SizedBox(height: 4),
         Container(
-          width: 120,
-          height: 120,
+          width: 60,
+          height: 4,
           decoration: BoxDecoration(
             color: const Color(0xFFFC7286),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Icon(
-            Icons.child_care,
-            size: 60,
-            color: Colors.white,
-          ),
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'Selamat Datang!',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFFC7286),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Masuk ke akun Anda',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
+            borderRadius: BorderRadius.circular(2),
           ),
         ),
       ],
@@ -119,106 +128,208 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Widget _buildEmailField() {
-    return TextFormField(
-      controller: _emailController,
-      keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        prefixIcon: const Icon(Icons.email, color: Color(0xFFFC7286)),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Email',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF424242),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          decoration: InputDecoration(
+            hintText: 'contoh@gmail.com',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[400], size: 20),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Email wajib diisi';
+            }
+            if (!value.contains('@')) {
+              return 'Email tidak valid';
+            }
+            return null;
+          },
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFFC7286), width: 2),
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email wajib diisi';
-        }
-        if (!value.contains('@')) {
-          return 'Email tidak valid';
-        }
-        return null;
-      },
+      ],
     );
   }
 
   Widget _buildPasswordField() {
-    return TextFormField(
-      controller: _passwordController,
-      obscureText: _obscurePassword,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        prefixIcon: const Icon(Icons.lock, color: Color(0xFFFC7286)),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
-            color: Colors.grey,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Kata Sandi',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF424242),
           ),
-          onPressed: () {
-            setState(() {
-              _obscurePassword = !_obscurePassword;
-            });
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _passwordController,
+          obscureText: _obscurePassword,
+          decoration: InputDecoration(
+            hintText: 'Masukkan sandi Anda',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400], size: 20),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                color: Colors.grey[400],
+                size: 20,
+              ),
+              onPressed: () {
+                setState(() {
+                  _obscurePassword = !_obscurePassword;
+                });
+              },
+            ),
+            filled: true,
+            fillColor: Colors.grey[50],
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Password wajib diisi';
+            }
+            if (value.length < 6) {
+              return 'Password minimal 6 karakter';
+            }
+            return null;
           },
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+      ],
+    );
+  }
+
+  Widget _buildRememberAndForgot() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: Checkbox(
+                value: _rememberMe,
+                onChanged: (value) {
+                  setState(() {
+                    _rememberMe = value ?? false;
+                  });
+                },
+                activeColor: const Color(0xFFFC7286),
+                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Ingatkan saya',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF424242),
+              ),
+            ),
+          ],
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+        TextButton(
+          onPressed: () {
+            // TODO: Navigate to forgot password
+          },
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: const Size(0, 0),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: const Text(
+            'Lupa kata sandi?',
+            style: TextStyle(
+              fontSize: 14,
+              color: Color(0xFFFC7286),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFFC7286), width: 2),
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Password wajib diisi';
-        }
-        if (value.length < 6) {
-          return 'Password minimal 6 karakter';
-        }
-        return null;
-      },
+      ],
     );
   }
 
   Widget _buildLoginButton(AuthState authState) {
     return SizedBox(
-      height: 56,
+      width: double.infinity,
+      height: 54,
       child: ElevatedButton(
         onPressed: authState.isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFC7286),
+          disabledBackgroundColor: const Color(0xFFFC7286).withOpacity(0.6),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),
         child: authState.isLoading
             ? const SizedBox(
-                width: 20,
-                height: 20,
+                width: 22,
+                height: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             : const Text(
-                'MASUK',
+                'Masuk',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                   color: Colors.white,
-                  letterSpacing: 1,
+                  letterSpacing: 0.5,
                 ),
               ),
       ),
@@ -226,26 +337,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Widget _buildRegisterLink() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Belum punya akun? ',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        TextButton(
-          onPressed: () {
-            // TODO: Navigate to register
-          },
-          child: const Text(
-            'Daftar',
+    return Center(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Belum Punya Akun? ',
             style: TextStyle(
-              color: Color(0xFFFC7286),
-              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: Colors.grey[700],
             ),
           ),
-        ),
-      ],
+          TextButton(
+            onPressed: () {
+              // TODO: Navigate to register
+            },
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(0, 0),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: const Text(
+              'Daftar',
+              style: TextStyle(
+                fontSize: 15,
+                color: Color(0xFFFC7286),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

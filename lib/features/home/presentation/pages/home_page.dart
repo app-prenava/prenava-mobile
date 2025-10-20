@@ -22,7 +22,7 @@ class HomePage extends ConsumerWidget {
             onPressed: () async {
               await ref.read(authNotifierProvider.notifier).logout();
               if (context.mounted) {
-                context.go('/onboarding');
+                context.go('/login');
               }
             },
           ),
