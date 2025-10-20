@@ -122,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: _currentPage == index
-                ? const Color(0xFFFC7286)
+                ? const Color(0xFFFA6978)
                 : const Color(0xFFFFB3C6),
           ),
         ),
@@ -137,7 +137,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: ElevatedButton(
         onPressed: _handleButtonPress,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFC7286),
+          backgroundColor: const Color(0xFFFA6978),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
