@@ -47,7 +47,7 @@ class PromoCard extends StatelessWidget {
           const Icon(
             Icons.card_giftcard,
             size: 48,
-            color: Color(0xFFFC7286),
+            color: Color(0xFFFA6978),
           ),
           if (title != null) ...[
             const SizedBox(height: 12),
@@ -56,7 +56,7 @@ class PromoCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFFC7286),
+                color: Color(0xFFFA6978),
               ),
             ),
           ],

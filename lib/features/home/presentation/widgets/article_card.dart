@@ -114,7 +114,7 @@ class ArticleCard extends StatelessWidget {
                       'Selengkapnya',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFFFC7286),
+                        color: Color(0xFFFA6978),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -132,7 +132,7 @@ class ArticleCard extends StatelessWidget {
     return const Icon(
       Icons.person,
       size: 24,
-      color: Color(0xFFFC7286),
+      color: Color(0xFFFA6978),
     );
   }
 }

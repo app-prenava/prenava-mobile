@@ -36,7 +36,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFFC7286),
+        selectedItemColor: const Color(0xFFFA6978),
         unselectedItemColor: Colors.grey[600],
         selectedFontSize: 12,
         unselectedFontSize: 12,

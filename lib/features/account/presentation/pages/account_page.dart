@@ -95,7 +95,7 @@ class AccountPage extends ConsumerWidget {
     return ListTile(
       leading: Icon(
         icon,
-        color: iconColor ?? const Color(0xFFFC7286),
+        color: iconColor ?? const Color(0xFFFA6978),
       ),
       title: Text(
         title,

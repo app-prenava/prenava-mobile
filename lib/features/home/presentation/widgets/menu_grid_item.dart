@@ -33,7 +33,7 @@ class MenuGridItem extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              color: iconColor ?? const Color(0xFFFC7286),
+              color: iconColor ?? const Color(0xFFFA6978),
               size: 32,
             ),
           ),

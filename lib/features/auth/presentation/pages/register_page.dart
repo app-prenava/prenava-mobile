@@ -49,7 +49,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Registrasi berhasil! Silakan login.'),
-          backgroundColor: Color(0xFFFC7286),
+          backgroundColor: Color(0xFFFA6978),
           duration: Duration(seconds: 3),
         ),
       );
@@ -129,7 +129,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           width: 60,
           height: 4,
           decoration: BoxDecoration(
-            color: const Color(0xFFFC7286),
+            color: const Color(0xFFFA6978),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -171,7 +171,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -223,7 +223,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -290,7 +290,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -357,7 +357,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -385,8 +385,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       child: ElevatedButton(
         onPressed: authState.isLoading ? null : _handleRegister,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFC7286),
-          disabledBackgroundColor: const Color(0xFFFC7286).withValues(alpha: 0.6),
+          backgroundColor: const Color(0xFFFA6978),
+          disabledBackgroundColor: const Color(0xFFFA6978).withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -437,7 +437,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               'Masuk',
               style: TextStyle(
                 fontSize: 15,
-                color: Color(0xFFFC7286),
+                color: Color(0xFFFA6978),
                 fontWeight: FontWeight.w600,
               ),
             ),

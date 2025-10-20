@@ -22,13 +22,13 @@ class UserHeader extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFF7E92), Color(0xFFFC7286)],
+          colors: [Color(0xFFFA6978), Color(0xFFFA6978)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
         ),
       ),
       child: SafeArea(
@@ -90,7 +90,7 @@ class UserHeader extends StatelessWidget {
                   Text(
                     location,
                     style: const TextStyle(
-                      color: Color(0xFFFC7286),
+                      color: Color(0xFFFA6978),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -98,7 +98,7 @@ class UserHeader extends StatelessWidget {
                   const SizedBox(width: 4),
                   const Icon(
                     Icons.location_on,
-                    color: Color(0xFFFC7286),
+                    color: Color(0xFFFA6978),
                     size: 16,
                   ),
                 ],
@@ -126,7 +126,7 @@ class UserHeader extends StatelessWidget {
     return const Icon(
       Icons.person,
       size: 32,
-      color: Color(0xFFFC7286),
+      color: Color(0xFFFA6978),
     );
   }
 }

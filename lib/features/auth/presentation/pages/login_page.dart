@@ -119,7 +119,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           width: 60,
           height: 4,
           decoration: BoxDecoration(
-            color: const Color(0xFFFC7286),
+            color: const Color(0xFFFA6978),
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -160,7 +160,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -226,7 +226,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFC7286), width: 1.5),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -263,7 +263,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     _rememberMe = value ?? false;
                   });
                 },
-                activeColor: const Color(0xFFFC7286),
+                activeColor: const Color(0xFFFA6978),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 visualDensity: VisualDensity.compact,
               ),
@@ -291,7 +291,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             'Lupa kata sandi?',
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFFFC7286),
+              color: Color(0xFFFA6978),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -307,8 +307,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       child: ElevatedButton(
         onPressed: authState.isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFC7286),
-          disabledBackgroundColor: const Color(0xFFFC7286).withValues(alpha: 0.6),
+          backgroundColor: const Color(0xFFFA6978),
+          disabledBackgroundColor: const Color(0xFFFA6978).withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -359,7 +359,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               'Daftar',
               style: TextStyle(
                 fontSize: 15,
-                color: Color(0xFFFC7286),
+                color: Color(0xFFFA6978),
                 fontWeight: FontWeight.w600,
               ),
             ),
