@@ -1,12 +1,30 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/splash/presentation/pages/splash_screen.dart';
+import '../../features/splash/presentation/pages/onboarding_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/home/presentation/pages/home_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    initialLocation: '/',
     routes: [
-      GoRoute(path: '/', redirect: (_, __) => '/login'),
-      GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginPage(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const HomePage(),
+      ),
     ],
   );
 });
