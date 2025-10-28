@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/profile.dart';
@@ -63,8 +64,28 @@ class ProfileState {
 class ProfileNotifier extends Notifier<ProfileState> {
   @override
   ProfileState build() {
-    // Schedule loadProfile to run after build completes
-    Future.microtask(() => loadProfile());
+    // Listen to auth state changes to reload profile on login
+    ref.listen(
+      authNotifierProvider.select((state) => state.isAuthenticated),
+      (previous, next) {
+        if (next && previous != next) {
+          // User just logged in, load their profile
+          loadProfile();
+        } else if (!next && previous != next) {
+          // User just logged out, clear profile
+          clearProfile();
+        }
+      },
+    );
+    
+    // Schedule loadProfile to run after build completes if authenticated
+    Future.microtask(() {
+      final isAuthenticated = ref.read(authNotifierProvider).isAuthenticated;
+      if (isAuthenticated) {
+        loadProfile();
+      }
+    });
+    
     return const ProfileState.initial();
   }
 
@@ -81,11 +102,9 @@ class ProfileNotifier extends Notifier<ProfileState> {
         hasProfile: profile != null,
       );
     } catch (e) {
-      // Silently fail - user can still use the form to create profile
       state = state.copyWith(
         isLoading: false,
         hasProfile: false,
-        // Don't show error - just let user fill the form
       );
     }
   }
@@ -152,7 +171,7 @@ class ProfileNotifier extends Notifier<ProfileState> {
     try {
       final repository = ref.read(profileRepositoryProvider);
       await repository.deletePhoto();
-      await loadProfile(); // Reload profile
+      await loadProfile();
       
       state = state.copyWith(
         isLoading: false,
@@ -164,6 +183,11 @@ class ProfileNotifier extends Notifier<ProfileState> {
         error: e.toString().replaceAll('Exception: ', ''),
       );
     }
+  }
+
+  // Clear profile state (call this on logout)
+  void clearProfile() {
+    state = const ProfileState.initial();
   }
 }
 
