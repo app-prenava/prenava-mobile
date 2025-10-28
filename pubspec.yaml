@@ -22,6 +22,7 @@ dependencies:
   logger: ^2.6.2
   shared_preferences: ^2.3.3
   url_launcher: ^6.3.2
+  
 
 dev_dependencies:
   flutter_test:
@@ -32,9 +33,17 @@ dev_dependencies:
   freezed: ^3.2.3
   json_serializable: ^6.11.1
   very_good_analysis: ^10.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
   
   assets:
     - assets/images/
+
+# Launcher icon configuration
+flutter_launcher_icons:
+  image_path: assets/images/prenava_logo.png
+  android: true
+  ios: true
+  remove_alpha_ios: true

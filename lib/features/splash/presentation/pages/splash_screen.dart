@@ -48,24 +48,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _navigateAfterDelay() async {
     await Future.delayed(const Duration(milliseconds: 1500));
-
     if (!mounted) return;
-
-    // Wait for auth initialization
-    int attempts = 0;
-    while (true) {
-      final authState = ref.read(authNotifierProvider);
-      
-      if (authState.isInitialized) break;
-      
-      await Future.delayed(const Duration(milliseconds: 100));
-      attempts++;
-      
-      if (!mounted) return;
-      
-      // Safety timeout after 5 seconds
-      if (attempts > 50) break;
-    }
 
     await _performNavigation();
   }
@@ -110,14 +93,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         child: AnimatedBuilder(
           animation: _animationController,
           builder: (context, child) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final logoSize = screenWidth * 0.18; // smaller and responsive
             return FadeTransition(
               opacity: _fadeAnimation,
               child: ScaleTransition(
                 scale: _scaleAnimation,
                 child: Image.asset(
                   'assets/images/prenava_logo.png',
-                  width: 200,
-                  height: 200,
+                  width: logoSize,
+                  height: logoSize,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const SizedBox.shrink();
