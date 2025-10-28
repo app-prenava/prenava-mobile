@@ -1,44 +1,52 @@
-class ProductModel {
-  final int? id;
-  final String produk;
-  final String deskripsi;
-  final double harga;
-  final String? gambar;
-  final String? link;
-  final String? createdAt;
-  final String? updatedAt;
+import '../../domain/entities/product.dart';
 
+class ProductModel extends Product {
   const ProductModel({
-    this.id,
-    required this.produk,
-    required this.deskripsi,
-    required this.harga,
-    this.gambar,
-    this.link,
-    this.createdAt,
-    this.updatedAt,
+    super.productId,
+    super.userId,
+    required super.productName,
+    required super.price,
+    required super.url,
+    super.photo,
+    super.createdAt,
+    super.updatedAt,
+    super.sellerName,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    double parsedHarga;
-    final dynamic hargaValue = json['harga'];
-    if (hargaValue is String) {
-      parsedHarga = double.tryParse(hargaValue) ?? 0.0;
-    } else if (hargaValue is num) {
-      parsedHarga = hargaValue.toDouble();
-    } else {
-      parsedHarga = 0.0;
+    // Fix localhost URL to use server IP
+    String? photoUrl = json['photo']?.toString();
+    if (photoUrl != null && photoUrl.contains('localhost')) {
+      photoUrl = photoUrl.replaceAll('http://localhost:8000', 'http://192.168.1.16:8000');
     }
 
     return ProductModel(
-      id: json['id'] is String ? int.tryParse(json['id']) : json['id'] as int?,
-      produk: (json['produk'] as String?)?.trim() ?? '',
-      deskripsi: (json['deskripsi'] as String?)?.trim() ?? '',
-      harga: parsedHarga,
-      gambar: json['gambar'] as String?,
-      link: json['link'] as String?,
-      createdAt: json['created_at'] as String?,
-      updatedAt: json['updated_at'] as String?,
+      productId: json['product_id'] as int?,
+      userId: json['user_id'] as int?,
+      productName: json['product_name']?.toString() ?? '',
+      price: json['price']?.toString() ?? '0',
+      url: json['url']?.toString() ?? '',
+      photo: photoUrl,
+      createdAt: json['created_at']?.toString(),
+      updatedAt: json['updated_at']?.toString(),
+      sellerName: json['seller_name']?.toString(),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    final map = <String, dynamic>{
+      'product_name': productName,
+      'price': price,
+      'url': url,
+    };
+    
+    if (productId != null) map['product_id'] = productId;
+    if (userId != null) map['user_id'] = userId;
+    if (photo != null) map['photo'] = photo;
+    if (createdAt != null) map['created_at'] = createdAt;
+    if (updatedAt != null) map['updated_at'] = updatedAt;
+    if (sellerName != null) map['seller_name'] = sellerName;
+    
+    return map;
   }
 }
