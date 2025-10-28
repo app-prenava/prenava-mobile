@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 
 class AccountPage extends ConsumerWidget {
   const AccountPage({super.key});
@@ -10,20 +11,21 @@ class AccountPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final profileState = ref.watch(profileNotifierProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          _buildHeader(context),
+          _buildHeader(context, profileState),
           Expanded(
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   const SizedBox(height: 80),
-                  _buildProfileInfo(user?.name ?? 'User', user?.email ?? ''),
+                  _buildProfileHeader(user?.name ?? 'User', user?.email ?? ''),
                   const SizedBox(height: 32),
-                  _buildDataSection(context, ref),
+                  _buildDataSection(context, ref, profileState),
                 ],
               ),
             ),
@@ -33,7 +35,7 @@ class AccountPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, ProfileState profileState) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -61,51 +63,37 @@ class AccountPage extends ConsumerWidget {
           right: 0,
           bottom: -60,
           child: Center(
-            child: Stack(
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(color: Colors.white, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+            child: Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(color: Colors.white, width: 4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  child: CircleAvatar(
-                    radius: 56,
-                    backgroundColor: const Color(0xFFB8E6F0),
-                    child: Icon(
-                      Icons.person,
-                      size: 60,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.edit,
-                      size: 20,
-                      color: Color(0xFF424242),
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
+              child: CircleAvatar(
+                radius: 56,
+                backgroundColor: const Color(0xFFB8E6F0),
+                backgroundImage: (profileState.profile?.photoUrl != null && 
+                                 profileState.profile!.photoUrl!.isNotEmpty)
+                    ? NetworkImage(profileState.profile!.photoUrl!)
+                    : null,
+                child: (profileState.profile?.photoUrl == null || 
+                        profileState.profile!.photoUrl!.isEmpty)
+                    ? Icon(
+                        Icons.person,
+                        size: 60,
+                        color: Colors.grey[700],
+                      )
+                    : null,
+              ),
             ),
           ),
         ),
@@ -113,7 +101,7 @@ class AccountPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileInfo(String name, String email) {
+  Widget _buildProfileHeader(String name, String email) {
     return Column(
       children: [
         Text(
@@ -137,7 +125,7 @@ class AccountPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDataSection(BuildContext context, WidgetRef ref) {
+  Widget _buildDataSection(BuildContext context, WidgetRef ref, ProfileState profileState) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,7 +144,8 @@ class AccountPage extends ConsumerWidget {
         _buildMenuItem(
           icon: Icons.person_outline,
           title: 'Data Pribadi',
-          onTap: () => context.push('/edit-profile'),
+          subtitle: profileState.hasProfile ? 'Profil lengkap tersedia' : 'Belum ada profil',
+          onTap: () => context.push('/profile'),
         ),
         _buildMenuItem(
           icon: Icons.people_outline,
@@ -173,6 +162,9 @@ class AccountPage extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: InkWell(
             onTap: () async {
+              // Clear profile state before logout
+              ref.read(profileNotifierProvider.notifier).clearProfile();
+              
               await ref.read(authNotifierProvider.notifier).logout();
               if (context.mounted) {
                 context.go('/login');
@@ -206,6 +198,7 @@ class AccountPage extends ConsumerWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    String? subtitle,
   }) {
     return ListTile(
       leading: Icon(
@@ -221,6 +214,15 @@ class AccountPage extends ConsumerWidget {
           color: Color(0xFF424242),
         ),
       ),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            )
+          : null,
       trailing: Icon(
         Icons.chevron_right,
         color: Colors.grey[400],

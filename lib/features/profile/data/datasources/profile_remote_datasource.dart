@@ -11,18 +11,16 @@ class ProfileRemoteDatasource {
       final response = await _dio.get('/profile');
 
       if (response.statusCode == 200 && response.data != null) {
-        // Backend returns nested: { "profile": { ... } }
         final data = response.data as Map<String, dynamic>;
         if (data.containsKey('profile') && data['profile'] != null) {
           return ProfileModel.fromJson(data['profile'] as Map<String, dynamic>);
         }
-        // Fallback if direct format
         return ProfileModel.fromJson(data);
       }
       return null;
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return null; // Profile belum dibuat
+        return null;
       }
       rethrow;
     }
@@ -66,7 +64,6 @@ class ProfileRemoteDatasource {
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
-        // Handle nested response: { "profile": { ... } }
         if (responseData.containsKey('profile')) {
           return ProfileModel.fromJson(responseData['profile'] as Map<String, dynamic>);
         }
@@ -121,7 +118,6 @@ class ProfileRemoteDatasource {
 
       if (response.statusCode == 200) {
         final responseData = response.data as Map<String, dynamic>;
-        // Handle nested response: { "profile": { ... } }
         if (responseData.containsKey('profile')) {
           return ProfileModel.fromJson(responseData['profile'] as Map<String, dynamic>);
         }

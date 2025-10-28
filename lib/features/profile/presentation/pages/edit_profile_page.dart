@@ -42,19 +42,21 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       final profile = profileState.profile;
 
       if (profile != null) {
-        _tanggalLahirController.text = profile.tanggalLahir ?? '';
-        _usiaController.text = profile.usia?.toString() ?? '';
-        _alamatController.text = profile.alamat ?? '';
-        _noTeleponController.text = profile.noTelepon ?? '';
-        _pendidikanController.text = profile.pendidikanTerakhir ?? '';
-        _pekerjaanController.text = profile.pekerjaan ?? '';
-        _selectedGolonganDarah = profile.golonganDarah;
+        setState(() {
+          _tanggalLahirController.text = profile.tanggalLahir ?? '';
+          _usiaController.text = profile.usia?.toString() ?? '';
+          _alamatController.text = profile.alamat ?? '';
+          _noTeleponController.text = profile.noTelepon ?? '';
+          _pendidikanController.text = profile.pendidikanTerakhir ?? '';
+          _pekerjaanController.text = profile.pekerjaan ?? '';
+          _selectedGolonganDarah = profile.golonganDarah;
 
-        if (profile.tanggalLahir != null && profile.tanggalLahir!.isNotEmpty) {
-          try {
-            _selectedDate = DateFormat('yyyy-MM-dd').parse(profile.tanggalLahir!);
-          } catch (_) {}
-        }
+          if (profile.tanggalLahir != null && profile.tanggalLahir!.isNotEmpty) {
+            try {
+              _selectedDate = DateFormat('yyyy-MM-dd').parse(profile.tanggalLahir!);
+            } catch (_) {}
+          }
+        });
       }
     });
   }
@@ -159,26 +161,76 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
 
     final data = <String, dynamic>{};
 
-    if (_tanggalLahirController.text.isNotEmpty) {
-      data['tanggal_lahir'] = _tanggalLahirController.text;
-    }
-    if (_usiaController.text.isNotEmpty) {
-      data['usia'] = int.tryParse(_usiaController.text) ?? 0;
-    }
-    if (_alamatController.text.isNotEmpty) {
-      data['alamat'] = _alamatController.text;
-    }
-    if (_noTeleponController.text.isNotEmpty) {
-      data['no_telepon'] = _noTeleponController.text;
-    }
-    if (_pendidikanController.text.isNotEmpty) {
-      data['pendidikan_terakhir'] = _pendidikanController.text;
-    }
-    if (_pekerjaanController.text.isNotEmpty) {
-      data['pekerjaan'] = _pekerjaanController.text;
-    }
-    if (_selectedGolonganDarah != null) {
-      data['golongan_darah'] = _selectedGolonganDarah;
+    // Always include existing data for update, or new data for create
+    if (profileState.hasProfile) {
+      // For update: preserve existing data and only update changed fields
+      final existingProfile = profileState.profile!;
+      
+      // Only include fields that have been changed or are not empty
+      if (_tanggalLahirController.text.isNotEmpty) {
+        data['tanggal_lahir'] = _tanggalLahirController.text;
+      } else if (existingProfile.tanggalLahir != null) {
+        data['tanggal_lahir'] = existingProfile.tanggalLahir;
+      }
+      
+      if (_usiaController.text.isNotEmpty) {
+        data['usia'] = int.tryParse(_usiaController.text) ?? 0;
+      } else if (existingProfile.usia != null) {
+        data['usia'] = existingProfile.usia;
+      }
+      
+      if (_alamatController.text.isNotEmpty) {
+        data['alamat'] = _alamatController.text;
+      } else if (existingProfile.alamat != null) {
+        data['alamat'] = existingProfile.alamat;
+      }
+      
+      if (_noTeleponController.text.isNotEmpty) {
+        data['no_telepon'] = _noTeleponController.text;
+      } else if (existingProfile.noTelepon != null) {
+        data['no_telepon'] = existingProfile.noTelepon;
+      }
+      
+      if (_pendidikanController.text.isNotEmpty) {
+        data['pendidikan_terakhir'] = _pendidikanController.text;
+      } else if (existingProfile.pendidikanTerakhir != null) {
+        data['pendidikan_terakhir'] = existingProfile.pendidikanTerakhir;
+      }
+      
+      if (_pekerjaanController.text.isNotEmpty) {
+        data['pekerjaan'] = _pekerjaanController.text;
+      } else if (existingProfile.pekerjaan != null) {
+        data['pekerjaan'] = existingProfile.pekerjaan;
+      }
+      
+      if (_selectedGolonganDarah != null) {
+        data['golongan_darah'] = _selectedGolonganDarah;
+      } else if (existingProfile.golonganDarah != null) {
+        data['golongan_darah'] = existingProfile.golonganDarah;
+      }
+    } else {
+      // For create: only include non-empty fields
+      if (_tanggalLahirController.text.isNotEmpty) {
+        data['tanggal_lahir'] = _tanggalLahirController.text;
+      }
+      if (_usiaController.text.isNotEmpty) {
+        data['usia'] = int.tryParse(_usiaController.text) ?? 0;
+      }
+      if (_alamatController.text.isNotEmpty) {
+        data['alamat'] = _alamatController.text;
+      }
+      if (_noTeleponController.text.isNotEmpty) {
+        data['no_telepon'] = _noTeleponController.text;
+      }
+      if (_pendidikanController.text.isNotEmpty) {
+        data['pendidikan_terakhir'] = _pendidikanController.text;
+      }
+      if (_pekerjaanController.text.isNotEmpty) {
+        data['pekerjaan'] = _pekerjaanController.text;
+      }
+      if (_selectedGolonganDarah != null) {
+        data['golongan_darah'] = _selectedGolonganDarah;
+      }
     }
 
     final success = await ref.read(profileNotifierProvider.notifier).saveProfile(
