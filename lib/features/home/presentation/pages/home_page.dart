@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
-import '../widgets/promo_banner.dart';
+import '../widgets/banner_carousel.dart';
 import '../widgets/article_carousel.dart';
 
 class HomePage extends ConsumerWidget {
@@ -112,10 +112,10 @@ class HomePage extends ConsumerWidget {
   }
 
   Widget _buildPromoSection() {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Promo Menarik',
@@ -126,15 +126,8 @@ class HomePage extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        const PromoBanner(
-          bannerImages: [
-            'assets/images/banner 1.png',
-            'assets/images/banner 2.png',
-            'assets/images/banner 3.png',
-            'assets/images/banner 4.png',
-          ],
-        ),
+        SizedBox(height: 16),
+        BannerCarousel(),
       ],
     );
   }
