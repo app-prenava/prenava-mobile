@@ -1,6 +1,13 @@
 import '../../../../core/utils/image_url_helper.dart';
 import '../../domain/entities/post.dart';
 
+int _parseInt(dynamic value, [int defaultValue = 0]) {
+  if (value == null) return defaultValue;
+  if (value is int) return value;
+  if (value is String) return int.tryParse(value) ?? defaultValue;
+  return defaultValue;
+}
+
 class PostUserModel extends PostUser {
   const PostUserModel({
     required super.id,
@@ -9,13 +16,14 @@ class PostUserModel extends PostUser {
   });
 
   factory PostUserModel.fromJson(Map<String, dynamic> json) {
-    // Normalize profile image URL
-    final profileImage = ImageUrlHelper.normalizeImageUrl(json['profile_image']?.toString());
+    final profileImageUrl = json['photo']?.toString() ?? 
+                            json['profile_image']?.toString() ?? 
+                            json['avatar']?.toString();
     
     return PostUserModel(
-      id: json['id'] as int? ?? 0,
-      name: json['name']?.toString() ?? 'Unknown',
-      profileImage: profileImage,
+      id: _parseInt(json['id'] ?? json['user_id']),
+      name: json['name']?.toString() ?? json['username']?.toString() ?? 'Unknown',
+      profileImage: ImageUrlHelper.normalizeImageUrl(profileImageUrl),
     );
   }
 
@@ -42,36 +50,90 @@ class PostModel extends Post {
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
-    // Parse user data
     final userData = json['user'] as Map<String, dynamic>?;
     final user = userData != null 
         ? PostUserModel.fromJson(userData)
         : const PostUserModel(id: 0, name: 'Unknown');
     
-    // Normalize gambar URL if present
     final gambar = ImageUrlHelper.normalizeImageUrl(json['gambar']?.toString());
 
-    // Handle komentar: could be int (count) or List (array of comments)
     int komentarCount = 0;
-    final komentarValue = json['komentar'];
+    final komentarValue = json['komentar'] ?? json['komen'];
     if (komentarValue is int) {
       komentarCount = komentarValue;
+    } else if (komentarValue is String) {
+      komentarCount = int.tryParse(komentarValue) ?? 0;
     } else if (komentarValue is List) {
       komentarCount = komentarValue.length;
-    } else if (json['komen'] is int) {
-      komentarCount = json['komen'] as int;
     }
 
     return PostModel(
-      id: json['id'] as int? ?? json['post_id'] as int? ?? 0,
+      id: _parseInt(json['id'] ?? json['post_id']),
       judul: json['judul']?.toString() ?? '',
       deskripsi: json['deskripsi']?.toString() ?? '',
       gambar: gambar,
-      apresiasi: json['apresiasi'] as int? ?? 0,
+      apresiasi: _parseInt(json['apresiasi']),
       komentar: komentarCount,
       user: user,
       createdAt: json['created_at']?.toString(),
       isLiked: json['is_liked'] as bool? ?? false,
+    );
+  }
+
+  factory PostModel.fromThreadsJson(Map<String, dynamic> json) {
+    PostUserModel user;
+    final authorData = json['author'] as Map<String, dynamic>?;
+    if (authorData != null) {
+      final profileImageUrl = authorData['photo']?.toString() ?? 
+                              authorData['profile_image']?.toString() ?? 
+                              authorData['avatar']?.toString();
+      
+      user = PostUserModel(
+        id: _parseInt(authorData['id'] ?? authorData['user_id']),
+        name: authorData['name']?.toString() ?? authorData['username']?.toString() ?? 'Unknown',
+        profileImage: ImageUrlHelper.normalizeImageUrl(profileImageUrl),
+      );
+    } else {
+      final userData = json['user'] as Map<String, dynamic>?;
+      user = userData != null 
+          ? PostUserModel.fromJson(userData)
+          : const PostUserModel(id: 0, name: 'Unknown');
+    }
+    
+    final gambar = ImageUrlHelper.normalizeImageUrl(
+      json['image']?.toString() ?? json['gambar']?.toString()
+    );
+
+    int komentarCount = 0;
+    final commentsValue = json['comments'] ?? json['comments_count'];
+    if (commentsValue is int) {
+      komentarCount = commentsValue;
+    } else if (commentsValue is String) {
+      komentarCount = int.tryParse(commentsValue) ?? 0;
+    } else if (commentsValue is List) {
+      komentarCount = commentsValue.length;
+    }
+
+    int likesCount = 0;
+    final likesValue = json['likes'] ?? json['likes_count'] ?? json['apresiasi'];
+    if (likesValue is int) {
+      likesCount = likesValue;
+    } else if (likesValue is String) {
+      likesCount = int.tryParse(likesValue) ?? 0;
+    } else if (likesValue is List) {
+      likesCount = likesValue.length;
+    }
+
+    return PostModel(
+      id: _parseInt(json['id'] ?? json['thread_id'] ?? json['post_id']),
+      judul: json['title']?.toString() ?? json['judul']?.toString() ?? '',
+      deskripsi: json['content']?.toString() ?? json['deskripsi']?.toString() ?? '',
+      gambar: gambar,
+      apresiasi: likesCount,
+      komentar: komentarCount,
+      user: user,
+      createdAt: json['created_at']?.toString(),
+      isLiked: json['is_liked'] as bool? ?? json['liked'] as bool? ?? false,
     );
   }
 
@@ -89,4 +151,3 @@ class PostModel extends Post {
     };
   }
 }
-

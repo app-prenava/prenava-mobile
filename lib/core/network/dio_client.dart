@@ -35,6 +35,11 @@ final appDioProvider = Provider<Dio>((ref) {
     },
     onResponse: (response, handler) {
       print('✅ RESPONSE [${response.statusCode}]: ${response.requestOptions.uri}');
+      // Log response data for debugging community endpoints
+      final path = response.requestOptions.path;
+      if (path.contains('komunitas') || path.contains('threads') || path.contains('komen')) {
+        print('📦 Response Data: ${response.data}');
+      }
       return handler.next(response);
     },
     onError: (error, handler) {

@@ -185,6 +185,78 @@ class CommunityNotifier extends Notifier<CommunityState> {
       return false;
     }
   }
+
+  /// Update a single post in the list (used for syncing detail with list)
+  void updatePost(Post updatedPost) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.id == updatedPost.id) {
+        return updatedPost;
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: updatedPosts);
+  }
+
+  /// Optimistic like update - immediately update UI, then sync with server
+  Future<Map<String, dynamic>> optimisticToggleLike(int postId) async {
+    // Get current state
+    final currentPost = state.posts.firstWhere((p) => p.id == postId);
+    final wasLiked = currentPost.isLiked;
+    final oldCount = currentPost.apresiasi;
+    
+    // Optimistic update
+    final newLiked = !wasLiked;
+    final newCount = newLiked ? oldCount + 1 : oldCount - 1;
+    
+    final optimisticPosts = state.posts.map((post) {
+      if (post.id == postId) {
+        return post.copyWith(isLiked: newLiked, apresiasi: newCount);
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: optimisticPosts);
+    
+    try {
+      // Call API
+      final repository = ref.read(communityRepositoryProvider);
+      final result = await repository.toggleLike(postId);
+      
+      // Sync with actual server response
+      final syncedPosts = state.posts.map((post) {
+        if (post.id == postId) {
+          return post.copyWith(
+            isLiked: result['is_liked'] as bool,
+            apresiasi: result['apresiasi'] as int,
+          );
+        }
+        return post;
+      }).toList();
+      state = state.copyWith(posts: syncedPosts);
+      
+      return result;
+    } catch (e) {
+      // Revert on error
+      final revertedPosts = state.posts.map((post) {
+        if (post.id == postId) {
+          return post.copyWith(isLiked: wasLiked, apresiasi: oldCount);
+        }
+        return post;
+      }).toList();
+      state = state.copyWith(posts: revertedPosts);
+      rethrow;
+    }
+  }
+
+  /// Increment comment count for a post
+  void incrementCommentCount(int postId) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.id == postId) {
+        return post.copyWith(komentar: post.komentar + 1);
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: updatedPosts);
+  }
 }
 
 final communityNotifierProvider =
@@ -266,8 +338,23 @@ final postDetailServiceProvider = Provider.family<PostDetailService, int>(
 );
 
 /// Provider for loading post detail
+/// First checks local cache (from list), then fetches from API if needed
 final postDetailProvider = FutureProvider.autoDispose.family<Post, int>(
   (ref, postId) async {
+    // First try to get from local cache (community list)
+    final communityState = ref.read(communityNotifierProvider);
+    final cachedPost = communityState.posts.where((p) => p.id == postId).firstOrNull;
+    
+    if (cachedPost != null) {
+      // Return cached post immediately, but also fetch fresh data in background
+      ref.read(postDetailServiceProvider(postId)).getPost().then((freshPost) {
+        // Update cache with fresh data
+        ref.read(communityNotifierProvider.notifier).updatePost(freshPost);
+      });
+      return cachedPost;
+    }
+    
+    // No cache, fetch from API
     final service = ref.read(postDetailServiceProvider(postId));
     return await service.getPost();
   },
@@ -276,8 +363,14 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, int>(
 /// Provider for loading comments
 final postCommentsProvider = FutureProvider.autoDispose.family<List<Comment>, int>(
   (ref, postId) async {
-    final service = ref.read(postDetailServiceProvider(postId));
-    return await service.getComments();
+    try {
+      final service = ref.read(postDetailServiceProvider(postId));
+      final comments = await service.getComments();
+      return comments;
+    } catch (e) {
+      print('postCommentsProvider error: $e');
+      rethrow;
+    }
   },
 );
 

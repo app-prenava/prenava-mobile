@@ -39,17 +39,35 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
       final service = ref.read(postDetailServiceProvider(widget.postId));
       await service.addComment(text);
       
-      // Refresh comments
+      // Increment comment count in main list (optimistic)
+      ref.read(communityNotifierProvider.notifier).incrementCommentCount(widget.postId);
+      
+      // Refresh comments list
       ref.invalidate(postCommentsProvider(widget.postId));
       
       _commentController.clear();
       FocusScope.of(context).unfocus();
-    } catch (e) {
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gagal mengirim komentar'),
+            content: Text('Komentar berhasil dikirim'),
+            backgroundColor: Color(0xFFFA6978),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengirim komentar: ${e.toString().replaceAll('Exception: ', '')}'),
             backgroundColor: Colors.red,
+            action: SnackBarAction(
+              label: 'Coba Lagi',
+              textColor: Colors.white,
+              onPressed: _sendComment,
+            ),
           ),
         );
       }
@@ -61,19 +79,42 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
   }
 
   Future<void> _toggleLike() async {
+    // Optimistic update - immediately change UI
+    final wasLiked = _isLiked;
+    final oldCount = _likeCount;
+    
+    setState(() {
+      _isLiked = !_isLiked;
+      _likeCount = _isLiked ? _likeCount + 1 : _likeCount - 1;
+    });
+    
     try {
-      final service = ref.read(postDetailServiceProvider(widget.postId));
-      final result = await service.toggleLike();
+      // Call API with optimistic update
+      final result = await ref
+          .read(communityNotifierProvider.notifier)
+          .optimisticToggleLike(widget.postId);
       
-      setState(() {
-        _isLiked = result['is_liked'] as bool;
-        _likeCount = result['apresiasi'] as int;
-      });
-      
-      // Update main list
-      ref.read(communityNotifierProvider.notifier).toggleLike(widget.postId);
+      // Sync with server response
+      if (mounted) {
+        setState(() {
+          _isLiked = result['is_liked'] as bool;
+          _likeCount = result['apresiasi'] as int;
+        });
+      }
     } catch (e) {
-      // Handle error silently
+      // Revert on error
+      if (mounted) {
+        setState(() {
+          _isLiked = wasLiked;
+          _likeCount = oldCount;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal menyukai postingan'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
