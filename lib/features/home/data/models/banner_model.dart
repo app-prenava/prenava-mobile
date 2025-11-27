@@ -1,3 +1,4 @@
+import '../../../../core/utils/image_url_helper.dart';
 import '../../domain/entities/banner_entity.dart';
 
 class BannerModel extends BannerEntity {
@@ -11,11 +12,8 @@ class BannerModel extends BannerEntity {
   });
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
-    String? photoUrl = json['photo']?.toString();
-    // Fix localhost URL to use server IP
-    if (photoUrl != null && photoUrl.contains('localhost')) {
-      photoUrl = photoUrl.replaceAll('http://localhost:8000', 'http://192.168.1.16:8000');
-    }
+    // Normalize image URL using helper
+    final photoUrl = ImageUrlHelper.normalizeImageUrl(json['photo']?.toString());
 
     return BannerModel(
       id: json['id'] as int?,

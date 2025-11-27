@@ -217,10 +217,37 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                     ? Image.network(
                         product.photo!,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
                           return Container(
                             color: Colors.grey[200],
-                            child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                                color: const Color(0xFFFA6978),
+                              ),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          debugPrint('Image load error for: ${product.photo}');
+                          debugPrint('Error: $error');
+                          return Container(
+                            color: Colors.grey[200],
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Failed to load',
+                                  style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       )
