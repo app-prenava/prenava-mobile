@@ -10,6 +10,8 @@ import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
 import '../../features/shop/presentation/pages/shop_detail_page.dart';
+import '../../features/community/presentation/pages/community_detail_page.dart';
+import '../../features/community/presentation/pages/create_post_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -63,6 +65,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final productId = state.pathParameters['id']!;
           return ShopDetailPage(productId: productId);
+        },
+      ),
+      // Community routes
+      GoRoute(
+        path: '/community/create',
+        builder: (context, state) => const CreatePostPage(),
+      ),
+      GoRoute(
+        path: '/community/detail/:id',
+        builder: (context, state) {
+          final postId = int.parse(state.pathParameters['id']!);
+          return CommunityDetailPage(postId: postId);
         },
       ),
     ],
