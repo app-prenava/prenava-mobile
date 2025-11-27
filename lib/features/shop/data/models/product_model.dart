@@ -1,3 +1,4 @@
+import '../../../../core/utils/image_url_helper.dart';
 import '../../domain/entities/product.dart';
 
 class ProductModel extends Product {
@@ -14,10 +15,19 @@ class ProductModel extends Product {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    // Fix localhost URL to use server IP
-    String? photoUrl = json['photo']?.toString();
-    if (photoUrl != null && photoUrl.contains('localhost')) {
-      photoUrl = photoUrl.replaceAll('http://localhost:8000', 'http://192.168.1.16:8000');
+    // Log raw photo data from backend
+    final rawPhoto = json['photo']?.toString();
+    if (rawPhoto != null) {
+      print('ProductModel: Raw photo from backend: $rawPhoto');
+    } else {
+      print('ProductModel: No photo field in response');
+    }
+    
+    // Normalize image URL using helper
+    final photoUrl = ImageUrlHelper.normalizeImageUrl(rawPhoto);
+    
+    if (photoUrl != null) {
+      print('ProductModel: Normalized photo URL: $photoUrl');
     }
 
     return ProductModel(
