@@ -12,18 +12,38 @@ class CommentModel extends Comment {
     super.user,
   });
 
+  static int _parseInt(dynamic value, [int defaultValue = 0]) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? defaultValue;
+    return defaultValue;
+  }
+
   factory CommentModel.fromJson(Map<String, dynamic> json) {
-    // Parse user data if present
+    PostUser? user;
+    
+    final authorData = json['author'] as Map<String, dynamic>?;
     final userData = json['user'] as Map<String, dynamic>?;
-    final PostUser? user = userData != null 
-        ? PostUserModel.fromJson(userData)
-        : null;
+    
+    if (authorData != null) {
+      final profileImageUrl = authorData['photo']?.toString() ?? 
+                              authorData['profile_image']?.toString() ?? 
+                              authorData['avatar']?.toString();
+      
+      user = PostUserModel(
+        id: _parseInt(authorData['id'] ?? authorData['user_id']),
+        name: authorData['name']?.toString() ?? authorData['username']?.toString() ?? 'Unknown',
+        profileImage: profileImageUrl,
+      );
+    } else if (userData != null) {
+      user = PostUserModel.fromJson(userData);
+    }
 
     return CommentModel(
-      id: json['id'] as int? ?? json['comment_id'] as int? ?? 0,
-      postId: json['post_id'] as int? ?? 0,
-      userId: json['user_id'] as int? ?? 0,
-      komentar: json['komentar']?.toString() ?? '',
+      id: _parseInt(json['id'] ?? json['comment_id']),
+      postId: _parseInt(json['post_id'] ?? json['thread_id']),
+      userId: _parseInt(json['user_id'] ?? json['author_id']),
+      komentar: json['content']?.toString() ?? json['komentar']?.toString() ?? json['body']?.toString() ?? '',
       createdAt: json['created_at']?.toString(),
       user: user,
     );
@@ -39,4 +59,3 @@ class CommentModel extends Comment {
     };
   }
 }
-
