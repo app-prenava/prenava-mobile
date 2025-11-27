@@ -6,22 +6,41 @@ import '../../shared/services/secure_store.dart';
 final appDioProvider = Provider<Dio>((ref) {
   final dio = Dio(BaseOptions(
     baseUrl: Env.apiBase,
-    connectTimeout: const Duration(seconds: 3),
-    receiveTimeout: const Duration(seconds: 5),
-    sendTimeout: const Duration(seconds: 5),
+    connectTimeout: const Duration(seconds: 30),
+    receiveTimeout: const Duration(seconds: 30),
+    sendTimeout: const Duration(seconds: 60), // Longer for file uploads
     headers: {
       'Accept': 'application/json',
     },
   ));
 
-  // Add interceptor to attach JWT token
+  // Add interceptor to attach JWT token and log requests
   dio.interceptors.add(InterceptorsWrapper(
     onRequest: (options, handler) async {
-      final token = await SecureStore().read('jwt_token');
-      if (token != null && token.isNotEmpty) {
-        options.headers['Authorization'] = 'Bearer $token';
+      // Skip Authorization header for auth endpoints (login/register)
+      final path = options.path;
+      final isAuthEndpoint = path.contains('/auth/login') || 
+                             path.contains('/auth/register');
+      
+      if (!isAuthEndpoint) {
+        final token = await SecureStore().read('jwt_token');
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
       }
+      
+      print('🌐 REQUEST: ${options.method} ${options.uri}');
+      print('🔑 Headers: ${options.headers}');
       return handler.next(options);
+    },
+    onResponse: (response, handler) {
+      print('✅ RESPONSE [${response.statusCode}]: ${response.requestOptions.uri}');
+      return handler.next(response);
+    },
+    onError: (error, handler) {
+      print('❌ ERROR [${error.response?.statusCode}]: ${error.requestOptions.uri}');
+      print('❌ Message: ${error.response?.data}');
+      return handler.next(error);
     },
   ));
 
