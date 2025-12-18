@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/comment_card.dart';
 
@@ -19,6 +20,7 @@ class CommunityDetailPage extends ConsumerStatefulWidget {
 
 class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
   final TextEditingController _commentController = TextEditingController();
+  final FocusNode _commentFocusNode = FocusNode();
   bool _isSending = false;
   bool _isLiked = false;
   int _likeCount = 0;
@@ -26,6 +28,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
   @override
   void dispose() {
     _commentController.dispose();
+    _commentFocusNode.dispose();
     super.dispose();
   }
 
@@ -152,6 +155,13 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                   });
                 }
                 
+                // Hitung jumlah komentar yang ditampilkan:
+                // - jika commentsAsync sudah punya data, gunakan length-nya
+                // - kalau belum, fallback ke nilai dari post.komentar
+                final effectiveCommentCount = commentsAsync.hasValue
+                    ? (commentsAsync.value?.length ?? post.komentar)
+                    : post.komentar;
+
                 return RefreshIndicator(
                   onRefresh: () async {
                     ref.invalidate(postDetailProvider(widget.postId));
@@ -163,7 +173,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Post content
-                        _buildPostContent(post),
+                        _buildPostContent(post, effectiveCommentCount),
 
                         const Divider(height: 1),
 
@@ -248,7 +258,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
     );
   }
 
-  Widget _buildPostContent(post) {
+  Widget _buildPostContent(post, int commentCount) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -351,7 +361,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
               // Comment count
               _buildActionButton(
                 icon: Icons.chat_bubble_outline,
-                label: '${post.komentar}',
+                label: '$commentCount',
                 color: Colors.grey[600]!,
                 onTap: null,
               ),
@@ -399,6 +409,8 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
   }
 
   Widget _buildCommentsSection(AsyncValue<List> commentsAsync) {
+    final authState = ref.watch(authNotifierProvider);
+    final currentUserId = authState.user?.id;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -448,7 +460,26 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 itemCount: comments.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  return CommentCard(comment: comments[index]);
+                  final comment = comments[index];
+                  final isMine =
+                      currentUserId != null && comment.userId == currentUserId;
+                  return CommentCard(
+                    comment: comment,
+                    isMine: isMine,
+                    onReply: () {
+                      final name = comment.user?.name;
+                      if (name != null && name.isNotEmpty) {
+                        _commentController.text = '@$name ';
+                        _commentController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _commentController.text.length),
+                        );
+                        _commentFocusNode.requestFocus();
+                      }
+                    },
+                    onDelete: isMine
+                        ? () => _confirmDeleteComment(comment.id)
+                        : null,
+                  );
                 },
               );
             },
@@ -477,6 +508,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
             Expanded(
               child: TextField(
                 controller: _commentController,
+                focusNode: _commentFocusNode,
                 decoration: InputDecoration(
                   hintText: 'Tulis komentar...',
                   hintStyle: TextStyle(color: Colors.grey[400]),
@@ -539,6 +571,63 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
       }
     } catch (_) {
       return dateStr;
+    }
+  }
+
+  Future<void> _confirmDeleteComment(int commentId) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Hapus Komentar'),
+          content: const Text('Apakah kamu yakin ingin menghapus komentar ini?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text(
+                'Hapus',
+                style: TextStyle(color: Color(0xFFFA6978)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) return;
+
+    try {
+      final service = ref.read(postDetailServiceProvider(widget.postId));
+      await service.deleteComment(commentId);
+
+      // Decrement comment count in main list
+      ref.read(communityNotifierProvider.notifier).decrementCommentCount(widget.postId);
+
+      // Refresh comments
+      ref.invalidate(postCommentsProvider(widget.postId));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Komentar berhasil dihapus'),
+          backgroundColor: Color(0xFFFA6978),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gagal menghapus komentar: ${e.toString().replaceAll('Exception: ', '')}',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

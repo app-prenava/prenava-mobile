@@ -72,11 +72,20 @@ class CommunityState {
       }).toList();
     }
 
-    // Sort by category
-    if (selectedCategory == 'Terbaru') {
-      filtered = List.from(filtered)
-        ..sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
+    // Filter by selected category (except 'Terbaru')
+    if (selectedCategory != 'Terbaru') {
+      filtered = filtered
+          .where(
+            (post) =>
+                post.judul.toLowerCase() ==
+                selectedCategory.toLowerCase(),
+          )
+          .toList();
     }
+
+    // Always sort by newest first
+    filtered = List.from(filtered)
+      ..sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
 
     return filtered;
   }
@@ -257,6 +266,28 @@ class CommunityNotifier extends Notifier<CommunityState> {
     }).toList();
     state = state.copyWith(posts: updatedPosts);
   }
+
+  /// Decrement comment count for a post (used when deleting a comment)
+  void decrementCommentCount(int postId) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.id == postId && post.komentar > 0) {
+        return post.copyWith(komentar: post.komentar - 1);
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: updatedPosts);
+  }
+
+  /// Set exact comment count for a post (sync with backend)
+  void setCommentCount(int postId, int count) {
+    final updatedPosts = state.posts.map((post) {
+      if (post.id == postId) {
+        return post.copyWith(komentar: count);
+      }
+      return post;
+    }).toList();
+    state = state.copyWith(posts: updatedPosts);
+  }
 }
 
 final communityNotifierProvider =
@@ -330,6 +361,10 @@ class PostDetailService {
   Future<Map<String, dynamic>> toggleLike() async {
     return await _repository.toggleLike(postId);
   }
+
+  Future<void> deleteComment(int commentId) async {
+    await _repository.deleteComment(commentId);
+  }
 }
 
 /// Provider for post detail service
@@ -346,11 +381,6 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, int>(
     final cachedPost = communityState.posts.where((p) => p.id == postId).firstOrNull;
     
     if (cachedPost != null) {
-      // Return cached post immediately, but also fetch fresh data in background
-      ref.read(postDetailServiceProvider(postId)).getPost().then((freshPost) {
-        // Update cache with fresh data
-        ref.read(communityNotifierProvider.notifier).updatePost(freshPost);
-      });
       return cachedPost;
     }
     
@@ -366,6 +396,12 @@ final postCommentsProvider = FutureProvider.autoDispose.family<List<Comment>, in
     try {
       final service = ref.read(postDetailServiceProvider(postId));
       final comments = await service.getComments();
+
+      // Sync comment count with actual comments length
+      ref
+          .read(communityNotifierProvider.notifier)
+          .setCommentCount(postId, comments.length);
+
       return comments;
     } catch (e) {
       print('postCommentsProvider error: $e');

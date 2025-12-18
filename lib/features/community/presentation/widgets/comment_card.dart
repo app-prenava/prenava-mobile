@@ -3,10 +3,16 @@ import '../../domain/entities/comment.dart';
 
 class CommentCard extends StatelessWidget {
   final Comment comment;
+  final VoidCallback? onReply;
+  final VoidCallback? onDelete;
+  final bool isMine;
 
   const CommentCard({
     super.key,
     required this.comment,
+    this.onReply,
+    this.onDelete,
+    this.isMine = false,
   });
 
   @override
@@ -65,6 +71,33 @@ class CommentCard extends StatelessWidget {
                   ],
                 ),
               ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, size: 18, color: Colors.grey),
+                onSelected: (value) {
+                  if (value == 'reply' && onReply != null) {
+                    onReply!();
+                  } else if (value == 'delete' && onDelete != null) {
+                    onDelete!();
+                  }
+                },
+                itemBuilder: (context) {
+                  final items = <PopupMenuEntry<String>>[
+                    const PopupMenuItem(
+                      value: 'reply',
+                      child: Text('Balas'),
+                    ),
+                  ];
+                  if (isMine && onDelete != null) {
+                    items.add(
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Text('Hapus'),
+                      ),
+                    );
+                  }
+                  return items;
+                },
+              ),
             ],
           ),
           const SizedBox(height: 8),
@@ -115,4 +148,14 @@ class CommentCard extends StatelessWidget {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/post_card.dart';
 
@@ -34,6 +35,8 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
   @override
   Widget build(BuildContext context) {
     final communityState = ref.watch(communityNotifierProvider);
+    final authState = ref.watch(authNotifierProvider);
+    final currentUserId = authState.user?.id;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -67,6 +70,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                           itemCount: communityState.displayPosts.length,
                           itemBuilder: (context, index) {
                             final post = communityState.displayPosts[index];
+                            final isMine = currentUserId != null && post.user.id == currentUserId;
                             return PostCard(
                               post: post,
                               onTap: () =>
@@ -76,12 +80,61 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                                   .toggleLike(post.id),
                               onComment: () =>
                                   context.push('/community/detail/${post.id}'),
+                              isMine: isMine,
+                              onDelete: isMine
+                                  ? () => _confirmDeletePost(context, post.id)
+                                  : null,
                             );
                           },
                         ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _confirmDeletePost(BuildContext context, int postId) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Hapus Postingan'),
+          content: const Text(
+            'Apakah kamu yakin ingin menghapus postingan ini? '
+            'Komentar dan like juga akan terhapus.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text(
+                'Hapus',
+                style: TextStyle(color: Color(0xFFFA6978)),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) return;
+
+    final notifier = ref.read(communityNotifierProvider.notifier);
+    final success = await notifier.deletePost(postId);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Postingan berhasil dihapus' : 'Gagal menghapus postingan',
+        ),
+        backgroundColor: success ? const Color(0xFFFA6978) : Colors.red,
+        duration: const Duration(seconds: 2),
       ),
     );
   }
@@ -110,7 +163,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
           ),
           SizedBox(height: 4),
           Text(
-            'Berbagi Cerita, Taya Apa Saja',
+            'Berbagi Cerita, Tanya Apa Saja',
             style: TextStyle(
               fontSize: 13,
               color: Colors.white,

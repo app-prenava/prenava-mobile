@@ -29,30 +29,6 @@ class CommunityRemoteDatasource {
 
   Future<PostModel> getPostById(int id) async {
     try {
-      try {
-        final response = await _dio.get('/threads/detail/$id');
-
-        if (response.statusCode == 200 && response.data != null) {
-          final responseMap = response.data is Map 
-              ? Map<String, dynamic>.from(response.data as Map)
-              : <String, dynamic>{};
-          
-          Map<String, dynamic> data;
-          if (responseMap.containsKey('data')) {
-            data = Map<String, dynamic>.from(responseMap['data'] as Map);
-          } else {
-            data = responseMap;
-          }
-          
-          _lastThreadDetailData = data;
-          _lastThreadDetailId = id;
-          
-          return PostModel.fromThreadsJson(data);
-        }
-      } on DioException {
-        // Fallback to old endpoint
-      }
-      
       final response = await _dio.get('/komunitas/$id');
 
       if (response.statusCode == 200 && response.data != null) {
@@ -154,73 +130,32 @@ class CommunityRemoteDatasource {
 
   Future<List<CommentModel>> getComments(int postId) async {
     try {
-      List<dynamic> commentsData = [];
-      
-      if (_lastThreadDetailId == postId && _lastThreadDetailData != null && _lastThreadDetailData!.containsKey('comments')) {
-        commentsData = (_lastThreadDetailData!['comments'] as List?) ?? [];
-      } else {
-        try {
-          final response = await _dio.get('/threads/detail/$postId');
-          
-          if (response.statusCode == 200 && response.data != null) {
-            final responseMap = response.data is Map 
-                ? Map<String, dynamic>.from(response.data as Map)
-                : <String, dynamic>{};
-            
-            Map<String, dynamic> data;
-            if (responseMap.containsKey('data')) {
-              data = Map<String, dynamic>.from(responseMap['data'] as Map);
-            } else {
-              data = responseMap;
-            }
-            
-            _lastThreadDetailData = data;
-            _lastThreadDetailId = postId;
-            
-            commentsData = (data['comments'] as List?) ?? [];
-          }
-        } on DioException {
-          final response = await _dio.get('/komunitas/komen/$postId');
-          
-          if (response.statusCode == 200 && response.data != null) {
-            if (response.data is List) {
-              commentsData = response.data as List;
-            } else if (response.data is Map) {
-              final responseMap = Map<String, dynamic>.from(response.data as Map);
-              
-              final possibleKeys = ['comments', 'Comments', 'data', 'komentar', 'Komentar'];
-              for (final key in possibleKeys) {
-                if (responseMap.containsKey(key) && responseMap[key] is List) {
-                  commentsData = responseMap[key] as List;
-                  break;
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      final comments = <CommentModel>[];
-      for (var i = 0; i < commentsData.length; i++) {
-        try {
-          final item = Map<String, dynamic>.from(commentsData[i] as Map);
-          final comment = CommentModel.fromJson(item);
-          comments.add(comment);
-        } catch (_) {}
-      }
-      
-      return comments;
+      final response = await _dio.get('/komunitas/komen/$postId');
 
-    } on DioException {
+      if (response.statusCode == 200 && response.data != null) {
+        final List<dynamic> items;
+        
+        if (response.data is Map) {
+          final responseMap = response.data as Map<String, dynamic>;
+          items = responseMap['komen'] ?? 
+                  responseMap['comments'] ?? 
+                  responseMap['data'] ?? 
+                  [];
+        } else if (response.data is List) {
+          items = response.data as List<dynamic>;
+        } else {
+          items = [];
+        }
+        
+        return items
+            .map((item) => CommentModel.fromJson(Map<String, dynamic>.from(item as Map)))
+            .toList();
+      }
+
       return [];
-    } catch (_) {
-      return [];
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal mengambil komentar');
     }
-  }
-  
-  void clearCache() {
-    _lastThreadDetailData = null;
-    _lastThreadDetailId = null;
   }
 
   Future<CommentModel> addComment({
@@ -230,17 +165,38 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.post(
         '/komunitas/komen/add/$postId',
-        data: {'komentar': komentar},
+        data: {
+          'komentar': komentar,
+        },
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        final responseData = response.data is Map<String, dynamic> 
-            ? response.data 
-            : response.data['data'];
-        
-        if (responseData != null) {
-          return CommentModel.fromJson(responseData as Map<String, dynamic>);
+        if (response.data is Map<String, dynamic>) {
+          final responseMap = response.data as Map<String, dynamic>;
+          
+          Map<String, dynamic>? commentData;
+          if (responseMap.containsKey('data')) {
+            commentData = responseMap['data'] as Map<String, dynamic>?;
+          } else if (responseMap.containsKey('komen')) {
+            commentData = responseMap['komen'] as Map<String, dynamic>?;
+          } else if (responseMap.containsKey('comment')) {
+            commentData = responseMap['comment'] as Map<String, dynamic>?;
+          } else if (responseMap.containsKey('id')) {
+            commentData = responseMap;
+          }
+          
+          if (commentData != null) {
+            return CommentModel.fromJson(commentData);
+          }
         }
+        
+        // Fallback: create comment model from response
+        return CommentModel(
+          id: 0,
+          postId: postId,
+          userId: 0,
+          komentar: komentar,
+        );
       }
 
       throw Exception('Gagal menambah komentar');
@@ -249,19 +205,44 @@ class CommunityRemoteDatasource {
     }
   }
 
+  /// Delete a single comment (reply) by id
+  Future<void> deleteComment(int commentId) async {
+    try {
+      // Assumes backend endpoint: DELETE /api/komunitas/komen/{commentId}
+      final response = await _dio.delete('/komunitas/komen/$commentId');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus komentar');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus komentar');
+    }
+  }
+
   Future<void> deletePost(int postId) async {
     try {
-      await _dio.delete('/komunitas/history/$postId');
+      // Backend route: DELETE /api/komunitas/history/{id}
+      final response = await _dio.delete('/komunitas/history/$postId');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus postingan');
+      }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus post');
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus postingan');
     }
   }
 
   Future<void> deleteAllPosts() async {
     try {
-      await _dio.delete('/komunitas/history/deleteAll');
+      // Backend route: DELETE /api/komunitas/history/deleteAll
+      final response = await _dio.delete('/komunitas/history/deleteAll');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus semua postingan');
+      }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus semua post');
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus semua postingan');
     }
   }
+
 }

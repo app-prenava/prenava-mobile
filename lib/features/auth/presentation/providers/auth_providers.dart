@@ -67,11 +67,14 @@ class AuthState {
 class AuthNotifier extends Notifier<AuthState> {
   @override
   AuthState build() {
-    _initialize();
+    initialize();
     return const AuthState.initial();
   }
 
-  Future<void> _initialize() async {
+  /// Ensure auth state is loaded from secure storage + backend.
+  /// Dipanggil saat startup (SplashScreen) agar user yang sudah
+  /// pernah login tidak perlu login ulang selama token masih valid.
+  Future<void> initialize() async {
     final repository = ref.read(authRepositoryProvider);
 
     try {
