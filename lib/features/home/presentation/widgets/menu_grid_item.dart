@@ -25,6 +25,8 @@ class MenuGridItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
             width: 64,
@@ -63,7 +65,7 @@ class MenuGridItem extends StatelessWidget {
                     size: 32,
                   ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
