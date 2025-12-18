@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../models/product_model.dart';
+import '../models/review_model.dart';
 
 class ShopRemoteDatasource {
   final Dio _dio;
@@ -7,11 +8,23 @@ class ShopRemoteDatasource {
   ShopRemoteDatasource(this._dio);
 
   // GET /api/shop/all - Get all products with pagination
-  Future<Map<String, dynamic>> getAllProducts({int page = 1, int limit = 30}) async {
+  Future<Map<String, dynamic>> getAllProducts({
+    int page = 1,
+    int limit = 30,
+    String? category,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'data': limit,
+      };
+      if (category != null) {
+        queryParams['category'] = category;
+      }
+
       final response = await _dio.get(
         '/shop/all',
-        queryParameters: {'page': page, 'data': limit},
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -88,6 +101,10 @@ class ShopRemoteDatasource {
         'product_name': data['product_name'],
         'price': data['price'],
         'url': data['url'],
+        if ((data['description'] as String?)?.isNotEmpty ?? false)
+          'description': data['description'],
+        if ((data['category'] as String?)?.isNotEmpty ?? false)
+          'category': data['category'],
         'photo': await MultipartFile.fromFile(
           photoPath,
           filename: photoPath.split('/').last,
@@ -182,6 +199,94 @@ class ShopRemoteDatasource {
       }
       final message = e.response?.data['message'] as String?;
       throw Exception(message ?? 'Gagal menghapus produk');
+    }
+  }
+
+  // GET /api/shop/{id}/reviews - Get product reviews
+  Future<Map<String, dynamic>> getReviews({
+    required int productId,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/shop/$productId/reviews',
+        queryParameters: {'page': page, 'data': limit},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+        final reviews = (data['data'] as List?)
+                ?.map(
+                  (item) => ShopReviewModel.fromJson(
+                    item as Map<String, dynamic>,
+                  ),
+                )
+                .toList() ??
+            [];
+
+        return {
+          'reviews': reviews,
+          'current_page': data['current_page'] ?? 1,
+          'last_page': data['last_page'] ?? 1,
+          'total': data['total'] ?? 0,
+          'per_page': data['per_page'] ?? limit,
+        };
+      }
+
+      return {
+        'reviews': <ShopReviewModel>[],
+        'current_page': 1,
+        'last_page': 1,
+        'total': 0,
+        'per_page': limit,
+      };
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal mengambil review');
+    }
+  }
+
+  // POST /api/shop/{id}/reviews - Create/update review
+  Future<ShopReviewModel> upsertReview({
+    required int productId,
+    required int rating,
+    String? comment,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/shop/$productId/reviews',
+        data: {
+          'rating': rating,
+          if (comment != null && comment.isNotEmpty) 'comment': comment,
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
+        final reviewJson = (data['data'] as Map<String, dynamic>?) ?? data;
+        return ShopReviewModel.fromJson(reviewJson);
+      }
+
+      throw Exception('Gagal menyimpan review');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal menyimpan review');
+    }
+  }
+
+  // DELETE /api/shop/{productId}/reviews/{reviewId} - Delete review
+  Future<void> deleteReview({
+    required int productId,
+    required int reviewId,
+  }) async {
+    try {
+      final response =
+          await _dio.delete('/shop/$productId/reviews/$reviewId');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus review');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus review');
     }
   }
 }
