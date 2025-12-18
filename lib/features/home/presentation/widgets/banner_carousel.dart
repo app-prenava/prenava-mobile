@@ -56,7 +56,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
           child: Text(
-            'News',
+            'Informasi Terbaru',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

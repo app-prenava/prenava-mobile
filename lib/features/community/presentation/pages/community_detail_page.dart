@@ -286,18 +286,6 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
 
           const SizedBox(height: 16),
 
-          // Post description
-          Text(
-            post.deskripsi,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.black87,
-              height: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
           // User info
           Row(
             children: [
@@ -343,6 +331,18 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Post description
+          Text(
+            post.deskripsi,
+            style: const TextStyle(
+              fontSize: 15,
+              color: Colors.black87,
+              height: 1.5,
+            ),
           ),
 
           const SizedBox(height: 16),
