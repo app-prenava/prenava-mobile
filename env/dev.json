@@ -1,5 +1,5 @@
 {
-    "API_BASE": "http://172.20.10.3:8000/api",
+    "API_BASE": "http://172.168.101.133:8000/api",
     "ENV": "dev",
     "LOG_LEVEL": "debug"
   }
