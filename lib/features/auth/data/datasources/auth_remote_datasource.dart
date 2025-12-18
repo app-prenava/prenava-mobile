@@ -58,6 +58,9 @@ class AuthRemoteDatasource {
 
       throw Exception('Failed to get user data');
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('401 Unauthorized');
+      }
       throw Exception('Network error: ${e.message}');
     }
   }

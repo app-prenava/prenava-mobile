@@ -45,7 +45,9 @@ class AuthRepositoryImpl implements AuthRepository {
         return false;
       }
 
-      return await _remoteDatasource.validateToken(token);
+      // Token exists locally - trust it and let API calls handle 401 if invalid
+      // This prevents logout on network errors during app startup
+      return true;
     } catch (_) {
       return false;
     }
@@ -61,7 +63,11 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       return await _remoteDatasource.getCurrentUser(token);
-    } catch (_) {
+    } catch (e) {
+      // If token is invalid (401), clear it
+      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+        await _secureStore.delete('jwt_token');
+      }
       return null;
     }
   }

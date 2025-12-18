@@ -9,6 +9,10 @@ class ProductModel extends Product {
     required super.price,
     required super.url,
     super.photo,
+    super.description,
+    super.category,
+    super.averageRating,
+    super.ratingCount,
     super.createdAt,
     super.updatedAt,
     super.sellerName,
@@ -37,6 +41,12 @@ class ProductModel extends Product {
       price: json['price']?.toString() ?? '0',
       url: json['url']?.toString() ?? '',
       photo: photoUrl,
+      description: json['description']?.toString(),
+      category: json['category']?.toString(),
+      averageRating: (json['average_rating'] is num)
+          ? (json['average_rating'] as num).toDouble()
+          : 0,
+      ratingCount: (json['rating_count'] as int?) ?? 0,
       createdAt: json['created_at']?.toString(),
       updatedAt: json['updated_at']?.toString(),
       sellerName: json['seller_name']?.toString(),
@@ -53,6 +63,10 @@ class ProductModel extends Product {
     if (productId != null) map['product_id'] = productId;
     if (userId != null) map['user_id'] = userId;
     if (photo != null) map['photo'] = photo;
+    if (description != null) map['description'] = description;
+    if (category != null) map['category'] = category;
+    if (averageRating != 0) map['average_rating'] = averageRating;
+    if (ratingCount != 0) map['rating_count'] = ratingCount;
     if (createdAt != null) map['created_at'] = createdAt;
     if (updatedAt != null) map['updated_at'] = updatedAt;
     if (sellerName != null) map['seller_name'] = sellerName;

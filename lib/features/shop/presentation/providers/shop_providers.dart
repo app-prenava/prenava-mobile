@@ -4,6 +4,7 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/shop_remote_datasource.dart';
 import '../../data/repositories/shop_repository_impl.dart';
 import '../../domain/entities/product.dart';
+import '../../domain/entities/review.dart';
 import '../../domain/repositories/shop_repository.dart';
 
 // Datasource provider
@@ -24,6 +25,7 @@ class ShopState {
   final List<Product> products;
   final List<Product> filteredProducts;
   final String searchQuery;
+  final String? selectedCategory;
   final int currentPage;
   final int lastPage;
   final int total;
@@ -35,6 +37,7 @@ class ShopState {
     this.products = const [],
     this.filteredProducts = const [],
     this.searchQuery = '',
+    this.selectedCategory,
     this.currentPage = 1,
     this.lastPage = 1,
     this.total = 0,
@@ -47,6 +50,7 @@ class ShopState {
         products = const [],
         filteredProducts = const [],
         searchQuery = '',
+        selectedCategory = null,
         currentPage = 1,
         lastPage = 1,
         total = 0,
@@ -58,6 +62,8 @@ class ShopState {
     List<Product>? products,
     List<Product>? filteredProducts,
     String? searchQuery,
+    String? selectedCategory,
+    bool clearCategory = false,
     int? currentPage,
     int? lastPage,
     int? total,
@@ -71,6 +77,7 @@ class ShopState {
       products: products ?? this.products,
       filteredProducts: filteredProducts ?? this.filteredProducts,
       searchQuery: searchQuery ?? this.searchQuery,
+      selectedCategory: clearCategory ? null : (selectedCategory ?? this.selectedCategory),
       currentPage: currentPage ?? this.currentPage,
       lastPage: lastPage ?? this.lastPage,
       total: total ?? this.total,
@@ -113,13 +120,18 @@ class ShopNotifier extends Notifier<ShopState> {
     return const ShopState.initial();
   }
 
-  Future<void> loadProducts({int page = 1, bool loadMore = false}) async {
+  Future<void> loadProducts({int page = 1, bool loadMore = false, String? category}) async {
     if (loadMore && !state.hasMore) return;
+
+    // Use existing category if not provided and loading more
+    final effectiveCategory = category ?? (loadMore ? state.selectedCategory : null);
 
     state = state.copyWith(
       isLoading: true,
       clearError: true,
       currentPage: loadMore ? state.currentPage : page,
+      selectedCategory: effectiveCategory,
+      clearCategory: effectiveCategory == null,
     );
 
     try {
@@ -127,6 +139,7 @@ class ShopNotifier extends Notifier<ShopState> {
       final result = await repository.getAllProducts(
         page: loadMore ? state.currentPage + 1 : page,
         limit: 30,
+        category: effectiveCategory,
       );
 
       final newProducts = result['products'] as List<Product>;
@@ -134,6 +147,7 @@ class ShopNotifier extends Notifier<ShopState> {
       state = ShopState(
         isLoading: false,
         products: loadMore ? [...state.products, ...newProducts] : newProducts,
+        selectedCategory: effectiveCategory,
         currentPage: result['current_page'] as int,
         lastPage: result['last_page'] as int,
         total: result['total'] as int,
@@ -146,8 +160,8 @@ class ShopNotifier extends Notifier<ShopState> {
     }
   }
 
-  Future<void> refreshProducts() async {
-    await loadProducts(page: 1);
+  Future<void> refreshProducts({String? category}) async {
+    await loadProducts(page: 1, category: category);
   }
 
   Future<bool> createProduct({
@@ -243,7 +257,7 @@ class ShopNotifier extends Notifier<ShopState> {
     }
 
     final filtered = state.products.where((product) {
-      final productName = product.productName?.toLowerCase() ?? '';
+      final productName = product.productName.toLowerCase();
       final searchLower = query.toLowerCase();
       return productName.contains(searchLower);
     }).toList();
@@ -262,3 +276,17 @@ class ShopNotifier extends Notifier<ShopState> {
 final shopNotifierProvider = NotifierProvider<ShopNotifier, ShopState>(() {
   return ShopNotifier();
 });
+
+/// Reviews provider per product
+final productReviewsProvider =
+    FutureProvider.autoDispose.family<List<ShopReview>, int>(
+  (ref, productId) async {
+    final repository = ref.read(shopRepositoryProvider);
+    final result = await repository.getReviews(
+      productId: productId,
+      page: 1,
+      limit: 50,
+    );
+    return (result['reviews'] as List<ShopReview>);
+  },
+);

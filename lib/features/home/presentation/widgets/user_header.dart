@@ -3,17 +3,13 @@ import 'package:flutter/material.dart';
 class UserHeader extends StatelessWidget {
   final String greeting;
   final String userName;
-  final String location;
   final String? avatarUrl;
-  final VoidCallback? onNotificationTap;
 
   const UserHeader({
     super.key,
     required this.greeting,
     required this.userName,
-    required this.location,
     this.avatarUrl,
-    this.onNotificationTap,
   });
 
   @override
@@ -59,8 +55,8 @@ class UserHeader extends StatelessWidget {
                     greeting,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -68,52 +64,13 @@ class UserHeader extends StatelessWidget {
                     userName,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    location,
-                    style: const TextStyle(
-                      color: Color(0xFFFA6978),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(
-                    Icons.location_on,
-                    color: Color(0xFFFA6978),
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: onNotificationTap,
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: Colors.white,
-                size: 28,
-              ),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.white.withValues(alpha: 0.2),
               ),
             ),
           ],

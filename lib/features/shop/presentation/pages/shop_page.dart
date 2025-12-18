@@ -13,13 +13,13 @@ class ShopPage extends ConsumerStatefulWidget {
 class _ShopPageState extends ConsumerState<ShopPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _categories = const [
-    'All',
-    'Vitamin',
-    'Makanan',
-    'Peralatan Bayi',
-    'Kesehatan',
-    'Ibu Hamil'
+  final List<Map<String, String?>> _categories = const [
+    {'label': 'All', 'slug': null},
+    {'label': 'Vitamin', 'slug': 'vitamin'},
+    {'label': 'Makanan', 'slug': 'makanan'},
+    {'label': 'Peralatan Bayi', 'slug': 'peralatan_bayi'},
+    {'label': 'Kesehatan', 'slug': 'kesehatan'},
+    {'label': 'Lainnya', 'slug': 'lainnya'},
   ];
   int _selectedCategory = 0;
 
@@ -38,12 +38,19 @@ class _ShopPageState extends ConsumerState<ShopPage> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
-      ref.read(shopNotifierProvider.notifier).loadProducts(loadMore: true);
+      final slug = _categories[_selectedCategory]['slug'];
+      ref.read(shopNotifierProvider.notifier).loadProducts(loadMore: true, category: slug);
     }
   }
 
   void _onSearchChanged(String query) {
     ref.read(shopNotifierProvider.notifier).filterProducts(query);
+  }
+
+  void _onCategoryChanged(int index) {
+    setState(() => _selectedCategory = index);
+    final slug = _categories[index]['slug'];
+    ref.read(shopNotifierProvider.notifier).loadProducts(category: slug);
   }
 
   @override
@@ -65,10 +72,10 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                 bottomRight: Radius.circular(24),
               ),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Belanja',
                   style: TextStyle(
                     fontSize: 24,
@@ -76,37 +83,47 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                SizedBox(height: 4),
+                Text(
                   'Hari ini mau beli apa momsi?',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Search
-                TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'Search products...',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
 
-          const SizedBox(height: 12),
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              style: const TextStyle(color: Colors.black87),
+              decoration: InputDecoration(
+                hintText: 'Cari Produk',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+                filled: true,
+                fillColor: Colors.white,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide(color: Colors.grey[300]!),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: const BorderSide(color: Color(0xFFFA6978)),
+                ),
+              ),
+            ),
+          ),
 
           // Categories tabs
           Padding(
@@ -120,12 +137,12 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                 itemBuilder: (context, index) {
                   final bool active = _selectedCategory == index;
                   return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = index),
+                    onTap: () => _onCategoryChanged(index),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          _categories[index],
+                          _categories[index]['label']!,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: active ? FontWeight.w700 : FontWeight.w500,
@@ -154,21 +171,40 @@ class _ShopPageState extends ConsumerState<ShopPage> {
           // Products Grid
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref.read(shopNotifierProvider.notifier).refreshProducts(),
+              onRefresh: () => ref.read(shopNotifierProvider.notifier).loadProducts(category: _categories[_selectedCategory]['slug']),
               child: shopState.isLoading && shopState.products.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? ListView(
+                      // Supaya RefreshIndicator tetap bisa di-swipe
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: const [
+                        SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      ],
+                    )
                   : shopState.displayProducts.isEmpty
-                      ? _buildEmptyState()
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: [
+                            const SizedBox(height: 40),
+                            _buildEmptyState(context),
+                          ],
+                        )
                       : GridView.builder(
                           controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            childAspectRatio: 0.7,
+                            childAspectRatio: 0.62,
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
                           ),
-                          itemCount: shopState.displayProducts.length + (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
+                          itemCount: shopState.displayProducts.length +
+                              (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == shopState.displayProducts.length) {
                               return const Center(
@@ -273,28 +309,51 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                    const Spacer(),
-                  Text(
-                      'Rp ${product.price}',
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      color: Color(0xFFFA6978),
+                  const SizedBox(height: 6),
+                  // Rating row
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.star,
+                        size: 14,
+                        color: product.ratingCount > 0
+                            ? Colors.amber
+                            : Colors.grey[400],
                       ),
-                    ),
-                    if (product.sellerName != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(width: 4),
                       Text(
-                        product.sellerName!,
+                        product.ratingCount > 0
+                            ? (product.averageRating)
+                                .toStringAsFixed(1)
+                            : 'Belum ada rating',
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
+                      if (product.ratingCount > 0) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '(${product.ratingCount})',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Rp ${product.price}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFA6978),
+                    ),
+                  ),
+                ],
                 ),
               ),
             ),
@@ -304,11 +363,11 @@ class _ShopPageState extends ConsumerState<ShopPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  static Widget _buildEmptyState(BuildContext context) {
     return Center(
-              child: Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+        children: [
           Icon(
             Icons.shopping_bag_outlined,
             size: 100,
