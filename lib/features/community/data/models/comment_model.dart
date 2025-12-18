@@ -37,6 +37,23 @@ class CommentModel extends Comment {
       );
     } else if (userData != null) {
       user = PostUserModel.fromJson(userData);
+    } else {
+      // Some APIs might return user info flattened on the comment object
+      final flattenedName = json['name']?.toString() ??
+          json['nama']?.toString() ??
+          json['username']?.toString();
+
+      if (flattenedName != null && flattenedName.isNotEmpty) {
+        final profileImageUrl = json['photo']?.toString() ??
+            json['profile_image']?.toString() ??
+            json['avatar']?.toString();
+
+        user = PostUserModel(
+          id: _parseInt(json['user_id']),
+          name: flattenedName,
+          profileImage: profileImageUrl,
+        );
+      }
     }
 
     return CommentModel(

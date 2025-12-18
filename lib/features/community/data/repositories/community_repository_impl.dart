@@ -50,6 +50,11 @@ class CommunityRepositoryImpl implements CommunityRepository {
   }
 
   @override
+  Future<void> deleteComment(int commentId) {
+    return remoteDatasource.deleteComment(commentId);
+  }
+
+  @override
   Future<void> deletePost(int postId) {
     return remoteDatasource.deletePost(postId);
   }

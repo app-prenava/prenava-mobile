@@ -27,6 +27,9 @@ abstract class CommunityRepository {
     required String komentar,
   });
 
+  /// Delete a single comment (reply) by id
+  Future<void> deleteComment(int commentId);
+
   /// Delete post by id
   Future<void> deletePost(int postId);
 
