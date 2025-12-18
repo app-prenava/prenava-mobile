@@ -22,7 +22,7 @@ class MenuGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -30,12 +30,23 @@ class MenuGridItem extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: backgroundColor ?? const Color(0xFFFFE8EC),
-              shape: BoxShape.circle,
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFE58DC5),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFE58DC5).withOpacity(0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: imagePath != null
                 ? Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10),
                     child: Image.asset(
                       imagePath!,
                       fit: BoxFit.contain,

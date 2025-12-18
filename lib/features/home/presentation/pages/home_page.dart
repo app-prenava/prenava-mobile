@@ -74,43 +74,43 @@ class _HomePageState extends ConsumerState<HomePage> {
         crossAxisCount: 4,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 20,
+        mainAxisSpacing: 16,
         crossAxisSpacing: 8,
         childAspectRatio: 0.85,
         children: [
           MenuGridItem(
-            imagePath: 'assets/images/yoga-instructor 1.png',
-            label: 'Rekomendasi Olahraga',
+            imagePath: 'assets/images/hidrasi.png',
+            label: 'Hidrasi',
             onTap: () {},
           ),
           MenuGridItem(
-            imagePath: 'assets/images/vegetables 1.png',
-            label: 'Rekomendasi Makanan',
+            imagePath: 'assets/images/tips.png',
+            label: 'Tips',
             onTap: () {},
           ),
           MenuGridItem(
-            imagePath: 'assets/images/anemia 1.png',
-            label: 'Prediksi Anemia',
-            onTap: () {},
-          ),
-          MenuGridItem(
-            imagePath: 'assets/images/depression 1.png',
-            label: 'Prediksi Depresi',
-            onTap: () {},
-          ),
-          MenuGridItem(
-            imagePath: 'assets/images/newborn (1) 1.png',
+            imagePath: 'assets/images/kalkulator hpl.png',
             label: 'Kalkulator HPL',
             onTap: () {},
           ),
           MenuGridItem(
-            imagePath: 'assets/images/newborn 1.png',
-            label: 'Prediksi Persalinan',
+            imagePath: 'assets/images/kick counter.png',
+            label: 'Kick Counter',
             onTap: () {},
           ),
           MenuGridItem(
-            imagePath: 'assets/images/air-quality 1.png',
-            label: 'Cek Kualitas Udara',
+            imagePath: 'assets/images/deteksi depresi.png',
+            label: 'Deteksi Depresi',
+            onTap: () {},
+          ),
+          MenuGridItem(
+            imagePath: 'assets/images/risiko stunting.png',
+            label: 'Risiko Stunting',
+            onTap: () {},
+          ),
+          MenuGridItem(
+            imagePath: 'assets/images/anemia.png',
+            label: 'Anemia',
             onTap: () {},
           ),
           MenuGridItem(

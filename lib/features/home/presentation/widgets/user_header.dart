@@ -17,34 +17,48 @@ class UserHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFFFA6978), Color(0xFFFA6978)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        image: DecorationImage(
+          image: AssetImage('assets/images/gradien.png'),
+          fit: BoxFit.cover,
         ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: Colors.white,
-              child: avatarUrl != null
-                  ? ClipOval(
-                      child: Image.network(
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white,
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: avatarUrl != null
+                    ? Image.network(
                         avatarUrl!,
                         width: 52,
                         height: 52,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => _defaultAvatar(),
-                      ),
-                    )
-                  : _defaultAvatar(),
+                      )
+                    : _defaultAvatar(),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -52,11 +66,11 @@ class UserHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    greeting,
+                    '$greeting,',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -64,8 +78,8 @@ class UserHeader extends StatelessWidget {
                     userName,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -80,10 +94,13 @@ class UserHeader extends StatelessWidget {
   }
 
   Widget _defaultAvatar() {
-    return const Icon(
-      Icons.person,
-      size: 32,
-      color: Color(0xFFFA6978),
+    return Container(
+      color: Colors.white,
+      child: const Icon(
+        Icons.person,
+        size: 32,
+        color: Color(0xFFFA6978),
+      ),
     );
   }
 }
