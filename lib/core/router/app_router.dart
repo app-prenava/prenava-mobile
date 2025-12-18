@@ -12,6 +12,7 @@ import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
 import '../../features/shop/presentation/pages/shop_detail_page.dart';
 import '../../features/community/presentation/pages/community_detail_page.dart';
 import '../../features/community/presentation/pages/create_post_page.dart';
+import '../../features/hydration/presentation/pages/hydration_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -78,6 +79,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           final postId = int.parse(state.pathParameters['id']!);
           return CommunityDetailPage(postId: postId);
         },
+      ),
+      // Hydration route
+      GoRoute(
+        path: '/hydration',
+        builder: (context, state) => const HydrationPage(),
       ),
     ],
   );
