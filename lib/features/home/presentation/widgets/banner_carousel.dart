@@ -39,66 +39,32 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
     final bannerState = ref.watch(bannerNotifierProvider);
 
     if (bannerState.isLoading) {
-      return const SizedBox(
-        height: 140,
-        child: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFFFA6978),
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     if (bannerState.error != null) {
-      return SizedBox(
-        height: 140,
-        child: Center(
-          child: Text(
-            'Gagal memuat banner',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     if (bannerState.banners.isEmpty) {
-      return SizedBox(
-        height: 140,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFE8EC),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.image_outlined,
-                  color: Color(0xFFFA6978),
-                  size: 48,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Belum ada banner',
-                  style: TextStyle(
-                    color: Color(0xFFFA6978),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      return const SizedBox.shrink();
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Text(
+            'News',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF424242),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         CarouselSlider.builder(
           itemCount: bannerState.banners.length,
           options: CarouselOptions(

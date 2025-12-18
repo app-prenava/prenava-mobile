@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../providers/banner_providers.dart';
 import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/article_carousel.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
+  @override
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
   String _getGreeting() {
-    final hour = DateTime.now().hour;
+    // Get current time in WIB (UTC+7) - Indonesia Western Time
+    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
+    final hour = now.hour;
     if (hour < 12) return 'Selamat Pagi';
     if (hour < 15) return 'Selamat Siang';
     if (hour < 18) return 'Selamat Sore';
     return 'Selamat Malam';
   }
 
+  Future<void> _onRefresh() async {
+    await ref.read(bannerNotifierProvider.notifier).refreshBanners();
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
 
@@ -29,24 +41,24 @@ class HomePage extends ConsumerWidget {
           UserHeader(
             greeting: _getGreeting(),
             userName: user?.name ?? 'User',
-            location: 'Bandung',
-            onNotificationTap: () {
-              // TODO: Navigate to notifications
-            },
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 24),
-                  _buildMenuGrid(),
-                  const SizedBox(height: 32),
-                  _buildPromoSection(),
-                  const SizedBox(height: 32),
-                  _buildArticleSection(),
-                ],
+            child: RefreshIndicator(
+              onRefresh: _onRefresh,
+              color: const Color(0xFFFA6978),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildMenuGrid(),
+                    const SizedBox(height: 48),
+                    _buildPromoSection(),
+                    const SizedBox(height: 48),
+                    _buildArticleSection(),
+                  ],
+                ),
               ),
             ),
           ),
@@ -112,24 +124,7 @@ class HomePage extends ConsumerWidget {
   }
 
   Widget _buildPromoSection() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
-          child: Text(
-            'Promo Menarik',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF424242),
-            ),
-          ),
-        ),
-        SizedBox(height: 16),
-        BannerCarousel(),
-      ],
-    );
+    return const BannerCarousel();
   }
 
   Widget _buildArticleSection() {
