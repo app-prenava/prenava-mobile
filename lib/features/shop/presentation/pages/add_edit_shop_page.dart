@@ -343,14 +343,21 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
 
     return GestureDetector(
       onTap: _pickImage,
-      child: Container(
-        height: 140,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
+      child: CustomPaint(
+        painter: hasImage ? null : DashedBorderPainter(
+          color: Colors.grey[400]!,
+          strokeWidth: 1.5,
+          gap: 6,
+          radius: 12,
         ),
-        child: hasImage
+        child: Container(
+          height: 160,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: hasImage
             ? Stack(
                 children: [
                   ClipRRect(
@@ -407,6 +414,7 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
                 ],
               )
             : _buildPhotoPlaceholder(),
+        ),
       ),
     );
   }
@@ -538,4 +546,55 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
       },
     );
   }
+}
+
+// Custom painter for dashed border
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double gap;
+  final double radius;
+
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 1.5,
+    this.gap = 6,
+    this.radius = 12,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(radius),
+      ),
+    );
+
+    // Create dashed effect
+    final dashPath = Path();
+    const dashWidth = 8.0;
+    
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
+      while (distance < metric.length) {
+        dashPath.addPath(
+          metric.extractPath(distance, distance + dashWidth),
+          Offset.zero,
+        );
+        distance += dashWidth + gap;
+      }
+    }
+
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
