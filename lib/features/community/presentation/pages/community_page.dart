@@ -180,16 +180,25 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
       child: TextField(
         controller: _searchController,
         onChanged: _onSearchChanged,
+        style: const TextStyle(color: Colors.black87),
         decoration: InputDecoration(
           hintText: 'Cari Postingan',
           hintStyle: TextStyle(color: Colors.grey[400]),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey),
+          prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
           filled: true,
-          fillColor: Colors.grey[100],
+          fillColor: Colors.white,
           contentPadding: const EdgeInsets.symmetric(vertical: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+            borderSide: const BorderSide(color: Color(0xFFFA6978)),
           ),
         ),
       ),
@@ -215,10 +224,12 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: active
-                      ? const Color(0xFFFA6978)
-                      : const Color(0xFFFA6978).withOpacity(0.1),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: active ? const Color(0xFFFA6978) : Colors.grey[300]!,
+                    width: active ? 1.5 : 1,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
@@ -226,7 +237,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                    color: active ? Colors.white : const Color(0xFFFA6978),
+                    color: active ? const Color(0xFFFA6978) : Colors.black87,
                   ),
                 ),
               ),
