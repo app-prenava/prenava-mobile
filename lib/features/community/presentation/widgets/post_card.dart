@@ -6,6 +6,8 @@ class PostCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLike;
   final VoidCallback? onComment;
+  final VoidCallback? onDelete;
+  final bool isMine;
 
   const PostCard({
     super.key,
@@ -13,6 +15,8 @@ class PostCard extends StatelessWidget {
     this.onTap,
     this.onLike,
     this.onComment,
+  this.onDelete,
+  this.isMine = false,
   });
 
   @override
@@ -108,7 +112,8 @@ class PostCard extends StatelessWidget {
             color: const Color(0xFFFA6978).withOpacity(0.1),
           ),
           child: ClipOval(
-            child: post.user.profileImage != null && post.user.profileImage!.isNotEmpty
+            child: post.user.profileImage != null &&
+                    post.user.profileImage!.isNotEmpty
                 ? Image.network(
                     post.user.profileImage!,
                     fit: BoxFit.cover,
@@ -118,14 +123,25 @@ class PostCard extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          post.user.name,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
+        Expanded(
+          child: Text(
+            post.user.name,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[700],
+            ),
           ),
         ),
+        if (isMine && onDelete != null)
+          IconButton(
+            icon: const Icon(
+              Icons.more_vert,
+              size: 20,
+              color: Colors.grey,
+            ),
+            onPressed: onDelete,
+          ),
       ],
     );
   }
