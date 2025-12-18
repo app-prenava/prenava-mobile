@@ -54,6 +54,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _performNavigation() async {
+    // Pastikan auth state sudah di-load dari local storage/backend
+    await ref.read(authNotifierProvider.notifier).initialize();
+
     final authState = ref.read(authNotifierProvider);
 
     if (!mounted) return;
