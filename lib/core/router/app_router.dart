@@ -13,6 +13,8 @@ import '../../features/shop/presentation/pages/shop_detail_page.dart';
 import '../../features/community/presentation/pages/community_detail_page.dart';
 import '../../features/community/presentation/pages/create_post_page.dart';
 import '../../features/hydration/presentation/pages/hydration_page.dart';
+import '../../features/tips/presentation/pages/tips_list_page.dart';
+import '../../features/tips/presentation/pages/tips_detail_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -84,6 +86,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/hydration',
         builder: (context, state) => const HydrationPage(),
+      ),
+      // Tips routes
+      GoRoute(
+        path: '/tips',
+        builder: (context, state) => const TipsListPage(),
+      ),
+      GoRoute(
+        path: '/tips/detail/:id',
+        builder: (context, state) {
+          final tipId = int.parse(state.pathParameters['id']!);
+          return TipsDetailPage(tipId: tipId);
+        },
       ),
     ],
   );

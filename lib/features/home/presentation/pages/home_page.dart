@@ -102,7 +102,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             MenuGridItem(
               imagePath: 'assets/images/tips.png',
               label: 'Tips',
-              onTap: () {},
+              onTap: () => context.push('/tips'),
             ),
             MenuGridItem(
               imagePath: 'assets/images/kalkulator hpl.png',
