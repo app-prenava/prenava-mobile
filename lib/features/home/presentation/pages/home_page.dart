@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/banner_providers.dart';
 import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
@@ -34,6 +35,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final user = authState.user;
+    final profileState = ref.watch(profileNotifierProvider);
+    final profilePhoto = profileState.profile?.photoUrl;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -58,6 +61,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     UserHeader(
                       greeting: _getGreeting(),
                       userName: user?.name ?? 'User',
+                      avatarUrl: profilePhoto,
                     ),
                     _buildMenuGrid(),
                     _buildPromoSection(),
@@ -107,12 +111,12 @@ class _HomePageState extends ConsumerState<HomePage> {
             MenuGridItem(
               imagePath: 'assets/images/kalkulator hpl.png',
               label: 'Kalkulator HPL',
-              onTap: () {},
+              onTap: () => context.push('/pregnancy-calculator'),
             ),
             MenuGridItem(
-              imagePath: 'assets/images/kick counter.png',
-              label: 'Kick Counter',
-              onTap: () {},
+              imagePath: 'assets/images/kunjungan.png',
+              label: 'Kunjungan',
+              onTap: () => context.push('/kunjungan'),
             ),
             MenuGridItem(
               imagePath: 'assets/images/deteksi depresi.png',
