@@ -1,7 +1,7 @@
 class Env {
   static const String apiBase = String.fromEnvironment(
     'API_BASE',
-    defaultValue: 'http://192.168.18.99:8000/api',
+    defaultValue: 'https://prenava.up.railway.app/api',
   );
 
   static const String env = String.fromEnvironment('ENV', defaultValue: 'dev');
