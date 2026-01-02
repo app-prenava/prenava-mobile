@@ -1,3 +1,4 @@
+import '../../../../core/utils/image_url_helper.dart';
 import '../../domain/entities/comment.dart';
 import '../../domain/entities/post.dart';
 import 'post_model.dart';
@@ -21,15 +22,17 @@ class CommentModel extends Comment {
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
     PostUser? user;
-    
+
     final authorData = json['author'] as Map<String, dynamic>?;
     final userData = json['user'] as Map<String, dynamic>?;
-    
+
     if (authorData != null) {
-      final profileImageUrl = authorData['photo']?.toString() ?? 
-                              authorData['profile_image']?.toString() ?? 
-                              authorData['avatar']?.toString();
-      
+      final profileImageUrl = ImageUrlHelper.normalizeImageUrl(
+        authorData['photo']?.toString() ??
+        authorData['profile_image']?.toString() ??
+        authorData['avatar']?.toString()
+      );
+
       user = PostUserModel(
         id: _parseInt(authorData['id'] ?? authorData['user_id']),
         name: authorData['name']?.toString() ?? authorData['username']?.toString() ?? 'Unknown',
@@ -44,9 +47,11 @@ class CommentModel extends Comment {
           json['username']?.toString();
 
       if (flattenedName != null && flattenedName.isNotEmpty) {
-        final profileImageUrl = json['photo']?.toString() ??
-            json['profile_image']?.toString() ??
-            json['avatar']?.toString();
+        final profileImageUrl = ImageUrlHelper.normalizeImageUrl(
+          json['photo']?.toString() ??
+          json['profile_image']?.toString() ??
+          json['avatar']?.toString()
+        );
 
         user = PostUserModel(
           id: _parseInt(json['user_id']),

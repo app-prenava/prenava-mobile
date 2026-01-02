@@ -9,8 +9,8 @@ class CommunityRepositoryImpl implements CommunityRepository {
   CommunityRepositoryImpl({required this.remoteDatasource});
 
   @override
-  Future<List<Post>> getAllPosts() {
-    return remoteDatasource.getAllPosts();
+  Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10}) {
+    return remoteDatasource.getAllPosts(page: page, limit: limit);
   }
 
   @override

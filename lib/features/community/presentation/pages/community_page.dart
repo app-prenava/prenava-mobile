@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prenava_mobile/shared/widgets/widgets.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/post_card.dart';
@@ -13,6 +14,7 @@ class CommunityPage extends ConsumerStatefulWidget {
 }
 
 class _CommunityPageState extends ConsumerState<CommunityPage> {
+  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final List<String> _categories = const [
     'Terbaru',
@@ -23,9 +25,22 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9) {
+      ref.read(communityNotifierProvider.notifier).loadPosts(loadMore: true);
+    }
   }
 
   void _onSearchChanged(String query) {
@@ -58,17 +73,30 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                   ref.read(communityNotifierProvider.notifier).refreshPosts(),
               color: const Color(0xFFFA6978),
               child: communityState.isLoading && communityState.posts.isEmpty
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFFA6978),
-                      ),
+                  ? ListView.builder(
+                      padding: const EdgeInsets.only(top: 8, bottom: 80),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const PostSkeleton(),
                     )
                   : communityState.displayPosts.isEmpty
                       ? _buildEmptyState()
                       : ListView.builder(
+                          controller: _scrollController,
                           padding: const EdgeInsets.only(top: 8, bottom: 80),
-                          itemCount: communityState.displayPosts.length,
+                          itemCount: communityState.displayPosts.length +
+                              (communityState.hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
+                            if (index == communityState.displayPosts.length) {
+                              return const Center(
+                                child: Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: CircularProgressIndicator(
+                                    color: Color(0xFFFA6978),
+                                  ),
+                                ),
+                              );
+                            }
+
                             final post = communityState.displayPosts[index];
                             final isMine = currentUserId != null && post.user.id == currentUserId;
                             return PostCard(
