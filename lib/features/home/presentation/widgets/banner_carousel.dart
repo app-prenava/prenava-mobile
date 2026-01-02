@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../shared/widgets/widgets.dart';
 import '../providers/banner_providers.dart';
 
 class BannerCarousel extends ConsumerStatefulWidget {
@@ -39,7 +40,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
     final bannerState = ref.watch(bannerNotifierProvider);
 
     if (bannerState.isLoading) {
-      return const SizedBox.shrink();
+      return const BannerSkeleton();
     }
 
     if (bannerState.error != null) {
