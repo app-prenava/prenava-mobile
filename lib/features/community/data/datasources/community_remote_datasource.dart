@@ -10,18 +10,36 @@ class CommunityRemoteDatasource {
   Map<String, dynamic>? _lastThreadDetailData;
   int? _lastThreadDetailId;
 
-  Future<List<PostModel>> getAllPosts() async {
+  Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10}) async {
     try {
-      final response = await _dio.get('/komunitas');
+      final response = await _dio.get(
+        '/komunitas',
+        queryParameters: {
+          'page': page,
+          'limit': limit,
+        },
+      );
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> items = response.data['Komunitas'] ?? [];
-        return items
+        final posts = items
             .map((item) => PostModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
+
+        return {
+          'posts': posts,
+          'current_page': response.data['current_page'] ?? page,
+          'last_page': response.data['last_page'] ?? 1,
+          'total': response.data['total'] ?? posts.length,
+        };
       }
 
-      return [];
+      return {
+        'posts': <PostModel>[],
+        'current_page': 1,
+        'last_page': 1,
+        'total': 0,
+      };
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Gagal mengambil postingan');
     }

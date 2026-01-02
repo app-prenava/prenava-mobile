@@ -543,11 +543,18 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                             radius: 16,
                             backgroundColor:
                                 const Color(0xFFFA6978).withOpacity(0.15),
-                            child: const Icon(
-                              Icons.person,
-                              size: 18,
-                              color: Color(0xFFFA6978),
-                            ),
+                            backgroundImage: review.userProfileImage != null &&
+                                    review.userProfileImage!.isNotEmpty
+                                ? NetworkImage(review.userProfileImage!)
+                                : null,
+                            child: review.userProfileImage == null ||
+                                    review.userProfileImage!.isEmpty
+                                ? const Icon(
+                                    Icons.person,
+                                    size: 18,
+                                    color: Color(0xFFFA6978),
+                                  )
+                                : null,
                           ),
                           const SizedBox(width: 8),
                           Expanded(

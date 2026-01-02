@@ -2,8 +2,8 @@ import '../entities/post.dart';
 import '../entities/comment.dart';
 
 abstract class CommunityRepository {
-  /// Get all posts
-  Future<List<Post>> getAllPosts();
+  /// Get all posts with pagination
+  Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10});
 
   /// Get post by id
   Future<Post> getPostById(int id);

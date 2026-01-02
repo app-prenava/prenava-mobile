@@ -22,42 +22,64 @@ final communityRepositoryProvider = Provider<CommunityRepository>((ref) {
 
 class CommunityState {
   final bool isLoading;
+  final bool isLoadingMore;
   final List<Post> posts;
   final String? error;
   final String searchQuery;
   final String selectedCategory;
+  final int currentPage;
+  final int lastPage;
+  final int total;
 
   const CommunityState({
     this.isLoading = false,
+    this.isLoadingMore = false,
     this.posts = const [],
     this.error,
     this.searchQuery = '',
     this.selectedCategory = 'Terbaru',
+    this.currentPage = 1,
+    this.lastPage = 1,
+    this.total = 0,
   });
 
   const CommunityState.initial()
       : isLoading = false,
+        isLoadingMore = false,
         posts = const [],
         error = null,
         searchQuery = '',
-        selectedCategory = 'Terbaru';
+        selectedCategory = 'Terbaru',
+        currentPage = 1,
+        lastPage = 1,
+        total = 0;
 
   CommunityState copyWith({
     bool? isLoading,
+    bool? isLoadingMore,
     List<Post>? posts,
     String? error,
     bool clearError = false,
     String? searchQuery,
     String? selectedCategory,
+    int? currentPage,
+    int? lastPage,
+    int? total,
   }) {
     return CommunityState(
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       posts: posts ?? this.posts,
       error: clearError ? null : (error ?? this.error),
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      currentPage: currentPage ?? this.currentPage,
+      lastPage: lastPage ?? this.lastPage,
+      total: total ?? this.total,
     );
   }
+
+  bool get hasMore => currentPage < lastPage;
 
   /// Get filtered posts based on search query and category
   List<Post> get displayPosts {
@@ -101,27 +123,46 @@ class CommunityNotifier extends Notifier<CommunityState> {
     return const CommunityState.initial();
   }
 
-  Future<void> loadPosts() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+  Future<void> loadPosts({bool loadMore = false}) async {
+    if (loadMore && !state.hasMore) return;
+    if (loadMore && state.isLoadingMore) return;
+
+    if (loadMore) {
+      state = state.copyWith(isLoadingMore: true);
+    } else {
+      state = state.copyWith(isLoading: true, clearError: true, currentPage: 1);
+    }
 
     try {
       final repository = ref.read(communityRepositoryProvider);
-      final posts = await repository.getAllPosts();
+      final result = await repository.getAllPosts(
+        page: loadMore ? state.currentPage + 1 : 1,
+        limit: 5,
+      );
 
-      state = state.copyWith(
+      final newPosts = result['posts'] as List<Post>;
+
+      state = CommunityState(
         isLoading: false,
-        posts: posts,
+        isLoadingMore: false,
+        posts: loadMore ? [...state.posts, ...newPosts] : newPosts,
+        searchQuery: state.searchQuery,
+        selectedCategory: state.selectedCategory,
+        currentPage: result['current_page'] as int,
+        lastPage: result['last_page'] as int,
+        total: result['total'] as int,
       );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
+        isLoadingMore: false,
         error: e.toString().replaceAll('Exception: ', ''),
       );
     }
   }
 
   Future<void> refreshPosts() async {
-    await loadPosts();
+    await loadPosts(loadMore: false);
   }
 
   void setSearchQuery(String query) {

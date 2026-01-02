@@ -22,6 +22,7 @@ final shopRepositoryProvider = Provider<ShopRepository>((ref) {
 // Shop state
 class ShopState {
   final bool isLoading;
+  final bool isLoadingMore;
   final List<Product> products;
   final List<Product> filteredProducts;
   final String searchQuery;
@@ -34,6 +35,7 @@ class ShopState {
 
   const ShopState({
     this.isLoading = false,
+    this.isLoadingMore = false,
     this.products = const [],
     this.filteredProducts = const [],
     this.searchQuery = '',
@@ -47,6 +49,7 @@ class ShopState {
 
   const ShopState.initial()
       : isLoading = false,
+        isLoadingMore = false,
         products = const [],
         filteredProducts = const [],
         searchQuery = '',
@@ -59,6 +62,7 @@ class ShopState {
 
   ShopState copyWith({
     bool? isLoading,
+    bool? isLoadingMore,
     List<Product>? products,
     List<Product>? filteredProducts,
     String? searchQuery,
@@ -74,6 +78,7 @@ class ShopState {
   }) {
     return ShopState(
       isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       products: products ?? this.products,
       filteredProducts: filteredProducts ?? this.filteredProducts,
       searchQuery: searchQuery ?? this.searchQuery,
@@ -122,30 +127,37 @@ class ShopNotifier extends Notifier<ShopState> {
 
   Future<void> loadProducts({int page = 1, bool loadMore = false, String? category}) async {
     if (loadMore && !state.hasMore) return;
+    if (loadMore && state.isLoadingMore) return;
 
     // Use existing category if not provided and loading more
     final effectiveCategory = category ?? (loadMore ? state.selectedCategory : null);
 
-    state = state.copyWith(
-      isLoading: true,
-      clearError: true,
-      currentPage: loadMore ? state.currentPage : page,
-      selectedCategory: effectiveCategory,
-      clearCategory: effectiveCategory == null,
-    );
+    // Set appropriate loading state
+    if (loadMore) {
+      state = state.copyWith(isLoadingMore: true);
+    } else {
+      state = state.copyWith(
+        isLoading: true,
+        clearError: true,
+        currentPage: page,
+        selectedCategory: effectiveCategory,
+        clearCategory: effectiveCategory == null,
+      );
+    }
 
     try {
       final repository = ref.read(shopRepositoryProvider);
       final result = await repository.getAllProducts(
         page: loadMore ? state.currentPage + 1 : page,
-        limit: 30,
+        limit: 10,
         category: effectiveCategory,
       );
 
       final newProducts = result['products'] as List<Product>;
-      
+
       state = ShopState(
         isLoading: false,
+        isLoadingMore: false,
         products: loadMore ? [...state.products, ...newProducts] : newProducts,
         selectedCategory: effectiveCategory,
         currentPage: result['current_page'] as int,
@@ -155,6 +167,7 @@ class ShopNotifier extends Notifier<ShopState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
+        isLoadingMore: false,
         error: e.toString().replaceAll('Exception: ', ''),
       );
     }

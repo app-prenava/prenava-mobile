@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:prenava_mobile/shared/widgets/widgets.dart';
 import '../providers/shop_providers.dart';
 
 class ShopPage extends ConsumerStatefulWidget {
@@ -170,56 +171,55 @@ class _ShopPageState extends ConsumerState<ShopPage> {
 
           // Products Grid
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: () => ref.read(shopNotifierProvider.notifier).loadProducts(category: _categories[_selectedCategory]['slug']),
-              child: shopState.isLoading && shopState.products.isEmpty
-                  ? ListView(
-                      // Supaya RefreshIndicator tetap bisa di-swipe
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: const [
-                        SizedBox(
-                          height: 200,
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                      ],
-                    )
-                  : shopState.displayProducts.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: [
-                            const SizedBox(height: 40),
-                            _buildEmptyState(context),
-                          ],
-                        )
-                      : GridView.builder(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.62,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          itemCount: shopState.displayProducts.length +
-                              (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == shopState.displayProducts.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
+            child: shopState.isLoading && shopState.products.isEmpty
+                ? GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.62,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                    ),
+                    itemCount: 6,
+                    itemBuilder: (context, index) => const ProductSkeleton(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () => ref.read(shopNotifierProvider.notifier).loadProducts(category: _categories[_selectedCategory]['slug']),
+                    child: shopState.displayProducts.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              const SizedBox(height: 40),
+                              _buildEmptyState(context),
+                            ],
+                          )
+                        : GridView.builder(
+                            controller: _scrollController,
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.62,
+                              crossAxisSpacing: 12,
+                              mainAxisSpacing: 12,
+                            ),
+                            itemCount: shopState.displayProducts.length +
+                                (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == shopState.displayProducts.length) {
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16),
+                                    child: CircularProgressIndicator(color: Color(0xFFFA6978)),
+                                  ),
+                                );
+                              }
 
-                            final product = shopState.displayProducts[index];
-                            return _buildProductCard(product);
-                          },
-                        ),
-            ),
+                              final product = shopState.displayProducts[index];
+                              return _buildProductCard(product);
+                            },
+                          ),
+                  ),
           ),
         ],
       ),

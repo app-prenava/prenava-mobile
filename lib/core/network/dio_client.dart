@@ -43,8 +43,14 @@ final appDioProvider = Provider<Dio>((ref) {
       return handler.next(response);
     },
     onError: (error, handler) {
-      print('❌ ERROR [${error.response?.statusCode}]: ${error.requestOptions.uri}');
-      print('❌ Message: ${error.response?.data}');
+      // Don't log 404 errors for pregnancy calculator endpoint (expected when no data)
+      final isPregnancyEndpoint = error.requestOptions.path.contains('/pregnancy-calculator/my');
+      final is404 = error.response?.statusCode == 404;
+
+      if (!is404 || !isPregnancyEndpoint) {
+        print('❌ ERROR [${error.response?.statusCode}]: ${error.requestOptions.uri}');
+        print('❌ Message: ${error.response?.data}');
+      }
       return handler.next(error);
     },
   ));
