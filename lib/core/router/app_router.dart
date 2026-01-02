@@ -15,6 +15,10 @@ import '../../features/community/presentation/pages/create_post_page.dart';
 import '../../features/hydration/presentation/pages/hydration_page.dart';
 import '../../features/tips/presentation/pages/tips_list_page.dart';
 import '../../features/tips/presentation/pages/tips_detail_page.dart';
+import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.dart';
+import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
+import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
+import '../../features/kunjungan/presentation/pages/visit_detail_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -97,6 +101,34 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final tipId = int.parse(state.pathParameters['id']!);
           return TipsDetailPage(tipId: tipId);
+        },
+      ),
+      // Pregnancy Calculator route
+      GoRoute(
+        path: '/pregnancy-calculator',
+        builder: (context, state) => const PregnancyCalculatorPage(),
+      ),
+      // Kunjungan routes
+      GoRoute(
+        path: '/kunjungan',
+        builder: (context, state) => const KunjunganDashboardPage(),
+      ),
+      GoRoute(
+        path: '/kunjungan/create',
+        builder: (context, state) => const VisitFormPage(),
+      ),
+      GoRoute(
+        path: '/kunjungan/edit/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return VisitFormPage(visitId: id);
+        },
+      ),
+      GoRoute(
+        path: '/kunjungan/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return VisitDetailPage(visitId: id);
         },
       ),
     ],
