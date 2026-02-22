@@ -60,168 +60,171 @@ class _ShopPageState extends ConsumerState<ShopPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // Header Section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
-            decoration: const BoxDecoration(
-              color: Color(0xFFFA6978),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header Section
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFA6978),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
+                ),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Belanja',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  SizedBox(height: 1),
+                  Text(
+                    'Hari ini mau beli apa momsi?',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Belanja',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+
+            // Search Bar
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(color: Colors.black87),
+                decoration: InputDecoration(
+                  hintText: 'Cari Produk',
+                  hintStyle: TextStyle(color: Colors.grey[400]),
+                  prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 18),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    borderSide: const BorderSide(color: Color(0xFFFA6978)),
                   ),
                 ),
-                SizedBox(height: 4),
-                Text(
-                  'Hari ini mau beli apa momsi?',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(color: Colors.black87),
-              decoration: InputDecoration(
-                hintText: 'Cari Produk',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide(color: Colors.grey[300]!),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: const BorderSide(color: Color(0xFFFA6978)),
-                ),
               ),
             ),
-          ),
 
-          // Categories tabs
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: SizedBox(
-              height: 36,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 16),
-                itemBuilder: (context, index) {
-                  final bool active = _selectedCategory == index;
-                  return GestureDetector(
-                    onTap: () => _onCategoryChanged(index),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _categories[index]['label']!,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                            color: active ? const Color(0xFFFA6978) : Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          height: 3,
-                          width: 24,
-                          decoration: BoxDecoration(
-                            color: active ? const Color(0xFFFA6978) : Colors.transparent,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Products Grid
-          Expanded(
-            child: shopState.isLoading && shopState.products.isEmpty
-                ? GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.62,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemCount: 6,
-                    itemBuilder: (context, index) => const ProductSkeleton(),
-                  )
-                : RefreshIndicator(
-                    onRefresh: () => ref.read(shopNotifierProvider.notifier).loadProducts(category: _categories[_selectedCategory]['slug']),
-                    child: shopState.displayProducts.isEmpty
-                        ? ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              const SizedBox(height: 40),
-                              _buildEmptyState(context),
-                            ],
-                          )
-                        : GridView.builder(
-                            controller: _scrollController,
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              childAspectRatio: 0.62,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
+            // Categories tabs
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                height: 26,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final bool active = _selectedCategory == index;
+                    return GestureDetector(
+                      onTap: () => _onCategoryChanged(index),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _categories[index]['label']!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                              color: active ? const Color(0xFFFA6978) : Colors.grey[600],
                             ),
-                            itemCount: shopState.displayProducts.length +
-                                (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == shopState.displayProducts.length) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16),
-                                    child: CircularProgressIndicator(color: Color(0xFFFA6978)),
-                                  ),
-                                );
-                              }
-
-                              final product = shopState.displayProducts[index];
-                              return _buildProductCard(product);
-                            },
                           ),
-                  ),
-          ),
-        ],
+                          const SizedBox(height: 2),
+                          Container(
+                            height: 2,
+                            width: 18,
+                            decoration: BoxDecoration(
+                              color: active ? const Color(0xFFFA6978) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 2),
+
+            // Products Grid
+            Expanded(
+              child: shopState.isLoading && shopState.products.isEmpty
+                  ? GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.78,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: 6,
+                      itemBuilder: (context, index) => const ProductSkeleton(),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () => ref.read(shopNotifierProvider.notifier).loadProducts(category: _categories[_selectedCategory]['slug']),
+                      child: shopState.displayProducts.isEmpty
+                          ? ListView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              children: [
+                                const SizedBox(height: 40),
+                                _buildEmptyState(context),
+                              ],
+                            )
+                          : GridView.builder(
+                              controller: _scrollController,
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 0.78,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
+                              itemCount: shopState.displayProducts.length +
+                                  (shopState.hasMore && shopState.searchQuery.isEmpty ? 1 : 0),
+                              itemBuilder: (context, index) {
+                                if (index == shopState.displayProducts.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: CircularProgressIndicator(color: Color(0xFFFA6978)),
+                                    ),
+                                  );
+                                }
+
+                                final product = shopState.displayProducts[index];
+                                return _buildProductCard(product);
+                              },
+                            ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }

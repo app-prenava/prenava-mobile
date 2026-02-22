@@ -19,31 +19,28 @@ import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.da
 import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
 import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
 import '../../features/kunjungan/presentation/pages/visit_detail_page.dart';
+import '../../features/bidan/presentation/pages/bidan_map_page.dart';
+import '../../features/appointment/presentation/pages/appointment_dashboard_page.dart';
+import '../../features/appointment/presentation/pages/bidan_selection_page.dart';
+import '../../features/appointment/presentation/pages/consent_page.dart';
+import '../../features/appointment/presentation/pages/appointment_form_page.dart';
+import '../../features/appointment/presentation/pages/appointment_detail_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const SplashScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginPage(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
       ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const MainScaffold(),
-      ),
+      GoRoute(path: '/home', builder: (context, state) => const MainScaffold()),
       GoRoute(
         path: '/edit-profile',
         builder: (context, state) => const EditProfilePage(),
@@ -92,10 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const HydrationPage(),
       ),
       // Tips routes
-      GoRoute(
-        path: '/tips',
-        builder: (context, state) => const TipsListPage(),
-      ),
+      GoRoute(path: '/tips', builder: (context, state) => const TipsListPage()),
       GoRoute(
         path: '/tips/detail/:id',
         builder: (context, state) {
@@ -131,7 +125,38 @@ final routerProvider = Provider<GoRouter>((ref) {
           return VisitDetailPage(visitId: id);
         },
       ),
+      // Bidan routes
+      GoRoute(
+        path: '/bidan-map',
+        builder: (context, state) => const BidanMapPage(),
+      ),
+      // Appointment routes
+      GoRoute(
+        path: '/appointments',
+        builder: (context, state) => const AppointmentDashboardPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create',
+        builder: (context, state) => const BidanSelectionPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create/consent',
+        builder: (context, state) => const ConsentPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create/form',
+        builder: (context, state) {
+          final sharedFields = state.extra as Map<String, bool>?;
+          return AppointmentFormPage(sharedFields: sharedFields!);
+        },
+      ),
+      GoRoute(
+        path: '/appointments/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return AppointmentDetailPage(appointmentId: id);
+        },
+      ),
     ],
   );
 });
-

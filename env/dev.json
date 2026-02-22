@@ -1,5 +1,5 @@
 {
-    "API_BASE": "https://prenava.up.railway.app/api",
+    "API_BASE": "https://prenavabe.cloud/api",
     "ENV": "dev",
     "LOG_LEVEL": "debug"
   }

@@ -55,21 +55,21 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20),
+          padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Informasi Terbaru',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
               color: Color(0xFF424242),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         CarouselSlider.builder(
           itemCount: bannerState.banners.length,
           options: CarouselOptions(
-            height: 140,
+            height: 120,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 3),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
@@ -148,15 +148,16 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
             );
           },
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         _buildPageIndicator(bannerState.banners.length),
+        const SizedBox(height: 4),
       ],
     );
   }
 
   Widget _buildPageIndicator(int itemCount) {
     return Padding(
-      padding: const EdgeInsets.only(left: 20),
+      padding: const EdgeInsets.only(left: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(

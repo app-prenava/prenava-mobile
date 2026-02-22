@@ -16,7 +16,21 @@ class KunjunganRemoteDatasource {
 
         // Handle different response formats
         if (data is Map<String, dynamic>) {
-          final visitsData = data['data'] as List<dynamic>?;
+          dynamic rawData = data['data'];
+          List<dynamic>? visitsData;
+
+          if (rawData is List) {
+            visitsData = rawData;
+          } else if (rawData is Map<String, dynamic>) {
+            if (rawData.containsKey('data') && rawData['data'] is List) {
+              visitsData = rawData['data'] as List<dynamic>;
+            } else if (rawData.isEmpty) {
+              visitsData = [];
+            } else {
+              visitsData = rawData.values.toList();
+            }
+          }
+
           if (visitsData != null) {
             return visitsData
                 .map((json) => VisitModel.fromJson(json as Map<String, dynamic>))

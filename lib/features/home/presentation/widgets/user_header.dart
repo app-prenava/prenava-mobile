@@ -15,7 +15,7 @@ class UserHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       decoration: const BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/images/gradien.png'),
@@ -31,8 +31,8 @@ class UserHeader extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
@@ -52,15 +52,15 @@ class UserHeader extends StatelessWidget {
                 child: avatarUrl != null
                     ? Image.network(
                         avatarUrl!,
-                        width: 52,
-                        height: 52,
+                        width: 40,
+                        height: 40,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => _defaultAvatar(),
                       )
                     : _defaultAvatar(),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,16 +69,16 @@ class UserHeader extends StatelessWidget {
                     '$greeting,',
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     userName,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,

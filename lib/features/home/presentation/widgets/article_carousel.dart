@@ -56,14 +56,14 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 160,
+          height: 130,
           child: PageView.builder(
             controller: _pageController,
             itemCount: widget.articles.length,
             itemBuilder: (context, index) {
               final article = widget.articles[index];
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ArticleCard(
                   authorName: article.authorName,
                   authorSubtitle: article.authorSubtitle,
@@ -76,15 +76,16 @@ class _ArticleCarouselState extends State<ArticleCarousel> {
             },
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         _buildPageIndicator(),
+        const SizedBox(height: 14),
       ],
     );
   }
 
   Widget _buildPageIndicator() {
     return Padding(
-      padding: const EdgeInsets.only(left: 20),
+      padding: const EdgeInsets.only(left: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(

@@ -40,37 +40,47 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        color: const Color(0xFFFA6978),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Bagian dengan background gradien
-              Container(
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage('assets/images/gradien.png'),
-                    fit: BoxFit.cover,
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: const Color(0xFFFA6978),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              // Gunakan SingleChildScrollView untuk konten yang bisa melebihi tinggi layar
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Bagian dengan background gradien
+                      Container(
+                        decoration: const BoxDecoration(
+                          image: DecorationImage(
+                            image: AssetImage('assets/images/gradien.png'),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            UserHeader(
+                              greeting: _getGreeting(),
+                              userName: user?.name ?? 'User',
+                              avatarUrl: profilePhoto,
+                            ),
+                            _buildMenuGrid(),
+                            _buildPromoSection(),
+                          ],
+                        ),
+                      ),
+                      // Bagian dengan background putih (Postingan Populer)
+                      _buildArticleSection(),
+                    ],
                   ),
                 ),
-                child: Column(
-                  children: [
-                    UserHeader(
-                      greeting: _getGreeting(),
-                      userName: user?.name ?? 'User',
-                      avatarUrl: profilePhoto,
-                    ),
-                    _buildMenuGrid(),
-                    _buildPromoSection(),
-                  ],
-                ),
-              ),
-              // Bagian dengan background putih (Postingan Populer)
-              _buildArticleSection(),
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -79,7 +89,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildMenuGrid() {
     return Container(
-      margin: const EdgeInsets.only(top: 20),
+      margin: const EdgeInsets.only(top: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -88,14 +98,14 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
         child: GridView.count(
           crossAxisCount: 4,
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 8,
-          childAspectRatio: 0.9,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 6,
+          childAspectRatio: 0.85,
           padding: EdgeInsets.zero,
           children: [
             MenuGridItem(
@@ -134,9 +144,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               onTap: () {},
             ),
             MenuGridItem(
-              imagePath: 'assets/images/lainnya.png',
-              label: 'Lainnya',
-              onTap: () {},
+              imagePath: 'assets/images/calendar.png',
+              label: 'Janji Temu',
+              onTap: () => context.push('/appointments'),
             ),
           ],
         ),
@@ -145,10 +155,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildPromoSection() {
-    return Container(
-      color: Colors.white,
-      child: const BannerCarousel(),
-    );
+    return Container(color: Colors.white, child: const BannerCarousel());
   }
 
   Widget _buildArticleSection() {
@@ -158,17 +165,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
+            padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Postingan Populer',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF424242),
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           ArticleCarousel(
             articles: const [
               ArticleData(
@@ -196,4 +203,3 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 }
-
