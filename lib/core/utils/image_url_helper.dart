@@ -1,4 +1,5 @@
 import 'dart:developer' as developer;
+import 'dart:io' show Platform;
 import '../config/env.dart';
 
 /// Helper class to normalize image URLs from the backend
@@ -41,6 +42,24 @@ class ImageUrlHelper {
             uri.host.contains('supabase.co')) {
           developer.log('ImageUrlHelper: Detected Supabase URL, preserving as-is', name: 'ImageUrlHelper');
           return url;
+        }
+
+        // Intercept prenavabe.cloud/storage and redirect to local server
+        if (uri.host == 'prenavabe.cloud' && uri.path.startsWith('/storage')) {
+          // Default to localhost for iOS/Web, and 10.0.2.2 for Android emulator
+          String localHost = '127.0.0.1';
+          try {
+            if (identical(0, 0.0)) {
+              // Web (do nothing special, just localhost)
+            } else if (Platform.isAndroid) {
+              localHost = '10.0.2.2';
+            }
+          } catch (e) {
+            // Ignore if Platform is not available (e.g. web)
+          }
+          final localUrl = 'http://$localHost:8000${uri.path}';
+          developer.log('ImageUrlHelper: Redirecting cloud storage to local: $localUrl', name: 'ImageUrlHelper');
+          return localUrl;
         }
 
         // Check if it's from an external CDN/storage service (not our API domain)

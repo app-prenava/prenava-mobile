@@ -178,7 +178,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                       padding: const EdgeInsets.all(16),
                       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        childAspectRatio: 0.78,
+                        childAspectRatio: 0.65,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 12,
                       ),
@@ -201,7 +201,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                               padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
-                                childAspectRatio: 0.78,
+                                childAspectRatio: 0.65,
                                 crossAxisSpacing: 12,
                                 mainAxisSpacing: 12,
                               ),
