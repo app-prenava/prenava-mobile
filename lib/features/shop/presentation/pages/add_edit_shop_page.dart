@@ -274,10 +274,17 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
                 if (value == null || value.trim().isEmpty) {
                   return 'Link produk wajib diisi';
                 }
-                if (!value.startsWith('http://') &&
-                    !value.startsWith('https://')) {
+                
+                final val = value.trim();
+                if (!val.startsWith('http://') && !val.startsWith('https://')) {
                   return 'Link harus diawali http:// atau https://';
                 }
+                
+                final uri = Uri.tryParse(val);
+                if (uri == null || !uri.hasAbsolutePath || uri.host.isEmpty) {
+                  return 'Data URL belum benar, pastikan format link valid';
+                }
+                
                 return null;
               },
             ),
@@ -298,7 +305,7 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),

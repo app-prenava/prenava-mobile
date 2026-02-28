@@ -1,5 +1,4 @@
 import 'dart:developer' as developer;
-import 'dart:io' show Platform;
 import '../config/env.dart';
 
 /// Helper class to normalize image URLs from the backend

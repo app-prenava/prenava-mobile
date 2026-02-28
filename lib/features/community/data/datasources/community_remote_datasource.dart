@@ -7,9 +7,6 @@ class CommunityRemoteDatasource {
 
   CommunityRemoteDatasource(this._dio);
 
-  Map<String, dynamic>? _lastThreadDetailData;
-  int? _lastThreadDetailId;
-
   Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10}) async {
     try {
       final response = await _dio.get(

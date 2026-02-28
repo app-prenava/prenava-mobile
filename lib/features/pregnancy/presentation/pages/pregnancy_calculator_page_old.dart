@@ -124,7 +124,7 @@ class _PregnancyCalculatorPageState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
           ),
         ],
@@ -325,7 +325,7 @@ class _PregnancyCalculatorPageState
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
                     color: _selectedGender == 'L'
-                        ? const Color(0xFFFA6978).withOpacity(0.1)
+                        ? const Color(0xFFFA6978).withValues(alpha: 0.1)
                         : Colors.grey[100],
                     border: Border.all(
                       color: _selectedGender == 'L'
@@ -371,7 +371,7 @@ class _PregnancyCalculatorPageState
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
                     color: _selectedGender == 'P'
-                        ? const Color(0xFFFA6978).withOpacity(0.1)
+                        ? const Color(0xFFFA6978).withValues(alpha: 0.1)
                         : Colors.grey[100],
                     border: Border.all(
                       color: _selectedGender == 'P'
@@ -528,7 +528,7 @@ class _PregnancyCalculatorPageState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
           ),
         ],
@@ -541,7 +541,7 @@ class _PregnancyCalculatorPageState
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFA6978).withOpacity(0.1),
+                  color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(

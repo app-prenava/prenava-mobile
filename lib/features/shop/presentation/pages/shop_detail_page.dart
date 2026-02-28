@@ -32,7 +32,7 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
         throw Exception('Could not launch $url');
       }
     } catch (e) {
-      print('Error launching URL: $e');
+      debugPrint('Error launching URL: $e');
     }
   }
 
@@ -542,7 +542,7 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                           CircleAvatar(
                             radius: 16,
                             backgroundColor:
-                                const Color(0xFFFA6978).withOpacity(0.15),
+                                const Color(0xFFFA6978).withValues(alpha: 0.15),
                             backgroundImage: review.userProfileImage != null &&
                                     review.userProfileImage!.isNotEmpty
                                 ? NetworkImage(review.userProfileImage!)

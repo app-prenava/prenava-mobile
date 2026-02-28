@@ -37,10 +37,22 @@ class AppointmentModel extends Appointment {
       ).toEntity();
     }
 
+    final consent = json['consent'] as Map<String, dynamic>?;
+    final consentAccepted = json['consent_accepted'] as bool? ??
+        (consent != null ? true : false);
+    final consentVersion = json['consent_version'] as String? ??
+        consent?['consent_version'] as String? ??
+        '1.0';
+    final rawSharedFields = json['shared_fields'] ??
+        consent?['shared_fields'];
+    final sharedFields = rawSharedFields is Map<String, dynamic>
+        ? Map<String, bool>.from(rawSharedFields)
+        : <String, bool>{};
+
     return AppointmentModel(
-      id: json['id'] as int,
+      id: json['appointment_id'] as int? ?? json['id'] as int? ?? 0,
       bidanId: json['bidan_id'] as int,
-      locationId: json['location_id'] as int?,
+      locationId: json['bidan_location_id'] as int? ?? json['location_id'] as int?,
       preferredDate: DateTime.parse(json['preferred_date'] as String),
       preferredTime: json['preferred_time'] as String,
       confirmedDate: parseDateTime(json['confirmed_date']),
@@ -48,12 +60,10 @@ class AppointmentModel extends Appointment {
       status: json['status'] as String,
       notes: json['notes'] as String?,
       bidanNotes: json['bidan_notes'] as String?,
-      consultationType: json['consultation_type'] as String,
-      consentAccepted: json['consent_accepted'] as bool? ?? false,
-      consentVersion: json['consent_version'] as String? ?? '1.0',
-      sharedFields: Map<String, bool>.from(
-        json['shared_fields'] as Map<String, dynamic>? ?? {},
-      ),
+      consultationType: json['consultation_type'] as String? ?? 'consultation',
+      consentAccepted: consentAccepted,
+      consentVersion: consentVersion,
+      sharedFields: sharedFields,
       createdAt: parseDateTime(json['created_at']),
       updatedAt: parseDateTime(json['updated_at']),
       bidan: parseBidan(json['bidan']),

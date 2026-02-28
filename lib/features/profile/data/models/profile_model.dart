@@ -38,6 +38,7 @@ class ProfileModel extends Profile {
     return null;
   }
 
+  @override
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
     if (id != null) map['id'] = id;

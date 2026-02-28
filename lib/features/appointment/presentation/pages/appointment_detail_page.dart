@@ -91,11 +91,11 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
         backgroundColor: const Color(0xFFFA6978),
         foregroundColor: Colors.white,
         actions: [
-          if (appointment!.canCancel)
+          if (appointment.canCancel)
             TextButton(
               onPressed: state.isCreating
                   ? null
-                  : () => _showCancelDialog(appointment!),
+                  : () => _showCancelDialog(appointment),
               child: Text(
                 'Batalkan',
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.9)),
@@ -108,20 +108,20 @@ class _AppointmentDetailPageState extends ConsumerState<AppointmentDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildStatusCard(appointment!),
+            _buildStatusCard(appointment),
             const SizedBox(height: 20),
-            _buildBidanInfo(appointment!),
+            _buildBidanInfo(appointment),
             const SizedBox(height: 20),
-            _buildDateTimeCard(appointment!),
+            _buildDateTimeCard(appointment),
             const SizedBox(height: 20),
-            _buildConsultationInfo(appointment!),
-            if (appointment!.notes != null) ...[
+            _buildConsultationInfo(appointment),
+            if (appointment.notes != null) ...[
               const SizedBox(height: 20),
-              _buildNotesCard(appointment!),
+              _buildNotesCard(appointment),
             ],
-            if (appointment!.bidanNotes != null) ...[
+            if (appointment.bidanNotes != null) ...[
               const SizedBox(height: 20),
-              _buildBidanNotesCard(appointment!),
+              _buildBidanNotesCard(appointment),
             ],
             const SizedBox(height: 40),
           ],

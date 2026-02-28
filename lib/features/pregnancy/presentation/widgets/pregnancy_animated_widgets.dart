@@ -29,20 +29,20 @@ class GlassCard extends StatelessWidget {
           child: Container(
             padding: padding ?? const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(borderRadius),
               border: Border.all(
-                color: Colors.white.withOpacity(0.3),
+                color: Colors.white.withValues(alpha: 0.3),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withValues(alpha: 0.7),
                   blurRadius: 20,
                   offset: const Offset(-5, -5),
                 ),
@@ -104,7 +104,7 @@ class BentoGridItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: effectiveAccentColor.withOpacity(0.1),
+                  color: effectiveAccentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -232,10 +232,10 @@ class AnimatedProgressBar extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFA6978).withOpacity(0.12),
+                      color: const Color(0xFFFA6978).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                        color: const Color(0xFFFA6978).withOpacity(0.3),
+                        color: const Color(0xFFFA6978).withValues(alpha: 0.3),
                         width: 1,
                       ),
                     ),
@@ -324,26 +324,26 @@ class _FloatingGenderIconState extends State<FloatingGenderIcon>
             end: Alignment.bottomRight,
             colors: widget.gender == 'L'
                 ? [
-                    const Color(0xFF2196F3).withOpacity(0.2),
-                    const Color(0xFF1976D2).withOpacity(0.2),
+                    const Color(0xFF2196F3).withValues(alpha: 0.2),
+                    const Color(0xFF1976D2).withValues(alpha: 0.2),
                   ]
                 : [
-                    const Color(0xFFE91E63).withOpacity(0.2),
-                    const Color(0xFFC2185B).withOpacity(0.2),
+                    const Color(0xFFE91E63).withValues(alpha: 0.2),
+                    const Color(0xFFC2185B).withValues(alpha: 0.2),
                   ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: widget.gender == 'L'
-                ? const Color(0xFF2196F3).withOpacity(0.3)
-                : const Color(0xFFE91E63).withOpacity(0.3),
+                ? const Color(0xFF2196F3).withValues(alpha: 0.3)
+                : const Color(0xFFE91E63).withValues(alpha: 0.3),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
               color: widget.gender == 'L'
-                  ? const Color(0xFF2196F3).withOpacity(0.2)
-                  : const Color(0xFFE91E63).withOpacity(0.2),
+                  ? const Color(0xFF2196F3).withValues(alpha: 0.2)
+                  : const Color(0xFFE91E63).withValues(alpha: 0.2),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),
@@ -388,7 +388,7 @@ class GlowingButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFA6978).withOpacity(0.4),
+                  color: const Color(0xFFFA6978).withValues(alpha: 0.4),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),

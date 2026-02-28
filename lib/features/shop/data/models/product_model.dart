@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/utils/image_url_helper.dart';
 import '../../domain/entities/product.dart';
 
@@ -22,16 +23,16 @@ class ProductModel extends Product {
     // Log raw photo data from backend
     final rawPhoto = json['photo']?.toString();
     if (rawPhoto != null) {
-      print('ProductModel: Raw photo from backend: $rawPhoto');
+      debugPrint('ProductModel: Raw photo from backend: $rawPhoto');
     } else {
-      print('ProductModel: No photo field in response');
+      debugPrint('ProductModel: No photo field in response');
     }
     
     // Normalize image URL using helper
     final photoUrl = ImageUrlHelper.normalizeImageUrl(rawPhoto);
     
     if (photoUrl != null) {
-      print('ProductModel: Normalized photo URL: $photoUrl');
+      debugPrint('ProductModel: Normalized photo URL: $photoUrl');
     }
 
     return ProductModel(

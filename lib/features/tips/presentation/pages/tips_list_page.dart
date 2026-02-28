@@ -152,7 +152,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ClipRRect(
@@ -367,7 +367,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFA6978).withOpacity(0.1),
+                    color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: tip.category?.iconUrl != null

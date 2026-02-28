@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/env.dart';
 import '../../shared/services/secure_store.dart';
@@ -29,16 +30,16 @@ final appDioProvider = Provider<Dio>((ref) {
         }
       }
       
-      print('🌐 REQUEST: ${options.method} ${options.uri}');
-      print('🔑 Headers: ${options.headers}');
+      debugPrint('🌐 REQUEST: ${options.method} ${options.uri}');
+      debugPrint('🔑 Headers: ${options.headers}');
       return handler.next(options);
     },
     onResponse: (response, handler) {
-      print('✅ RESPONSE [${response.statusCode}]: ${response.requestOptions.uri}');
+      debugPrint('✅ RESPONSE [${response.statusCode}]: ${response.requestOptions.uri}');
       // Log response data for debugging community endpoints
       final path = response.requestOptions.path;
       if (path.contains('komunitas') || path.contains('threads') || path.contains('komen')) {
-        print('📦 Response Data: ${response.data}');
+        debugPrint('📦 Response Data: ${response.data}');
       }
       return handler.next(response);
     },
@@ -48,8 +49,8 @@ final appDioProvider = Provider<Dio>((ref) {
       final is404 = error.response?.statusCode == 404;
 
       if (!is404 || !isPregnancyEndpoint) {
-        print('❌ ERROR [${error.response?.statusCode}]: ${error.requestOptions.uri}');
-        print('❌ Message: ${error.response?.data}');
+        debugPrint('❌ ERROR [${error.response?.statusCode}]: ${error.requestOptions.uri}');
+        debugPrint('❌ Message: ${error.response?.data}');
       }
       return handler.next(error);
     },

@@ -9,8 +9,8 @@ class ConsultationTypeModel extends ConsultationType {
 
   factory ConsultationTypeModel.fromJson(Map<String, dynamic> json) {
     return ConsultationTypeModel(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
+      id: json['key'] as String? ?? json['id'] as String? ?? '',
+      name: json['label'] as String? ?? json['name'] as String? ?? '',
       description: json['description'] as String? ?? '',
     );
   }

@@ -194,7 +194,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFA6978).withOpacity(0.1),
+                    color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Image.asset(

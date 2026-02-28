@@ -49,9 +49,9 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
       ref.invalidate(postCommentsProvider(widget.postId));
       
       _commentController.clear();
-      FocusScope.of(context).unfocus();
       
       if (mounted) {
+        FocusScope.of(context).unfocus();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Komentar berhasil dikirim'),
@@ -268,10 +268,10 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: const Color(0xFFFA6978).withOpacity(0.1),
+              color: const Color(0xFFFA6978).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFFA6978).withOpacity(0.3),
+                color: const Color(0xFFFA6978).withValues(alpha: 0.3),
               ),
             ),
             child: Text(
@@ -294,7 +294,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 height: 40,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFFA6978).withOpacity(0.1),
+                  color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                 ),
                 child: ClipOval(
                   child: post.user.profileImage != null &&
@@ -374,7 +374,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFFFA6978).withOpacity(0.2),
+      color: const Color(0xFFFA6978).withValues(alpha: 0.2),
       child: const Icon(
         Icons.person,
         size: 24,
@@ -496,7 +496,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),

@@ -239,7 +239,7 @@ class _BidanUpdatePageState extends ConsumerState<BidanUpdatePage> {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFFFA6978).withOpacity(0.1),
+            color: const Color(0xFFFA6978).withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: const Color(0xFFFA6978), size: 20),
@@ -369,8 +369,8 @@ class _BidanUpdatePageState extends ConsumerState<BidanUpdatePage> {
         decoration: BoxDecoration(
           color: value
               ? (isCritical
-                  ? const Color(0xFFF44336).withOpacity(0.1)
-                  : const Color(0xFFFA6978).withOpacity(0.1))
+                  ? const Color(0xFFF44336).withValues(alpha: 0.1)
+                  : const Color(0xFFFA6978).withValues(alpha: 0.1))
               : Colors.grey[50],
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
@@ -387,8 +387,8 @@ class _BidanUpdatePageState extends ConsumerState<BidanUpdatePage> {
               decoration: BoxDecoration(
                 color: value
                     ? (isCritical
-                        ? const Color(0xFFF44336).withOpacity(0.2)
-                        : const Color(0xFFFA6978).withOpacity(0.2))
+                        ? const Color(0xFFF44336).withValues(alpha: 0.2)
+                        : const Color(0xFFFA6978).withValues(alpha: 0.2))
                     : Colors.grey[200],
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -429,7 +429,7 @@ class _BidanUpdatePageState extends ConsumerState<BidanUpdatePage> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: isCritical ? const Color(0xFFF44336) : const Color(0xFFFA6978),
+              activeThumbColor: isCritical ? const Color(0xFFF44336) : const Color(0xFFFA6978),
             ),
           ],
         ),

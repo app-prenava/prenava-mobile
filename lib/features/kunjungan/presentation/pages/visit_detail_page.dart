@@ -333,14 +333,14 @@ class _VisitDetailPageState extends ConsumerState<VisitDetailPage> {
               if (!mounted) return;
 
               if (success) {
-                ScaffoldMessenger.of(context).showSnackBar(
+                ScaffoldMessenger.of(this.context).showSnackBar(
                   const SnackBar(
                     content: Text('Kunjungan berhasil dihapus'),
                     backgroundColor: Color(0xFF4CAF50),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
-                context.pop();
+                this.context.pop();
               }
             },
             child: const Text(

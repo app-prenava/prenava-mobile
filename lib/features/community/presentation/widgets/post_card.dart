@@ -77,10 +77,10 @@ class PostCard extends StatelessWidget {
       margin: const EdgeInsets.only(left: 16, top: 16),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFA6978).withOpacity(0.1),
+        color: const Color(0xFFFA6978).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFFA6978).withOpacity(0.3),
+          color: const Color(0xFFFA6978).withValues(alpha: 0.3),
         ),
       ),
       child: Text(
@@ -103,7 +103,7 @@ class PostCard extends StatelessWidget {
           height: 32,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: const Color(0xFFFA6978).withOpacity(0.1),
+            color: const Color(0xFFFA6978).withValues(alpha: 0.1),
           ),
           child: ClipOval(
             child: post.user.profileImage != null &&
@@ -142,7 +142,7 @@ class PostCard extends StatelessWidget {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFFFA6978).withOpacity(0.2),
+      color: const Color(0xFFFA6978).withValues(alpha: 0.2),
       child: const Icon(
         Icons.person,
         size: 18,

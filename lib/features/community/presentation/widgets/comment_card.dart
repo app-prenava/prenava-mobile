@@ -36,7 +36,7 @@ class CommentCard extends StatelessWidget {
                 height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFFA6978).withOpacity(0.1),
+                  color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                 ),
                 child: ClipOval(
                   child: comment.user?.profileImage != null &&
@@ -118,7 +118,7 @@ class CommentCard extends StatelessWidget {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFFFA6978).withOpacity(0.2),
+      color: const Color(0xFFFA6978).withValues(alpha: 0.2),
       child: const Icon(
         Icons.person,
         size: 16,

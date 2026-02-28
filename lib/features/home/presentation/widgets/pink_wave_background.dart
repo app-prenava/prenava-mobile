@@ -38,7 +38,7 @@ class PinkWaveBackground extends CustomPainter {
 
     // Wave lines dengan efek transparan
     final wavePaint = Paint()
-      ..color = Colors.white.withOpacity(0.15)
+      ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -65,7 +65,7 @@ class PinkWaveBackground extends CustomPainter {
 
     // Additional subtle waves untuk efek lebih halus
     final subtlePaint = Paint()
-      ..color = Colors.white.withOpacity(0.08)
+      ..color = Colors.white.withValues(alpha: 0.08)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 

@@ -15,8 +15,6 @@ class AppointmentRemoteDatasource {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        print('APPOINTMENTS RAW DATA: ' + data.toString());
-        print('APPOINTMENTS DATA TYPE: ' + data.runtimeType.toString());
 
         if (data is Map<String, dynamic>) {
           dynamic rawData = data['data'];
@@ -178,7 +176,6 @@ class AppointmentRemoteDatasource {
   Future<ConsentInfoModel> getConsentInfo() async {
     try {
       final response = await _dio.get('/user/consent-info');
-      print('CONSENT INFO DATA: ${response.data}');
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -196,7 +193,6 @@ class AppointmentRemoteDatasource {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        print('CONSENT ERROR: ${e.response?.data}');
         throw Exception(
           e.response?.data['message'] ?? 'Failed to load consent info',
         );
@@ -283,7 +279,6 @@ class AppointmentRemoteDatasource {
       }
     } on DioException catch (e) {
       if (e.response != null) {
-        print('CREATE APPOINTMENT ERROR RESPONSE: ${e.response?.data}');
         throw Exception(
           e.response?.data['message'] ?? 'Failed to create appointment',
         );

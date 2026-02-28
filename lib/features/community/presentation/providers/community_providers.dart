@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../data/datasources/community_remote_datasource.dart';
@@ -445,7 +446,7 @@ final postCommentsProvider = FutureProvider.autoDispose.family<List<Comment>, in
 
       return comments;
     } catch (e) {
-      print('postCommentsProvider error: $e');
+      debugPrint('postCommentsProvider error: $e');
       rethrow;
     }
   },

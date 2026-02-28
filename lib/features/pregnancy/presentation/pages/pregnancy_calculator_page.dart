@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../domain/entities/pregnancy.dart';
 import '../providers/pregnancy_providers.dart';
-import '../widgets/pregnancy_widgets.dart';
 import '../widgets/pregnancy_animated_widgets.dart';
 
 class PregnancyCalculatorPage extends ConsumerStatefulWidget {
@@ -221,7 +220,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                     end: Alignment.bottomRight,
                     colors: [
                       const Color(0xFFFA6978),
-                      const Color(0xFFFF6B9D).withOpacity(0.9),
+                      const Color(0xFFFF6B9D).withValues(alpha: 0.9),
                     ],
                   ),
                 ),
@@ -299,7 +298,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 20,
                     offset: const Offset(0, -5),
                   ),
@@ -414,7 +413,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFA6978).withOpacity(0.1),
+                    color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Image.asset(
@@ -486,7 +485,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
               margin: const EdgeInsets.all(8),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFA6978).withOpacity(0.1),
+                color: const Color(0xFFFA6978).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.baby_changing_station,
@@ -536,7 +535,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   decoration: BoxDecoration(
                     color: _selectedGender == 'L'
-                        ? const Color(0xFF2196F3).withOpacity(0.1)
+                        ? const Color(0xFF2196F3).withValues(alpha: 0.1)
                         : Colors.grey[50],
                     border: Border.all(
                       color: _selectedGender == 'L'
@@ -581,7 +580,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                   padding: const EdgeInsets.symmetric(vertical: 18),
                   decoration: BoxDecoration(
                     color: _selectedGender == 'P'
-                        ? const Color(0xFFE91E63).withOpacity(0.1)
+                        ? const Color(0xFFE91E63).withValues(alpha: 0.1)
                         : Colors.grey[50],
                     border: Border.all(
                       color: _selectedGender == 'P'
@@ -657,7 +656,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
@@ -675,7 +674,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                               'Hari Perkiraan Lahir',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -727,7 +726,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
+        color: Colors.white.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -735,13 +734,13 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
         children: [
           Row(
             children: [
-              Icon(icon, size: 18, color: Colors.white.withOpacity(0.9)),
+              Icon(icon, size: 18, color: Colors.white.withValues(alpha: 0.9)),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                 ),
               ),
             ],
@@ -830,8 +829,8 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFFFA6978).withOpacity(0.2),
-                    const Color(0xFFFF6B9D).withOpacity(0.2),
+                    const Color(0xFFFA6978).withValues(alpha: 0.2),
+                    const Color(0xFFFF6B9D).withValues(alpha: 0.2),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(14),
@@ -922,8 +921,8 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          const Color(0xFFFA6978).withOpacity(0.15),
-                          const Color(0xFFFF6B9D).withOpacity(0.15),
+                          const Color(0xFFFA6978).withValues(alpha: 0.15),
+                          const Color(0xFFFF6B9D).withValues(alpha: 0.15),
                         ],
                       ),
                       borderRadius: BorderRadius.circular(14),
@@ -1052,7 +1051,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: statusColor.withOpacity(0.12),
+                color: statusColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(statusIcon, color: statusColor, size: 26),
@@ -1108,7 +1107,7 @@ class _PregnancyCalculatorPageState extends ConsumerState<PregnancyCalculatorPag
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFFA6978).withOpacity(0.1),
+              color: const Color(0xFFFA6978).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

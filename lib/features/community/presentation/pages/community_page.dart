@@ -156,7 +156,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    ScaffoldMessenger.of(this.context).showSnackBar(
       SnackBar(
         content: Text(
           success ? 'Postingan berhasil dihapus' : 'Gagal menghapus postingan',

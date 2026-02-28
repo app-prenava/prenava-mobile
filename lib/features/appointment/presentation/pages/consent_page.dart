@@ -54,9 +54,9 @@ class _ConsentPageState extends ConsumerState<ConsentPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildConsentText(consentInfo!),
+                  _buildConsentText(consentInfo),
                   const SizedBox(height: 24),
-                  _buildSharedFieldsSection(consentInfo!),
+                  _buildSharedFieldsSection(consentInfo),
                   const SizedBox(height: 24),
                   _buildButtons(),
                 ],
