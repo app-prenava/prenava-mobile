@@ -120,11 +120,12 @@ class AppointmentNotifier extends Notifier<AppointmentState> {
   }
 
   Future<void> loadInitialData() async {
-    await Future.wait([
-      loadAppointments(),
-      loadBidanList(),
-      loadConsultationTypes(),
-    ]);
+    // Prioritize loading appointments first so the dashboard renders instantly
+    await loadAppointments();
+
+    // Fetch the rest in the background without blocking the UI
+    loadBidanList();
+    loadConsultationTypes();
   }
 
   Future<void> loadAppointments() async {

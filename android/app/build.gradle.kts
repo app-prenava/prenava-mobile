@@ -47,7 +47,9 @@ android {
         variant.outputs
             .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
             .forEach { output ->
-                output.outputFileName = "prenava.apk"
+                val abi = output.getFilter(com.android.build.OutputFile.ABI) ?: ""
+                val suffix = if (abi.isNotEmpty()) "-$abi" else ""
+                output.outputFileName = "prenava${suffix}.apk"
             }
     }
 }
