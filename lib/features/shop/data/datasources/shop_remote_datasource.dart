@@ -216,14 +216,22 @@ class ShopRemoteDatasource {
 
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data as Map<String, dynamic>;
-        final reviews = (data['data'] as List?)
-                ?.map(
+        dynamic rawData = data['data'];
+        List<dynamic> reviewsList = [];
+        
+        if (rawData is Map<String, dynamic> && rawData.containsKey('data')) {
+          reviewsList = rawData['data'] as List<dynamic>? ?? [];
+        } else if (rawData is List) {
+          reviewsList = rawData;
+        }
+
+        final reviews = reviewsList
+                .map(
                   (item) => ShopReviewModel.fromJson(
                     item as Map<String, dynamic>,
                   ),
                 )
-                .toList() ??
-            [];
+                .toList();
 
         return {
           'reviews': reviews,

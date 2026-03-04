@@ -186,8 +186,9 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFEBEE),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFFA6978)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -509,11 +510,21 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
           ),
           data: (reviews) {
             if (reviews.isEmpty) {
-              return Text(
-                'Belum ada ulasan. Jadilah yang pertama memberikan review!',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey[600],
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.grey, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Belum ada ulasan',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[800],
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
