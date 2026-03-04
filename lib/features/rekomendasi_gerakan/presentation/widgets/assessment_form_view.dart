@@ -280,7 +280,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           _buildLabel(label),
           const SizedBox(height: 6),
           DropdownButtonFormField<bool>(
-            value: value,
+            initialValue: value,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               border: OutlineInputBorder(
