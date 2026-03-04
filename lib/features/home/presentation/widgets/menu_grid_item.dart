@@ -33,41 +33,30 @@ class MenuGridItem extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFFE58DC5),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE58DC5).withValues(alpha: 0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                color: backgroundColor ?? const Color(0xFFFCE4EC),
+                shape: BoxShape.circle,
               ),
               child: imagePath != null
                   ? Padding(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       child: Image.asset(
                         imagePath!,
                         fit: BoxFit.contain,
                         errorBuilder: (_, __, ___) => Icon(
                           Icons.image_not_supported,
                           color: iconColor ?? const Color(0xFFFA6978),
-                          size: 28,
+                          size: 26,
                         ),
                       ),
                     )
                   : Icon(
                       icon ?? Icons.apps,
                       color: iconColor ?? const Color(0xFFFA6978),
-                      size: 28,
+                      size: 26,
                     ),
             ),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             label,
             textAlign: TextAlign.center,
@@ -85,4 +74,3 @@ class MenuGridItem extends StatelessWidget {
     );
   }
 }
-

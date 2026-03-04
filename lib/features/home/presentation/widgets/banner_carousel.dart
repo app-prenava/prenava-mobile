@@ -57,7 +57,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Informasi Terbaru',
+            'Promo Menarik',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
         CarouselSlider.builder(
           itemCount: bannerState.banners.length,
           options: CarouselOptions(
-            height: 120,
+            height: 160,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 3),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
