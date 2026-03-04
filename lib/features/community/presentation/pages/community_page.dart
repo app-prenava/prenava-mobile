@@ -105,7 +105,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                                   context.push('/community/detail/${post.id}'),
                               onLike: () => ref
                                   .read(communityNotifierProvider.notifier)
-                                  .toggleLike(post.id),
+                                  .optimisticToggleLike(post.id),
                               onComment: () =>
                                   context.push('/community/detail/${post.id}'),
                               isMine: isMine,
