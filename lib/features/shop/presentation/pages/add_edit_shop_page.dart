@@ -508,7 +508,7 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
 
   Widget _buildCategoryDropdown() {
     return DropdownButtonFormField<String>(
-      value: _selectedCategorySlug,
+      initialValue: _selectedCategorySlug,
       decoration: InputDecoration(
         labelText: 'Kategori',
         labelStyle: TextStyle(
