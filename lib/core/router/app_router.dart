@@ -25,6 +25,7 @@ import '../../features/appointment/presentation/pages/bidan_selection_page.dart'
 import '../../features/appointment/presentation/pages/consent_page.dart';
 import '../../features/appointment/presentation/pages/appointment_form_page.dart';
 import '../../features/appointment/presentation/pages/appointment_detail_page.dart';
+import '../../features/rekomendasi_gerakan/presentation/pages/rekomendasi_gerakan_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -156,6 +157,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = int.parse(state.pathParameters['id']!);
           return AppointmentDetailPage(appointmentId: id);
         },
+      ),
+      // Rekomendasi Gerakan route
+      GoRoute(
+        path: '/rekomendasi-gerakan',
+        builder: (context, state) => const RekomendasiGerakanPage(),
       ),
     ],
   );
