@@ -83,7 +83,7 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                   child: _SourceButton(
                     icon: Icons.camera_alt_rounded,
                     label: 'Kamera',
-                    color: const Color(0xFF4A90D9),
+                    color: const Color(0xFFF06292), // Primary Pink
                     onTap: () {
                       Navigator.pop(ctx);
                       _pickImage(ImageSource.camera);
@@ -117,16 +117,16 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF06292), // Primary Pink
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF2D3748)),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Deteksi Depresi',
           style: TextStyle(
-            color: Color(0xFF2D3748),
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -144,7 +144,7 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A202C),
+                  color: Color(0xFFD81B60), // Darker pink
                 ),
               ),
               const SizedBox(height: 8),
@@ -170,13 +170,13 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: state.selectedImagePath != null
-                          ? const Color(0xFF4A90D9).withValues(alpha: 0.3)
+                          ? const Color(0xFFF06292).withValues(alpha: 0.3)
                           : Colors.grey[300]!,
                       width: 2,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4A90D9).withValues(alpha: 0.08),
+                        color: const Color(0xFFF06292).withValues(alpha: 0.08),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -196,13 +196,13 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4A90D9).withValues(alpha: 0.1),
+                                  color: const Color(0xFFF06292).withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
                                   Icons.face_retouching_natural,
                                   size: 40,
-                                  color: Color(0xFF4A90D9),
+                                  color: Color(0xFFF06292),
                                 ),
                               ),
                               const SizedBox(height: 16),
@@ -211,7 +211,7 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF4A90D9),
+                                  color: Color(0xFFF06292),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -266,7 +266,7 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                       ? _startScan
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90D9),
+                    backgroundColor: const Color(0xFFF06292), // Primary Pink
                     disabledBackgroundColor: Colors.grey[300],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -322,7 +322,7 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                   child: const Text(
                     'Ganti Foto',
                     style: TextStyle(
-                      color: Color(0xFF4A90D9),
+                      color: Color(0xFFF06292), // Primary Pink
                       fontWeight: FontWeight.w600,
                     ),
                   ),
