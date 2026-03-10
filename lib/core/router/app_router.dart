@@ -26,6 +26,8 @@ import '../../features/appointment/presentation/pages/consent_page.dart';
 import '../../features/appointment/presentation/pages/appointment_form_page.dart';
 import '../../features/appointment/presentation/pages/appointment_detail_page.dart';
 import '../../features/rekomendasi_gerakan/presentation/pages/rekomendasi_gerakan_page.dart';
+import '../../features/deteksi_depresi/presentation/pages/face_scan_page.dart';
+import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -162,6 +164,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/rekomendasi-gerakan',
         builder: (context, state) => const RekomendasiGerakanPage(),
+      ),
+      // Deteksi Depresi routes
+      GoRoute(
+        path: '/deteksi-depresi',
+        builder: (context, state) => const FaceScanPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-depresi/result',
+        builder: (context, state) => const ScanResultPage(),
       ),
     ],
   );

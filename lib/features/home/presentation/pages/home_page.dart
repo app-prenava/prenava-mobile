@@ -136,7 +136,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             MenuGridItem(
               imagePath: 'assets/images/deteksi depresi.png',
               label: 'Deteksi Depresi',
-              onTap: () {},
+              onTap: () => context.push('/deteksi-depresi'),
             ),
             MenuGridItem(
               imagePath: 'assets/images/risiko stunting.png',
@@ -250,7 +250,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     return GestureDetector(
-      onTap: () => context.push('/community/${post.id}'),
+      onTap: () => context.push('/community/detail/${post.id}'),
       child: Container(
         width: 220,
         margin: const EdgeInsets.only(right: 12),

@@ -439,7 +439,7 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
       return;
     }
 
-    final state = ref.read(appointmentNotifierProvider);
+    final consentVersion = ref.read(appointmentNotifierProvider).consentInfo?.version ?? '1.0';
     final success = await ref
         .read(appointmentNotifierProvider.notifier)
         .createAppointment(
@@ -453,21 +453,94 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
               ? null
               : _notesController.text.trim(),
           consentAccepted: true,
-          consentVersion: state.consentInfo?.version ?? '1.0',
+          consentVersion: consentVersion,
           sharedFields: _sharedFields ?? {},
         );
 
     if (mounted) {
-      if (success && state.error == null) {
-        context.go('/appointments');
-      } else if (state.error != null) {
+      if (success) {
+        _showSuccessDialog();
+      } else {
+        final errorMsg = ref.read(appointmentNotifierProvider).error ?? 'Gagal membuat janji temu';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(state.error!), backgroundColor: Colors.red),
+          SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );
       }
     }
   }
 
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFE8F5E9),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle,
+                size: 48,
+                color: Color(0xFF4CAF50),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Janji Temu Berhasil Dibuat!',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF424242),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Janji temu Anda sedang menunggu konfirmasi dari bidan. Silakan cek status di halaman Janji Temu.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF757575),
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  context.go('/appointments');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFA6978),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Kembali ke Janji Temu',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   @override
   void dispose() {
     _notesController.dispose();
