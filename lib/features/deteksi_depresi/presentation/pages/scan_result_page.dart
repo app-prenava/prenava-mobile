@@ -59,7 +59,7 @@ class ScanResultPage extends ConsumerWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Color(0xFF2D4A7A), Color(0xFFF0F5FA)],
+                  colors: [Color(0xFFFFF0F5), Colors.white],
                   stops: [0.0, 0.6],
                 ),
               ),
@@ -72,7 +72,7 @@ class ScanResultPage extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Color(0xFFF06292),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -170,9 +170,11 @@ class ScanResultPage extends ConsumerWidget {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4A90D9),
+                        backgroundColor: const Color(0xFFF06292), // Primary Pink
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(double.infinity, 50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(26),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         elevation: 2,
                       ),
@@ -185,7 +187,7 @@ class ScanResultPage extends ConsumerWidget {
                     child: const Text(
                       'Share Results',
                       style: TextStyle(
-                        color: Color(0xFF4A90D9),
+                        color: Color(0xFFF06292),
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                       ),
@@ -201,8 +203,16 @@ class ScanResultPage extends ConsumerWidget {
     );
   }
 
+  String _getIndicatorLabel(double percentage) {
+    if (percentage <= 20) return 'Very Low';
+    if (percentage <= 40) return 'Low';
+    if (percentage <= 60) return 'Moderate';
+    if (percentage <= 80) return 'High';
+    return 'Very High';
+  }
+
   Widget _buildAnalysisSummaryCard(DepressionScanResult result) {
-    final wellbeing = result.wellbeingScore;
+    final score = result.score ?? 0.0;
     final fatigueProb = result.fatigueProbabilities?['Fatigue'] ?? 0.0;
     final happyProb = result.expressionProbabilities?['Happy'] ?? 0.0;
     final sadProb = result.expressionProbabilities?['Sad'] ?? 0.0;
@@ -212,26 +222,26 @@ class ScanResultPage extends ConsumerWidget {
             (result.expressionProbabilities?['Angry'] ?? 0.0)) *
         100;
 
-    // Determine emotional state
+    // Determine emotional state based on raw depression score (higher is worse)
     String emotionalState;
     String emotionalDescription;
     Color emotionalColor;
     IconData emotionalIcon;
 
-    if (wellbeing >= 67) {
-      emotionalState = 'Good Condition';
+    if (score <= 33) {
+      emotionalState = 'Indikasi Depresi Rendah';
       emotionalDescription =
           'Kondisi mental terlihat baik. Tetap jaga pola hidup sehat.';
       emotionalColor = const Color(0xFF48BB78);
       emotionalIcon = Icons.sentiment_satisfied_alt;
-    } else if (wellbeing >= 34) {
-      emotionalState = 'Mild Fatigue Detected';
+    } else if (score <= 66) {
+      emotionalState = 'Indikasi Depresi Sedang';
       emotionalDescription =
-          'Terdeteksi sedikit kelelahan. Fokus pada istirahat dan hidrasi.';
+          'Terdeteksi beberapa indikator. Fokus pada istirahat dan kelola stres.';
       emotionalColor = const Color(0xFFED8936);
       emotionalIcon = Icons.access_time_rounded;
     } else {
-      emotionalState = 'Attention Needed';
+      emotionalState = 'Indikasi Depresi Tinggi';
       emotionalDescription =
           'Perlu perhatian lebih. Konsultasikan dengan profesional kesehatan.';
       emotionalColor = const Color(0xFFE53E3E);
@@ -270,21 +280,21 @@ class ScanResultPage extends ConsumerWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Left: Wellbeing Score
+                // Left: Depression Score
                 Column(
                   children: [
                     SizedBox(
                       width: 100,
                       height: 100,
                       child: CustomPaint(
-                        painter: _WellbeingScorePainter(wellbeing / 100),
+                        painter: _DepressionScorePainter(score / 100),
                         child: Center(
                           child: Text(
-                            '${wellbeing.round()}%',
+                            '${score.round()}%',
                             style: const TextStyle(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF2D4A7A),
+                              color: Color(0xFFD81B60), // Darker pink for text
                             ),
                           ),
                         ),
@@ -292,7 +302,7 @@ class ScanResultPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 6),
                     const Text(
-                      'Wellbeing Score',
+                      'Skor Depresi',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -336,7 +346,7 @@ class ScanResultPage extends ConsumerWidget {
                         _getIndicatorLabel(100 - calmScore),
                         calmScore / 100,
                         '${calmScore.round()}%',
-                        const Color(0xFF4A90D9),
+                        const Color(0xFFF06292),
                       ),
                       const SizedBox(height: 10),
                       _buildIndicator(
@@ -344,7 +354,7 @@ class ScanResultPage extends ConsumerWidget {
                         _getIndicatorLabel(stressScore),
                         stressScore / 100,
                         '${stressScore.round()}%',
-                        const Color(0xFF4299E1),
+                        const Color(0xFFF06292),
                       ),
                     ],
                   ),
@@ -394,14 +404,6 @@ class ScanResultPage extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _getIndicatorLabel(double percentage) {
-    if (percentage <= 20) return 'Very Low';
-    if (percentage <= 40) return 'Low';
-    if (percentage <= 60) return 'Moderate';
-    if (percentage <= 80) return 'High';
-    return 'Very High';
   }
 
   Widget _buildIndicator(
@@ -544,7 +546,7 @@ class ScanResultPage extends ConsumerWidget {
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90D9),
+                    backgroundColor: const Color(0xFFF06292),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -559,10 +561,10 @@ class ScanResultPage extends ConsumerWidget {
   }
 }
 
-class _WellbeingScorePainter extends CustomPainter {
+class _DepressionScorePainter extends CustomPainter {
   final double progress;
 
-  _WellbeingScorePainter(this.progress);
+  _DepressionScorePainter(this.progress);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -584,13 +586,13 @@ class _WellbeingScorePainter extends CustomPainter {
       ..strokeWidth = 8
       ..strokeCap = StrokeCap.round;
 
-    // Color gradient based on score
+    // Color gradient based on score (higher = red, lower = green)
     if (progress >= 0.67) {
-      progressPaint.color = const Color(0xFF48BB78);
+      progressPaint.color = const Color(0xFFE53E3E);
     } else if (progress >= 0.34) {
-      progressPaint.color = const Color(0xFF4A90D9);
-    } else {
       progressPaint.color = const Color(0xFFED8936);
+    } else {
+      progressPaint.color = const Color(0xFF48BB78);
     }
 
     final sweepAngle = 2 * math.pi * progress;
@@ -604,7 +606,7 @@ class _WellbeingScorePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _WellbeingScorePainter oldDelegate) {
+  bool shouldRepaint(covariant _DepressionScorePainter oldDelegate) {
     return oldDelegate.progress != progress;
   }
 }

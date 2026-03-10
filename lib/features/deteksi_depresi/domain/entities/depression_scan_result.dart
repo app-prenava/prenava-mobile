@@ -25,6 +25,4 @@ class DepressionScanResult {
     this.error,
   });
 
-  /// Wellbeing score is the inverse of depression score (higher = healthier)
-  double get wellbeingScore => score != null ? (100.0 - score!) : 0.0;
 }
