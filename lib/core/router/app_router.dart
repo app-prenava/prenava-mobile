@@ -28,6 +28,8 @@ import '../../features/appointment/presentation/pages/appointment_detail_page.da
 import '../../features/rekomendasi_gerakan/presentation/pages/rekomendasi_gerakan_page.dart';
 import '../../features/deteksi_depresi/presentation/pages/face_scan_page.dart';
 import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart';
+import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
+import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -173,6 +175,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/deteksi-depresi/result',
         builder: (context, state) => const ScanResultPage(),
+      ),
+      // Deteksi Anemia routes
+      GoRoute(
+        path: '/deteksi-anemia',
+        builder: (context, state) => const AnemiaScanPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-anemia/result',
+        builder: (context, state) => const AnemiaResultPage(),
       ),
     ],
   );

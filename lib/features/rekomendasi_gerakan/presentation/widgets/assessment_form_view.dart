@@ -25,7 +25,8 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
   static const _pink = Color(0xFFFA6978);
 
   final _formKey = GlobalKey<FormState>();
-  final _ageController = TextEditingController();
+  final _beratBadanController = TextEditingController();
+  final _tinggiBadanController = TextEditingController();
 
   int _currentStep = 0;
 
@@ -46,7 +47,8 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
 
   @override
   void dispose() {
-    _ageController.dispose();
+    _beratBadanController.dispose();
+    _tinggiBadanController.dispose();
     super.dispose();
   }
 
@@ -64,11 +66,16 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
   }
 
   void _onSubmit() {
-    final age = double.tryParse(_ageController.text);
-    if (age == null) return;
+    final berat = double.tryParse(_beratBadanController.text);
+    final tinggiCm = double.tryParse(_tinggiBadanController.text);
+    if (berat == null || tinggiCm == null) return;
+    
+    // Calculate BMI: weight (kg) / (height (m))^2
+    final tinggiM = tinggiCm / 100;
+    final bmi = berat / (tinggiM * tinggiM);
 
     final payload = SportAssessmentPayload(
-      bmi: age,
+      bmi: double.parse(bmi.toStringAsFixed(1)),
       hypertension: _hypertension,
       isDiabetes: _isDiabetes,
       gestationalDiabetes: _gestationalDiabetes,
@@ -155,13 +162,13 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('Usia'),
+        _buildLabel('Berat Badan Sebelum Hamil (kg)'),
         const SizedBox(height: 6),
         TextFormField(
-          controller: _ageController,
-          keyboardType: TextInputType.number,
+          controller: _beratBadanController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: InputDecoration(
-            hintText: 'Usia saya saat ini',
+            hintText: 'Contoh: 55',
             hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
@@ -178,9 +185,39 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty) return 'Usia tidak boleh kosong';
-            final age = double.tryParse(value);
-            if (age == null || age <= 0 || age > 100) return 'Masukkan usia yang valid';
+            if (value == null || value.isEmpty) return 'Berat badan tidak boleh kosong';
+            final bb = double.tryParse(value);
+            if (bb == null || bb <= 20 || bb > 200) return 'Masukkan berat badan yang valid';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildLabel('Tinggi Badan (cm)'),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: _tinggiBadanController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            hintText: 'Contoh: 160',
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _pink, width: 1.5),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) return 'Tinggi badan tidak boleh kosong';
+            final tb = double.tryParse(value);
+            if (tb == null || tb <= 50 || tb > 250) return 'Masukkan tinggi badan yang valid';
             return null;
           },
         ),

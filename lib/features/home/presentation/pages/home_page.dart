@@ -11,6 +11,8 @@ import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/lainnya_modal.dart';
+import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
+import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -95,6 +97,33 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  void _handleMenuTap(String route, {bool requiresPregnancy = false}) async {
+    if (requiresPregnancy) {
+      final pregnancyState = ref.read(pregnancyNotifierProvider);
+      
+      if (pregnancyState.isLoading) {
+        return; // wait or show loading
+      }
+      
+      if (pregnancyState.pregnancy == null) {
+        final result = await showModalBottomSheet<bool>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (context) => const PregnancyOnboardingSheet(),
+        );
+        
+        if (result == true && mounted) {
+          // If successful, proceed to the requested route
+          context.push(route);
+        }
+        return;
+      }
+    }
+    
+    context.push(route);
+  }
+
   Widget _buildMenuGrid() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -115,13 +144,23 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             MenuGridItem(
               imagePath: 'assets/images/hidrasi.png',
-              label: 'Hidrasi',
-              onTap: () => context.push('/hydration'),
+              label: 'Rekomendasi Olahraga',
+              onTap: () => _handleMenuTap('/rekomendasi-gerakan', requiresPregnancy: true),
             ),
             MenuGridItem(
               imagePath: 'assets/images/tips.png',
-              label: 'Tips',
-              onTap: () => context.push('/tips'),
+              label: 'Rekomendasi Makanan',
+              onTap: () {},
+            ),
+            MenuGridItem(
+              imagePath: 'assets/images/anemia.png',
+              label: 'Prediksi Anemia',
+              onTap: () => context.push('/deteksi-anemia'),
+            ),
+            MenuGridItem(
+              imagePath: 'assets/images/deteksi depresi.png',
+              label: 'Prediksi Depresi',
+              onTap: () => context.push('/deteksi-depresi'),
             ),
             MenuGridItem(
               imagePath: 'assets/images/kalkulator hpl.png',
@@ -130,22 +169,12 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             MenuGridItem(
               imagePath: 'assets/images/kunjungan.png',
-              label: 'Kunjungan',
-              onTap: () => context.push('/kunjungan'),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/deteksi depresi.png',
-              label: 'Deteksi Depresi',
-              onTap: () => context.push('/deteksi-depresi'),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/risiko stunting.png',
-              label: 'Risiko Stunting',
+              label: 'Prediksi Persalinan',
               onTap: () {},
             ),
             MenuGridItem(
-              imagePath: 'assets/images/anemia.png',
-              label: 'Anemia',
+              imagePath: 'assets/images/kunjungan.png',
+              label: 'Cek Kualitas Udara',
               onTap: () {},
             ),
             MenuGridItem(
