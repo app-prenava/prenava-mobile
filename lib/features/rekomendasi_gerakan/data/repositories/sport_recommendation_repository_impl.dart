@@ -34,4 +34,9 @@ class SportRecommendationRepositoryImpl
     );
     return await _datasource.createRecommendation(model.toJson());
   }
+
+  @override
+  Future<List<SportRecommendation>> getAllSports() async {
+    return await _datasource.getAllSports();
+  }
 }

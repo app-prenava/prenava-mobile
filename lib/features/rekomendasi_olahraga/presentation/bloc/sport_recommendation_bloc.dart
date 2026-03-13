@@ -20,12 +20,12 @@ class SportRecommendationBloc extends Bloc<SportRecommendationEvent, SportRecomm
     failureOrResponse.fold(
       (failure) {
         final errorMsg = failure.message.toLowerCase();
-        
+
         if (errorMsg.contains('tanggal lahir tidak ditemukan')) {
           emit(SportRecommendationNeedsProfile(failure.message));
-        } else if (errorMsg.contains('lmp tidak ditemukan') || errorMsg.contains('pregnancy ongoing')) {
+        } else if (errorMsg.contains('lmp') || errorMsg.contains('pregnancy')) {
            emit(SportRecommendationNeedsLmp(failure.message));
-        } else if (errorMsg.contains('assessment belum tersedia')) {
+        } else if (errorMsg.contains('assessment')) {
            emit(SportRecommendationNeedsAssessment(failure.message));
         } else {
            emit(SportRecommendationError(failure.message));

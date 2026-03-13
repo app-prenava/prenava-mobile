@@ -5,4 +5,5 @@ abstract class SportRecommendationRepository {
   Future<SportRecommendationResponse> createRecommendation(
     SportAssessmentPayload payload,
   );
+  Future<List<SportRecommendation>> getAllSports();
 }

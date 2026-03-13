@@ -32,4 +32,11 @@ abstract class PregnancyRepository {
     required bool needsSpecialCare,
     required String notes,
   });
+
+  /// Create pregnancy record in pregnancies table (for sport recommendations)
+  Future<Map<String, dynamic>> createPregnancyRecord({
+    required String lmpDate,
+    int? gestationalAgeWeeks,
+    bool multipleGestation,
+  });
 }

@@ -1,8 +1,6 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:prenava/features/rekomendasi_olahraga/data/models/sport_assessment_request.dart';
-import 'package:prenava/features/rekomendasi_olahraga/data/models/sport_recommendation_response.dart';
-import '../../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/data/models/sport_assessment_request.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/data/models/sport_recommendation_response.dart';
 
 abstract class SportRecommendationRemoteDataSource {
   Future<SportRecommendationResponse> getSportRecommendation();
@@ -10,24 +8,33 @@ abstract class SportRecommendationRemoteDataSource {
 }
 
 class SportRecommendationRemoteDataSourceImpl implements SportRecommendationRemoteDataSource {
-  final ApiClient client;
+  final Dio dio;
 
-  SportRecommendationRemoteDataSourceImpl({required this.client});
+  SportRecommendationRemoteDataSourceImpl({required this.dio});
 
   @override
   Future<SportRecommendationResponse> getSportRecommendation() async {
-    final response = await client.get('/ibu-hamil/sport-recommendation');
-    final responseBody = json.decode(response.body);
-
-    // We pass the raw response even on errors to let the Repository/Bloc handle 422, 404, etc.
-    return SportRecommendationResponse.fromJson(responseBody);
+    try {
+      final response = await dio.get('/ibu-hamil/sport-recommendation');
+      return SportRecommendationResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        return SportRecommendationResponse.fromJson(e.response!.data);
+      }
+      rethrow;
+    }
   }
 
   @override
   Future<SportRecommendationResponse> createSportRecommendation(SportAssessmentRequest request) async {
-    final response = await client.post('/ibu-hamil/sport-recommendation', body: request.toJson());
-    final responseBody = json.decode(response.body);
-    
-    return SportRecommendationResponse.fromJson(responseBody);
+    try {
+      final response = await dio.post('/ibu-hamil/sport-recommendation', data: request.toJson());
+      return SportRecommendationResponse.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response != null && e.response?.data != null) {
+        return SportRecommendationResponse.fromJson(e.response!.data);
+      }
+      rethrow;
+    }
   }
 }

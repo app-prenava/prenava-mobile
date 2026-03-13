@@ -31,6 +31,13 @@ import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart'
 import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
 import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/network/dio_client.dart';
+import '../../features/rekomendasi_olahraga/data/datasources/sport_recommendation_remote_data_source.dart';
+import '../../features/rekomendasi_olahraga/data/repositories/sport_recommendation_repository_impl.dart';
+import '../../features/rekomendasi_olahraga/presentation/bloc/sport_recommendation_bloc.dart';
+import '../../features/rekomendasi_olahraga/presentation/pages/sport_recommendation_screen.dart';
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
@@ -184,6 +191,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/deteksi-anemia/result',
         builder: (context, state) => const AnemiaResultPage(),
+      ),
+      GoRoute(
+        path: '/rekomendasi-olahraga',
+        builder: (context, state) {
+          // Instead of injecting a new client, we get the Dio instance from Riverpod context inside the builder?
+          // Unfortunately GoRouter doesn't have easy context access to Riverpod if not provided,
+          // But wait, the router itself is a Provider giving us access to 'ref'. Let's ref.read
+          return BlocProvider(
+            create: (context) => SportRecommendationBloc(
+              repository: SportRecommendationRepositoryImpl(
+                remoteDataSource: SportRecommendationRemoteDataSourceImpl(
+                  dio: ref.read(appDioProvider),
+                ),
+              ),
+            ),
+            child: const SportRecommendationScreen(),
+          );
+        },
       ),
     ],
   );

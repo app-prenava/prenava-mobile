@@ -154,4 +154,36 @@ class PregnancyRemoteDatasource {
       throw Exception(e.response?.data['message'] ?? 'Gagal mengupdate status kesehatan');
     }
   }
+
+  // Create pregnancy record in pregnancies table (for sport recommendations)
+  Future<Map<String, dynamic>> createPregnancyRecord({
+    required String lmpDate,
+    int? gestationalAgeWeeks,
+    bool multipleGestation = false,
+  }) async {
+    try {
+      final data = <String, dynamic>{
+        'lmp_date': lmpDate,
+        'status': 'ongoing',
+        'multiple_gestation': multipleGestation,
+      };
+
+      if (gestationalAgeWeeks != null) {
+        data['gestational_age_weeks'] = gestationalAgeWeeks;
+      }
+
+      final response = await _dio.post(
+        '/pregnancies/create',
+        data: data,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data as Map<String, dynamic>;
+      }
+
+      throw Exception('Gagal membuat data kehamilan');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal membuat data kehamilan');
+    }
+  }
 }

@@ -257,6 +257,25 @@ class PregnancyNotifier extends Notifier<PregnancyState> {
     }
   }
 
+  // Create pregnancy record in pregnancies table (for sport recommendations)
+  Future<bool> createPregnancyRecord({
+    required String lmpDate,
+    int? gestationalAgeWeeks,
+    bool multipleGestation = false,
+  }) async {
+    try {
+      final repository = ref.read(pregnancyRepositoryProvider);
+      await repository.createPregnancyRecord(
+        lmpDate: lmpDate,
+        gestationalAgeWeeks: gestationalAgeWeeks,
+        multipleGestation: multipleGestation,
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   // Clear messages
   void clearMessages() {
     state = state.copyWith(clearError: true, clearSuccess: true);

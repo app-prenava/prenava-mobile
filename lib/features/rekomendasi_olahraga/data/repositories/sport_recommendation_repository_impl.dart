@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:prenava/core/error/failures.dart';
-import 'package:prenava/features/rekomendasi_olahraga/data/datasources/sport_recommendation_remote_data_source.dart';
-import 'package:prenava/features/rekomendasi_olahraga/data/models/sport_assessment_request.dart';
-import 'package:prenava/features/rekomendasi_olahraga/data/models/sport_recommendation_response.dart';
-import 'package:prenava/features/rekomendasi_olahraga/domain/repositories/sport_recommendation_repository.dart';
+import 'package:prenava_mobile/core/error/failures.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/data/datasources/sport_recommendation_remote_data_source.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/data/models/sport_assessment_request.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/data/models/sport_recommendation_response.dart';
+import 'package:prenava_mobile/features/rekomendasi_olahraga/domain/repositories/sport_recommendation_repository.dart';
 
 class SportRecommendationRepositoryImpl implements SportRecommendationRepository {
   final SportRecommendationRemoteDataSource remoteDataSource;

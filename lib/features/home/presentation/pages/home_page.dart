@@ -145,7 +145,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             MenuGridItem(
               imagePath: 'assets/images/hidrasi.png',
               label: 'Rekomendasi Olahraga',
-              onTap: () => _handleMenuTap('/rekomendasi-gerakan', requiresPregnancy: true),
+              onTap: () => _handleMenuTap('/rekomendasi-olahraga', requiresPregnancy: true),
             ),
             MenuGridItem(
               imagePath: 'assets/images/tips.png',

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../bloc/sport_recommendation_bloc.dart';
 import '../bloc/sport_recommendation_event.dart';
 import '../bloc/sport_recommendation_state.dart';
-// import 'widgets/lmp_bottom_sheet.dart';
-// import 'widgets/assessment_bottom_sheet.dart';
+import '../widgets/lmp_bottom_sheet.dart';
+import '../widgets/assessment_bottom_sheet.dart';
 
-class SportRecommendationScreen extends StatefulWidget {
-  const SportRecommendationScreen({Key? key}) : super(key: key);
+class SportRecommendationScreen extends ConsumerStatefulWidget {
+  const SportRecommendationScreen({super.key});
 
   @override
-  _SportRecommendationScreenState createState() => _SportRecommendationScreenState();
+  ConsumerState<SportRecommendationScreen> createState() => _SportRecommendationScreenState();
 }
 
-class _SportRecommendationScreenState extends State<SportRecommendationScreen> with SingleTickerProviderStateMixin {
+class _SportRecommendationScreenState extends ConsumerState<SportRecommendationScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -30,11 +32,52 @@ class _SportRecommendationScreenState extends State<SportRecommendationScreen> w
   }
 
   void _showLmpBottomSheet() {
-    // TODO: show Modal Bottom Sheet for LMP
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => LmpBottomSheet(
+        onSuccess: (hpht, gestationalAge, isMultiple) async {
+          // Close the sheet first
+          if (sheetContext.mounted) {
+            Navigator.of(sheetContext).pop();
+          }
+
+          // Step 1: Save to pregnancy_calculators
+          final success = await ref.read(pregnancyNotifierProvider.notifier).savePregnancy(
+            hpht: hpht,
+            babyGender: null,
+          );
+
+          if (success && mounted) {
+            // Step 2: Create record in pregnancies table for sport recommendations
+            await ref.read(pregnancyNotifierProvider.notifier).createPregnancyRecord(
+              lmpDate: hpht,
+              gestationalAgeWeeks: gestationalAge,
+              multipleGestation: isMultiple,
+            );
+
+            // Step 3: Small delay then refetch recommendations
+            await Future.delayed(const Duration(milliseconds: 500));
+            this.context.read<SportRecommendationBloc>().add(GetSportRecommendationEvent());
+          }
+        },
+      ),
+    );
   }
 
   void _showAssessmentBottomSheet() {
-    // TODO: show Modal Bottom Sheet for Med Assessment
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AssessmentBottomSheet(
+        onSuccess: () {
+          Navigator.pop(context);
+          context.read<SportRecommendationBloc>().add(GetSportRecommendationEvent());
+        },
+      ),
+    );
   }
 
   @override

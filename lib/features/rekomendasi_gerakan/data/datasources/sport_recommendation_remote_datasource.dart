@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../domain/entities/sport_recommendation.dart';
 import '../models/sport_recommendation_model.dart';
 
 class SportRecommendationRemoteDatasource {
@@ -55,9 +56,37 @@ class SportRecommendationRemoteDatasource {
     } on DioException catch (e) {
       if (e.response != null) {
         final msg = e.response?.data is Map
-            ? e.response?.data['message']
+            ? e.response?.data['message'] ?? e.response?.data.toString()
             : null;
         throw Exception(msg ?? 'Failed to create sport recommendation');
+      }
+      throw Exception('Network error: ${e.message}');
+    }
+  }
+
+  /// GET /api/recomendation/sports/all
+  /// Fetches all sports from admin data (fallback when ML is unavailable)
+  Future<List<SportRecommendation>> getAllSports() async {
+    try {
+      final response = await _dio.get('/recomendation/sports/all');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map<String, dynamic> && data['data'] is List) {
+          return (data['data'] as List)
+              .map((e) => SportRecommendationModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+        throw Exception('Invalid response format');
+      } else {
+        throw Exception('Failed to fetch all sports');
+      }
+    } on DioException catch (e) {
+      if (e.response != null) {
+        final msg = e.response?.data is Map
+            ? e.response?.data['message']
+            : null;
+        throw Exception(msg ?? 'Failed to fetch all sports');
       }
       throw Exception('Network error: ${e.message}');
     }

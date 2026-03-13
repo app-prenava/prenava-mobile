@@ -5,7 +5,9 @@ import '../bloc/sport_recommendation_bloc.dart';
 import '../bloc/sport_recommendation_event.dart';
 
 class AssessmentBottomSheet extends StatefulWidget {
-  const AssessmentBottomSheet({Key? key}) : super(key: key);
+  final VoidCallback onSuccess;
+
+  const AssessmentBottomSheet({Key? key, required this.onSuccess}) : super(key: key);
 
   @override
   _AssessmentBottomSheetState createState() => _AssessmentBottomSheetState();
@@ -109,7 +111,7 @@ class _AssessmentBottomSheetState extends State<AssessmentBottomSheet> {
   }
 
   void _submitForm() {
-    // Defaulting BMI to placeholder because BMI logic is handled slightly differently in different views. 
+    // Defaulting BMI to placeholder because BMI logic is handled slightly differently in different views.
     // In production, grab BMI from user profile or earlier questions
     final request = SportAssessmentRequest(
       bmi: 22.0, // Defaulting for now
@@ -124,8 +126,9 @@ class _AssessmentBottomSheetState extends State<AssessmentBottomSheet> {
       waterAccess: false,
       backPain: false,
     );
-    
+
     context.read<SportRecommendationBloc>().add(SubmitSportAssessmentEvent(request));
     Navigator.pop(context);
+    widget.onSuccess();
   }
 }

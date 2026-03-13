@@ -24,6 +24,8 @@ class SportRecommendationState {
   final List<SportRecommendation> recommendations;
   final String? error;
   final String? successMessage;
+  final bool needsLmp;
+  final bool needsProfile;
 
   const SportRecommendationState({
     this.isLoading = false,
@@ -32,6 +34,8 @@ class SportRecommendationState {
     this.recommendations = const [],
     this.error,
     this.successMessage,
+    this.needsLmp = false,
+    this.needsProfile = false,
   });
 
   const SportRecommendationState.initial()
@@ -40,7 +44,9 @@ class SportRecommendationState {
         needUpdateData = false,
         recommendations = const [],
         error = null,
-        successMessage = null;
+        successMessage = null,
+        needsLmp = false,
+        needsProfile = false;
 
   SportRecommendationState copyWith({
     bool? isLoading,
@@ -51,6 +57,8 @@ class SportRecommendationState {
     bool clearError = false,
     String? successMessage,
     bool clearSuccess = false,
+    bool? needsLmp,
+    bool? needsProfile,
   }) {
     return SportRecommendationState(
       isLoading: isLoading ?? this.isLoading,
@@ -60,6 +68,8 @@ class SportRecommendationState {
       error: clearError ? null : (error ?? this.error),
       successMessage:
           clearSuccess ? null : (successMessage ?? this.successMessage),
+      needsLmp: needsLmp ?? this.needsLmp,
+      needsProfile: needsProfile ?? this.needsProfile,
     );
   }
 }
@@ -71,7 +81,7 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
   }
 
   Future<void> fetchRecommendations() async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(isLoading: true, clearError: true, needsLmp: false, needsProfile: false);
 
     try {
       final repository = ref.read(sportRecommendationRepositoryProvider);
@@ -83,9 +93,16 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
         recommendations: response.recommendations,
       );
     } catch (e) {
+      final errorStr = e.toString().replaceAll('Exception: ', '');
+      final errorMsg = errorStr.toLowerCase();
+      final needsLmp = errorMsg.contains('lmp') || errorMsg.contains('pregnancy');
+      final needsProfile = errorMsg.contains('tanggal lahir tidak ditemukan');
+
       state = state.copyWith(
         isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
+        error: errorStr,
+        needsLmp: needsLmp,
+        needsProfile: needsProfile,
       );
     }
   }
@@ -102,6 +119,31 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
         needUpdateData: false,
         recommendations: response.recommendations,
         successMessage: response.message,
+      );
+    } catch (e) {
+      final errorStr = e.toString().replaceAll('Exception: ', '');
+
+      // If ML service fails, fall back to all sports from admin
+      if (errorStr.contains('predict') || errorStr.contains('ML') || errorStr.contains('cURL')) {
+        await _fetchAllSportsFallback();
+      } else {
+        state = state.copyWith(
+          isSubmitting: false,
+          error: errorStr,
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchAllSportsFallback() async {
+    try {
+      final repository = ref.read(sportRecommendationRepositoryProvider);
+      final allSports = await repository.getAllSports();
+
+      state = state.copyWith(
+        isSubmitting: false,
+        recommendations: allSports,
+        successMessage: 'Menampilkan semua olahraga dari admin',
       );
     } catch (e) {
       state = state.copyWith(

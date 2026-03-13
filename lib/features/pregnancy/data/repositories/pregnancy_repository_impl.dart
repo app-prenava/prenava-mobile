@@ -72,4 +72,17 @@ class PregnancyRepositoryImpl implements PregnancyRepository {
         )
         .then((model) => model.toEntity());
   }
+
+  @override
+  Future<Map<String, dynamic>> createPregnancyRecord({
+    required String lmpDate,
+    int? gestationalAgeWeeks,
+    bool multipleGestation = false,
+  }) {
+    return remoteDatasource.createPregnancyRecord(
+      lmpDate: lmpDate,
+      gestationalAgeWeeks: gestationalAgeWeeks,
+      multipleGestation: multipleGestation,
+    );
+  }
 }
