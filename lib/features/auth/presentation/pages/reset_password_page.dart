@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_providers.dart';
 
-class ResetPasswordPage extends StatefulWidget {
+class ResetPasswordPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> data;
 
   const ResetPasswordPage({super.key, required this.data});
 
   @override
-  State<ResetPasswordPage> createState() => _ResetPasswordPageState();
+  ConsumerState<ResetPasswordPage> createState() => _ResetPasswordPageState();
 }
 
-class _ResetPasswordPageState extends State<ResetPasswordPage> {
+class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
   final _passwordConfirmController = TextEditingController();
@@ -28,28 +30,37 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
   Future<void> _handleResetPassword() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-
-    // TODO: Call API provider to reset password using widget.data['token']
-    // For now we simulate success
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
+    final success = await ref.read(authNotifierProvider.notifier).resetPassword(
+      widget.data['email'],
+      widget.data['token'],
+      _passwordController.text,
+    );
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password berhasil diubah. Silakan login.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      // Go back to login page
-      context.go('/login');
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Password berhasil diubah. Silakan login.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        // Go back to login page
+        context.go('/login');
+      } else {
+        final error = ref.read(authNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Gagal mengubah password'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -251,7 +262,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleResetPassword,
+        onPressed: authState.isLoading ? null : _handleResetPassword,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFA6978),
           foregroundColor: Colors.white,
@@ -260,7 +271,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
           ),
           elevation: 0,
         ),
-        child: _isLoading
+        child: authState.isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,

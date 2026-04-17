@@ -165,6 +165,54 @@ class AuthNotifier extends Notifier<AuthState> {
       return false;
     }
   }
+
+  Future<bool> sendOtp(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.sendOtp(email);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<String?> verifyOtp(String email, String otp) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final resetToken = await repository.verifyOtp(email, otp);
+      state = state.copyWith(isLoading: false);
+      return resetToken;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return null;
+    }
+  }
+
+  Future<bool> resetPassword(String email, String resetToken, String password) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.resetPassword(email, resetToken, password);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
 }
 
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {

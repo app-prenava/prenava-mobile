@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_providers.dart';
 
-class VerifyOtpPage extends StatefulWidget {
+class VerifyOtpPage extends ConsumerStatefulWidget {
   final String email;
 
   const VerifyOtpPage({super.key, required this.email});
 
   @override
-  State<VerifyOtpPage> createState() => _VerifyOtpPageState();
+  ConsumerState<VerifyOtpPage> createState() => _VerifyOtpPageState();
 }
 
-class _VerifyOtpPageState extends State<VerifyOtpPage> {
+class _VerifyOtpPageState extends ConsumerState<VerifyOtpPage> {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
   bool _isLoading = false;
@@ -24,25 +26,32 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
   Future<void> _handleVerifyOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-
-    // TODO: Call API provider to verify OTP
-    // For now we simulate success and mock the reset token
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
+    final token = await ref.read(authNotifierProvider.notifier).verifyOtp(
+      widget.email,
+      _otpController.text,
+    );
 
     if (mounted) {
-      // Pass both email and the mock token to the reset password page
-      context.push('/reset-password', extra: {
-        'email': widget.email,
-        'token': 'mocked_reset_token',
-      });
+      if (token != null) {
+        context.push('/reset-password', extra: {
+          'email': widget.email,
+          'token': token,
+        });
+      } else {
+        final error = ref.read(authNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Kode OTP tidak valid'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -177,7 +186,7 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleVerifyOtp,
+        onPressed: authState.isLoading ? null : _handleVerifyOtp,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFA6978),
           foregroundColor: Colors.white,
@@ -186,7 +195,7 @@ class _VerifyOtpPageState extends State<VerifyOtpPage> {
           ),
           elevation: 0,
         ),
-        child: _isLoading
+        child: authState.isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,

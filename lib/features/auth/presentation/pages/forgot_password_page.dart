@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_providers.dart';
 
-class ForgotPasswordPage extends StatefulWidget {
+class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  ConsumerState<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -22,21 +24,28 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Future<void> _handleSendOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-
-    // TODO: Call API provider to send OTP
-    // For now we simulate success
-    await Future.delayed(const Duration(seconds: 1));
-
-    setState(() => _isLoading = false);
+    final success = await ref.read(authNotifierProvider.notifier).sendOtp(
+      _emailController.text.trim(),
+    );
 
     if (mounted) {
-      context.push('/verify-otp', extra: _emailController.text.trim());
+      if (success) {
+        context.push('/verify-otp', extra: _emailController.text.trim());
+      } else {
+        final error = ref.read(authNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Gagal mengirim OTP'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authNotifierProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -159,7 +168,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleSendOtp,
+        onPressed: authState.isLoading ? null : _handleSendOtp,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFA6978),
           foregroundColor: Colors.white,
@@ -168,7 +177,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           ),
           elevation: 0,
         ),
-        child: _isLoading
+        child: authState.isLoading
             ? const SizedBox(
                 height: 24,
                 width: 24,

@@ -146,5 +146,56 @@ class AuthRemoteDatasource {
       throw Exception(message ?? 'Gagal mendaftar. Silakan coba lagi.');
     }
   }
+
+  Future<void> sendOtp(String email) async {
+    try {
+      final response = await _dio.post(
+        '/forgot-password/send-otp',
+        data: {'email': email},
+      );
+      if (response.statusCode != 200) {
+        throw Exception(response.data?['message'] ?? 'Gagal mengirim OTP');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(message ?? 'Gagal mengirim email OTP. Pastikan email terdaftar.');
+    }
+  }
+
+  Future<String> verifyOtp(String email, String otp) async {
+    try {
+      final response = await _dio.post(
+        '/forgot-password/verify-otp',
+        data: {'email': email, 'otp': otp},
+      );
+      if (response.statusCode == 200 && response.data?['reset_token'] != null) {
+        return response.data['reset_token'] as String;
+      }
+      throw Exception(response.data?['message'] ?? 'Gagal memverifikasi OTP');
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(message ?? 'OTP tidak valid atau sudah kedaluwarsa.');
+    }
+  }
+
+  Future<void> resetPassword(String email, String resetToken, String password) async {
+    try {
+      final response = await _dio.post(
+        '/forgot-password/reset',
+        data: {
+          'email': email,
+          'reset_token': resetToken,
+          'password': password,
+          'password_confirmation': password,
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception(response.data?['message'] ?? 'Gagal mereset password');
+      }
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(message ?? 'Gagal mereset password. Token tidak valid.');
+    }
+  }
 }
 
