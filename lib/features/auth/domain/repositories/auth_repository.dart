@@ -13,7 +13,7 @@ abstract class AuthRepository {
     required String password,
     required String passwordConfirmation,
   });
-  Future<void> sendOtp(String email);
+  Future<String> sendOtp(String email);
   Future<String> verifyOtp(String email, String otp);
   Future<void> resetPassword(String email, String resetToken, String password);
 }

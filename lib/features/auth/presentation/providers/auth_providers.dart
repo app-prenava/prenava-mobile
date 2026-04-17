@@ -166,19 +166,19 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> sendOtp(String email) async {
+  Future<String?> sendOtp(String email) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(authRepositoryProvider);
-      await repository.sendOtp(email);
+      final message = await repository.sendOtp(email);
       state = state.copyWith(isLoading: false);
-      return true;
+      return message;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         error: e.toString().replaceAll('Exception: ', ''),
       );
-      return false;
+      return null;
     }
   }
 

@@ -102,9 +102,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> sendOtp(String email) async {
+  Future<String> sendOtp(String email) async {
     try {
-      await _remoteDatasource.sendOtp(email);
+      return await _remoteDatasource.sendOtp(email);
     } catch (e) {
       rethrow;
     }

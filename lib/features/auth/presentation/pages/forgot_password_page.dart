@@ -24,12 +24,20 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   Future<void> _handleSendOtp() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await ref.read(authNotifierProvider.notifier).sendOtp(
+    final message = await ref.read(authNotifierProvider.notifier).sendOtp(
       _emailController.text.trim(),
     );
 
     if (mounted) {
-      if (success) {
+      if (message != null) {
+        // Show the success message (including dev mode OTP if any)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 10), // Longer duration to read OTP
+          ),
+        );
         context.push('/verify-otp', extra: _emailController.text.trim());
       } else {
         final error = ref.read(authNotifierProvider).error;

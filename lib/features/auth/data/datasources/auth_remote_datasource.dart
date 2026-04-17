@@ -147,7 +147,7 @@ class AuthRemoteDatasource {
     }
   }
 
-  Future<void> sendOtp(String email) async {
+  Future<String> sendOtp(String email) async {
     try {
       final response = await _dio.post(
         '/auth/forgot-password/send-otp',
@@ -156,6 +156,7 @@ class AuthRemoteDatasource {
       if (response.statusCode != 200) {
         throw Exception(response.data?['message'] ?? 'Gagal mengirim OTP');
       }
+      return response.data?['message'] ?? 'Kode OTP telah dikirim';
     } on DioException catch (e) {
       final message = e.response?.data?['message'];
       throw Exception(message ?? 'Gagal mengirim email OTP. Pastikan email terdaftar.');
