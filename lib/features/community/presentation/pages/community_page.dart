@@ -46,7 +46,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
         _guideChecked = true;
       });
       if (!seen) {
-        ref.read(guideVisibleProvider.notifier).state = true;
+        guideVisibleNotifier.value = true;
       }
     }
   }
@@ -55,7 +55,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_community_guide', true);
     if (mounted) {
-      ref.read(guideVisibleProvider.notifier).state = false;
+      guideVisibleNotifier.value = false;
       setState(() => _hasSeenGuide = true);
     }
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/guide_provider.dart';
 import '../../../home/presentation/pages/home_page.dart';
@@ -7,14 +6,14 @@ import '../../../community/presentation/pages/community_page.dart';
 import '../../../shop/presentation/pages/shop_page.dart';
 import '../../../account/presentation/pages/account_page.dart';
 
-class MainScaffold extends ConsumerStatefulWidget {
+class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
 
   @override
-  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
+  State<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends ConsumerState<MainScaffold> {
+class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -29,38 +28,41 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final isGuideVisible = ref.watch(guideVisibleProvider);
-
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
-      bottomNavigationBar: isGuideVisible
-          ? null
-          : Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.2),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
+    return ValueListenableBuilder<bool>(
+      valueListenable: guideVisibleNotifier,
+      builder: (context, isGuideVisible, _) {
+        return Scaffold(
+          body: IndexedStack(
+            index: _currentIndex,
+            children: _pages,
+          ),
+          bottomNavigationBar: isGuideVisible
+              ? null
+              : Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withValues(alpha: 0.2),
+                        blurRadius: 10,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: SafeArea(
-                child: SizedBox(
-                  height: 70,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _showCenterButton
-                        ? _buildNavWithCenterButton()
-                        : _buildNavWithoutCenterButton(),
+                  child: SafeArea(
+                    child: SizedBox(
+                      height: 70,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: _showCenterButton
+                            ? _buildNavWithCenterButton()
+                            : _buildNavWithoutCenterButton(),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+        );
+      },
     );
   }
 

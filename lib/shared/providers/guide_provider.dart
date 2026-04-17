@@ -1,3 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 
-final guideVisibleProvider = StateProvider<bool>((ref) => false);
+final guideVisibleNotifier = ValueNotifier<bool>(false);
