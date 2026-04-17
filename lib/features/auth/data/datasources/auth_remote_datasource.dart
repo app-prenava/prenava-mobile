@@ -150,7 +150,7 @@ class AuthRemoteDatasource {
   Future<void> sendOtp(String email) async {
     try {
       final response = await _dio.post(
-        '/forgot-password/send-otp',
+        '/auth/forgot-password/send-otp',
         data: {'email': email},
       );
       if (response.statusCode != 200) {
@@ -165,7 +165,7 @@ class AuthRemoteDatasource {
   Future<String> verifyOtp(String email, String otp) async {
     try {
       final response = await _dio.post(
-        '/forgot-password/verify-otp',
+        '/auth/forgot-password/verify-otp',
         data: {'email': email, 'otp': otp},
       );
       if (response.statusCode == 200 && response.data?['reset_token'] != null) {
@@ -181,7 +181,7 @@ class AuthRemoteDatasource {
   Future<void> resetPassword(String email, String resetToken, String password) async {
     try {
       final response = await _dio.post(
-        '/forgot-password/reset',
+        '/auth/forgot-password/reset',
         data: {
           'email': email,
           'reset_token': resetToken,
