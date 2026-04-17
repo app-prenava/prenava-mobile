@@ -4,6 +4,7 @@ import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/splash/presentation/pages/onboarding_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/main/presentation/pages/main_scaffold.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
@@ -52,6 +53,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (context, state) => const MainScaffold()),
       GoRoute(

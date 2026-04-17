@@ -290,7 +290,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ),
         TextButton(
           onPressed: () {
-            // TODO: Navigate to forgot password
+            context.push('/forgot-password');
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,
