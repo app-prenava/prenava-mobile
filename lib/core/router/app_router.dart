@@ -5,6 +5,8 @@ import '../../features/splash/presentation/pages/onboarding_screen.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
+import '../../features/auth/presentation/pages/verify_otp_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/main/presentation/pages/main_scaffold.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
@@ -57,6 +59,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/forgot-password',
         builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/verify-otp',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyOtpPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>? ?? {};
+          return ResetPasswordPage(data: data);
+        },
       ),
       GoRoute(path: '/home', builder: (context, state) => const MainScaffold()),
       GoRoute(
