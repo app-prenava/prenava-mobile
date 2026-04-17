@@ -46,8 +46,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     return 'Selamat Malam';
   }
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileNotifierProvider.notifier).loadProfile();
+    });
+  }
+
   Future<void> _onRefresh() async {
-    await ref.read(bannerNotifierProvider.notifier).refreshBanners();
+    await Future.wait([
+      ref.read(bannerNotifierProvider.notifier).refreshBanners(),
+      ref.read(profileNotifierProvider.notifier).loadProfile(),
+    ]);
     ref.invalidate(popularPostsProvider);
   }
 
