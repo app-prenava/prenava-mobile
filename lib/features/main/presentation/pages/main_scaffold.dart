@@ -36,7 +36,7 @@ class _MainScaffoldState extends State<MainScaffold> {
             index: _currentIndex,
             children: _pages,
           ),
-          bottomNavigationBar: isGuideVisible
+          bottomNavigationBar: (isGuideVisible && (_currentIndex == 1 || _currentIndex == 2))
               ? null
               : Container(
                   decoration: BoxDecoration(
