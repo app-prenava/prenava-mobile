@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:prenava_mobile/shared/widgets/widgets.dart';
 import 'package:prenava_mobile/shared/widgets/feature_guide_page.dart';
+import 'package:prenava_mobile/shared/providers/guide_provider.dart';
 import '../providers/shop_providers.dart';
 
 class ShopPage extends ConsumerStatefulWidget {
@@ -43,6 +44,9 @@ class _ShopPageState extends ConsumerState<ShopPage> {
         _hasSeenGuide = seen;
         _guideChecked = true;
       });
+      if (!seen) {
+        ref.read(guideVisibleProvider.notifier).state = true;
+      }
     }
   }
 
@@ -50,6 +54,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_shop_guide', true);
     if (mounted) {
+      ref.read(guideVisibleProvider.notifier).state = false;
       setState(() => _hasSeenGuide = true);
     }
   }

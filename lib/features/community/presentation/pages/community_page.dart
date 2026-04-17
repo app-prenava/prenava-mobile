@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:prenava_mobile/shared/widgets/widgets.dart';
 import 'package:prenava_mobile/shared/widgets/feature_guide_page.dart';
+import 'package:prenava_mobile/shared/providers/guide_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/post_card.dart';
@@ -44,6 +45,9 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
         _hasSeenGuide = seen;
         _guideChecked = true;
       });
+      if (!seen) {
+        ref.read(guideVisibleProvider.notifier).state = true;
+      }
     }
   }
 
@@ -51,6 +55,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('has_seen_community_guide', true);
     if (mounted) {
+      ref.read(guideVisibleProvider.notifier).state = false;
       setState(() => _hasSeenGuide = true);
     }
   }
