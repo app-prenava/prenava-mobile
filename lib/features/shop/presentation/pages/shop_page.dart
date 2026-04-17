@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:prenava_mobile/shared/widgets/widgets.dart';
+import 'package:prenava_mobile/shared/widgets/feature_guide_page.dart';
 import '../providers/shop_providers.dart';
 
 class ShopPage extends ConsumerStatefulWidget {
@@ -23,11 +25,33 @@ class _ShopPageState extends ConsumerState<ShopPage> {
     {'label': 'Lainnya', 'slug': 'lainnya'},
   ];
   int _selectedCategory = 0;
+  bool _hasSeenGuide = true;
+  bool _guideChecked = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _checkGuide();
+  }
+
+  Future<void> _checkGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('has_seen_shop_guide') ?? false;
+    if (mounted) {
+      setState(() {
+        _hasSeenGuide = seen;
+        _guideChecked = true;
+      });
+    }
+  }
+
+  Future<void> _dismissGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_shop_guide', true);
+    if (mounted) {
+      setState(() => _hasSeenGuide = true);
+    }
   }
 
   @override
@@ -56,6 +80,42 @@ class _ShopPageState extends ConsumerState<ShopPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_guideChecked && !_hasSeenGuide) {
+      return FeatureGuidePage(
+        title: 'Belanja Prenava',
+        subtitle: 'Produk kehamilan terpercaya',
+        accentColor: const Color(0xFFFA6978),
+        onDone: _dismissGuide,
+        items: const [
+          GuideItem(
+            title: 'Jelajahi Produk',
+            description: 'Temukan berbagai produk kehamilan mulai dari vitamin, makanan sehat, hingga peralatan bayi.',
+            icon: Icons.shopping_bag_outlined,
+          ),
+          GuideItem(
+            title: 'Kategori Produk',
+            description: 'Filter produk berdasarkan kategori: Vitamin, Makanan, Peralatan Bayi, Kesehatan, dan lainnya.',
+            icon: Icons.category_outlined,
+          ),
+          GuideItem(
+            title: 'Jual Produk',
+            description: 'Ketuk tombol (+) di bawah untuk menjual produk Anda sendiri. Lengkapi foto, deskripsi, dan harga.',
+            icon: Icons.add_circle_outline,
+          ),
+          GuideItem(
+            title: 'Detail Produk',
+            description: 'Ketuk produk untuk melihat detail lengkap, termasuk deskripsi, harga, dan cara menghubungi penjual.',
+            icon: Icons.info_outline,
+          ),
+          GuideItem(
+            title: 'Cari Produk',
+            description: 'Gunakan fitur pencarian untuk menemukan produk yang Anda butuhkan dengan cepat.',
+            icon: Icons.search,
+          ),
+        ],
+      );
+    }
+
     final shopState = ref.watch(shopNotifierProvider);
 
     return Scaffold(

@@ -32,6 +32,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _hidrasiKey = GlobalKey();
   final GlobalKey _tipsKey = GlobalKey();
   final GlobalKey _anemiaKey = GlobalKey();
+  final GlobalKey _depresiKey = GlobalKey();
+  final GlobalKey _udaraKey = GlobalKey();
   final GlobalKey _hplKey = GlobalKey();
   final GlobalKey _lainnyaKey = GlobalKey();
 
@@ -241,6 +243,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       _hidrasiKey,
       _tipsKey,
       _anemiaKey,
+      _depresiKey,
+      _udaraKey,
       _hplKey,
       _lainnyaKey
     ]);
@@ -327,16 +331,24 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     ));
 
-    items.add(MenuGridItem(
-      imagePath: 'assets/images/deteksi depresi.png',
-      label: 'Prediksi Depresi',
-      onTap: () => context.push('/deteksi-depresi'),
+    items.add(Showcase(
+      key: _depresiKey,
+      description: 'Deteksi risiko depresi pasca melahirkan melalui analisis foto wajah menggunakan AI.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/deteksi depresi.png',
+        label: 'Prediksi Depresi',
+        onTap: () => context.push('/deteksi-depresi'),
+      ),
     ));
 
-    items.add(MenuGridItem(
-      imagePath: 'assets/images/risiko stunting.png',
-      label: 'Cek Kualitas Udara',
-      onTap: () {},
+    items.add(Showcase(
+      key: _udaraKey,
+      description: 'Cek kualitas udara di sekitar lokasi Bunda untuk memastikan lingkungan yang sehat.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/risiko stunting.png',
+        label: 'Cek Kualitas Udara',
+        onTap: () {},
+      ),
     ));
 
     items.add(Showcase(

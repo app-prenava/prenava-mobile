@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:prenava_mobile/shared/widgets/widgets.dart';
+import 'package:prenava_mobile/shared/widgets/feature_guide_page.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/post_card.dart';
@@ -24,10 +26,33 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     'Kesehatan',
   ];
 
+  bool _hasSeenGuide = true;
+  bool _guideChecked = false;
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _checkGuide();
+  }
+
+  Future<void> _checkGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    final seen = prefs.getBool('has_seen_community_guide') ?? false;
+    if (mounted) {
+      setState(() {
+        _hasSeenGuide = seen;
+        _guideChecked = true;
+      });
+    }
+  }
+
+  Future<void> _dismissGuide() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_community_guide', true);
+    if (mounted) {
+      setState(() => _hasSeenGuide = true);
+    }
   }
 
   @override
@@ -49,6 +74,42 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_guideChecked && !_hasSeenGuide) {
+      return FeatureGuidePage(
+        title: 'Komunitas Prenava',
+        subtitle: 'Forum diskusi sesama Bunda',
+        accentColor: const Color(0xFFFA6978),
+        onDone: _dismissGuide,
+        items: const [
+          GuideItem(
+            title: 'Berbagi Cerita',
+            description: 'Ceritakan pengalaman kehamilan, tips parenting, atau curhat ke sesama Bunda di komunitas.',
+            icon: Icons.chat_bubble_outline,
+          ),
+          GuideItem(
+            title: 'Kategori Topik',
+            description: 'Pilih topik seperti Parenting, Nutrisi, Kesehatan, atau Finansial untuk menemukan postingan yang relevan.',
+            icon: Icons.category_outlined,
+          ),
+          GuideItem(
+            title: 'Buat Postingan',
+            description: 'Ketuk tombol (+) di bawah untuk membuat postingan baru. Bisa menambahkan gambar dan memilih kategori.',
+            icon: Icons.add_circle_outline,
+          ),
+          GuideItem(
+            title: 'Apresiasi & Komentar',
+            description: 'Berikan apresiasi (❤️) dan komentar untuk mendukung sesama Bunda di komunitas.',
+            icon: Icons.favorite_border,
+          ),
+          GuideItem(
+            title: 'Cari Postingan',
+            description: 'Gunakan fitur pencarian untuk menemukan postingan berdasarkan kata kunci tertentu.',
+            icon: Icons.search,
+          ),
+        ],
+      );
+    }
+
     final communityState = ref.watch(communityNotifierProvider);
     final authState = ref.watch(authNotifierProvider);
     final currentUserId = authState.user?.id;
