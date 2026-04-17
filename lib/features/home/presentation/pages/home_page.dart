@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:showcaseview/showcaseview.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../community/domain/entities/post.dart';
@@ -11,6 +13,7 @@ import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/lainnya_modal.dart';
+import '../widgets/daily_tasks_section.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 
@@ -22,6 +25,14 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  final GlobalKey _headerKey = GlobalKey();
+  final GlobalKey _dailyKey = GlobalKey();
+  final GlobalKey _olahragaKey = GlobalKey();
+  final GlobalKey _makananKey = GlobalKey();
+  final GlobalKey _anemiaKey = GlobalKey();
+  final GlobalKey _hplKey = GlobalKey();
+  final GlobalKey _lainnyaKey = GlobalKey();
+
   String _getGreeting() {
     final now = DateTime.now().toUtc().add(const Duration(hours: 7));
     final hour = now.hour;
@@ -38,72 +49,125 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authNotifierProvider);
-    final user = authState.user;
-    final profileState = ref.watch(profileNotifierProvider);
-    final profilePhoto = profileState.profile?.photoUrl;
+    return ShowCaseWidget(
+      builder: (innerContext) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          final prefs = await SharedPreferences.getInstance();
+          final hasSeenTutorial = prefs.getBool('has_seen_tutorial') ?? false;
+          if (!hasSeenTutorial) {
+            _startTutorial(innerContext);
+            await prefs.setBool('has_seen_tutorial', true);
+          }
+        });
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Container(
-        color: const Color(0xFFFA6978),
-        child: SafeArea(
-          bottom: false,
-          child: Container(
-            color: Colors.white,
-            child: RefreshIndicator(
-              onRefresh: _onRefresh,
-              color: const Color(0xFFFA6978),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            decoration: const BoxDecoration(
-                              image: DecorationImage(
-                                image: AssetImage('assets/images/gradien.png'),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                UserHeader(
-                                  greeting: _getGreeting(),
-                                  userName: user?.name ?? 'User',
-                                  avatarUrl: profilePhoto,
+        final authState = ref.watch(authNotifierProvider);
+        final user = authState.user;
+        final profileState = ref.watch(profileNotifierProvider);
+        final profilePhoto = profileState.profile?.photoUrl;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            backgroundColor: const Color(0xFFFA6978),
+            elevation: 0,
+            toolbarHeight: 0, 
+          ),
+          body: Container(
+            color: const Color(0xFFFA6978),
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                color: Colors.white,
+                child: RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: const Color(0xFFFA6978),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                decoration: const BoxDecoration(
+                                  image: DecorationImage(
+                                    image: AssetImage('assets/images/gradien.png'),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
-                                _buildMenuGrid(),
-                                const SizedBox(height: 16),
-                              ],
-                            ),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Showcase(
+                                            key: _headerKey,
+                                            description: 'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
+                                            child: UserHeader(
+                                              greeting: _getGreeting(),
+                                              userName: user?.name ?? 'User',
+                                              avatarUrl: profilePhoto,
+                                            ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(top: 8, right: 8),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.help_outline, color: Colors.white),
+                                            onPressed: () {
+                                              _startTutorial(innerContext);
+                                            },
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    Showcase(
+                                      key: _dailyKey,
+                                      description: 'Cek misi harianmu di sini! Selesaikan untuk membangun streak harian.',
+                                      child: const DailyTasksSection(),
+                                    ),
+                                    _buildMenuGrid(user?.category ?? 'umum'),
+                                    const SizedBox(height: 16),
+                                  ],
+                                ),
+                              ),
+                              _buildPromoSection(),
+                              _buildPopularPostsSection(),
+                            ],
                           ),
-                          _buildPromoSection(),
-                          _buildPopularPostsSection(),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  void _startTutorial(BuildContext context) {
+    ShowCaseWidget.of(context).startShowCase([
+      _headerKey, 
+      _dailyKey, 
+      _olahragaKey, 
+      _makananKey,
+      _anemiaKey,
+      _hplKey,
+      _lainnyaKey
+    ]);
   }
 
   void _handleMenuTap(String route, {bool requiresPregnancy = false}) async {
     if (requiresPregnancy) {
       final pregnancyState = ref.read(pregnancyNotifierProvider);
-      
-      if (pregnancyState.isLoading) {
-        return; // wait or show loading
-      }
+      if (pregnancyState.isLoading) return;
       
       if (pregnancyState.pregnancy == null) {
         final result = await showModalBottomSheet<bool>(
@@ -112,19 +176,94 @@ class _HomePageState extends ConsumerState<HomePage> {
           backgroundColor: Colors.transparent,
           builder: (context) => const PregnancyOnboardingSheet(),
         );
-        
         if (result == true && mounted) {
-          // If successful, proceed to the requested route
           context.push(route);
         }
         return;
       }
     }
-    
     context.push(route);
   }
 
-  Widget _buildMenuGrid() {
+  Widget _buildMenuGrid(String category) {
+    final List<Widget> items = [];
+
+    items.add(Showcase(
+      key: _olahragaKey,
+      description: 'Dapatkan rekomendasi olahraga ringan yang aman.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/hidrasi.png',
+        label: 'Rekomendasi Olahraga',
+        onTap: () => _handleMenuTap('/rekomendasi-olahraga', requiresPregnancy: true),
+      ),
+    ));
+
+    items.add(Showcase(
+      key: _makananKey,
+      description: 'Panduan gizi dan kalori harian untuk kesehatanmu.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/tips.png',
+        label: 'Rekomendasi Makanan',
+        onTap: () {},
+      ),
+    ));
+
+    if (category == 'ibu_hamil' || category == 'bidan') {
+      items.add(Showcase(
+        key: _hplKey,
+        description: 'Fitur ibu hamil: prediksi hari kelahiran dan informasi trimester.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/kalkulator hpl.png',
+          label: 'Kalkulator HPL',
+          onTap: () => context.push('/pregnancy-calculator'),
+        ),
+      ));
+      items.add(MenuGridItem(
+        imagePath: 'assets/images/kunjungan.png',
+        label: 'Prediksi Persalinan',
+        onTap: () {},
+      ));
+    }
+
+    items.add(Showcase(
+      key: _anemiaKey,
+      description: 'Ketahui risiko Anemia dengan mengisi form observasi.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/anemia.png',
+        label: 'Prediksi Anemia',
+        onTap: () => context.push('/deteksi-anemia'),
+      ),
+    ));
+
+    items.add(MenuGridItem(
+      imagePath: 'assets/images/deteksi depresi.png',
+      label: 'Prediksi Depresi',
+      onTap: () => context.push('/deteksi-depresi'),
+    ));
+
+    items.add(MenuGridItem(
+      imagePath: 'assets/images/kunjungan.png',
+      label: 'Cek Kualitas Udara',
+      onTap: () {},
+    ));
+
+    items.add(Showcase(
+      key: _lainnyaKey,
+      description: 'Buka ini untuk melihat semua fitur tambahan yang tersedia!',
+      child: MenuGridItem(
+        imagePath: 'assets/images/lainnya.png',
+        label: 'Lainnya',
+        onTap: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => const LainnyaModal(),
+          );
+        },
+      ),
+    ));
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
@@ -141,55 +280,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           crossAxisSpacing: 6,
           childAspectRatio: 0.85,
           padding: EdgeInsets.zero,
-          children: [
-            MenuGridItem(
-              imagePath: 'assets/images/hidrasi.png',
-              label: 'Rekomendasi Olahraga',
-              onTap: () => _handleMenuTap('/rekomendasi-olahraga', requiresPregnancy: true),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/tips.png',
-              label: 'Rekomendasi Makanan',
-              onTap: () {},
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/anemia.png',
-              label: 'Prediksi Anemia',
-              onTap: () => context.push('/deteksi-anemia'),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/deteksi depresi.png',
-              label: 'Prediksi Depresi',
-              onTap: () => context.push('/deteksi-depresi'),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/kalkulator hpl.png',
-              label: 'Kalkulator HPL',
-              onTap: () => context.push('/pregnancy-calculator'),
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/kunjungan.png',
-              label: 'Prediksi Persalinan',
-              onTap: () {},
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/kunjungan.png',
-              label: 'Cek Kualitas Udara',
-              onTap: () {},
-            ),
-            MenuGridItem(
-              imagePath: 'assets/images/lainnya.png',
-              label: 'Lainnya',
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => const LainnyaModal(),
-                );
-              },
-            ),
-          ],
+          children: items,
         ),
       ),
     );
@@ -299,7 +390,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Author row
             Row(
               children: [
                 CircleAvatar(
@@ -340,7 +430,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               ],
             ),
             const SizedBox(height: 8),
-            // Content
             Expanded(
               child: Text(
                 post.deskripsi,
@@ -354,7 +443,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             const SizedBox(height: 4),
-            // Likes row
             Row(
               children: [
                 Icon(

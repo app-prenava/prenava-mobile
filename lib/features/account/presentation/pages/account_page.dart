@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 
@@ -156,6 +157,20 @@ class AccountPage extends ConsumerWidget {
           icon: Icons.key_outlined,
           title: 'Reset Password',
           onTap: () => context.push('/change-password'),
+        ),
+        _buildMenuItem(
+          icon: Icons.help_outline,
+          title: 'Ulangi Panduan (Tutorial)',
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('has_seen_tutorial', false);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Tutorial di-reset. Silakan kembali ke Home untuk melihat panduan.')),
+              );
+              context.go('/home');
+            }
+          },
         ),
         const SizedBox(height: 24),
         Padding(
