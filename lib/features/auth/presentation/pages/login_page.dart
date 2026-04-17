@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -38,7 +39,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!mounted) return;
 
     if (success) {
-      context.go('/home');
+      await ref.read(profileNotifierProvider.notifier).loadProfile();
+      final profileState = ref.read(profileNotifierProvider);
+      
+      if (!mounted) return;
+      
+      if (profileState.hasProfile) {
+        context.go('/home');
+      } else {
+        context.go('/profile-onboarding');
+      }
     } else {
       final error = ref.read(authNotifierProvider).error;
       ScaffoldMessenger.of(context).showSnackBar(

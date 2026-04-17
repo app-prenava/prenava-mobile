@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Network Security Configuration for Prenava App
+
+This configuration ensures the app only communicates over HTTPS,
+protecting users from man-in-the-middle attacks.
+
+For production:
+- Cleartext (HTTP) traffic is disabled
+- Certificate pinning can be added for additional security
+
+During development, you may temporarily enable cleartext traffic
+for local testing by setting cleartextTrafficPermitted="true"
+-->
+<network-security-config>
+    <!-- Base configuration for all domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system certificates -->
+            <certificates src="system" />
+            <!-- Optionally trust user-added certificates (NOT recommended for production) -->
+            <!-- <certificates src="user" /> -->
+        </trust-anchors>
+    </base-config>
+
+    <!-- Allow cleartext traffic for localhost during development -->
+    <!-- Remove this block before production release -->
+    <!--
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">192.168.1.1</domain>
+    </domain-config>
+    -->
+
+    <!-- Certificate pinning for production API (recommended) -->
+    <!-- Add your production API domain and pin its certificate -->
+    <!--
+    <domain-config>
+        <domain includeSubdomains="true">prenavabe.cloud</domain>
+        <pin-set>
+            <pin digest="SHA-256">AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</pin>
+            <pin digest="SHA-256">BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+    -->
+</network-security-config>

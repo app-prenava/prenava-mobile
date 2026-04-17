@@ -12,6 +12,11 @@ class ProfileModel extends Profile {
     super.pekerjaan,
     super.golonganDarah,
     super.photoUrl,
+    super.pendapatanKeluarga,
+    super.statusKandungan,
+    super.provinsi,
+    super.kota,
+    super.kecamatan,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +33,11 @@ class ProfileModel extends Profile {
       pekerjaan: json['pekerjaan']?.toString(),
       golonganDarah: json['golongan_darah']?.toString(),
       photoUrl: photoUrl,
+      pendapatanKeluarga: json['pendapatan_keluarga']?.toString(),
+      statusKandungan: json['status_kandungan']?.toString(),
+      provinsi: json['provinsi']?.toString(),
+      kota: json['kota']?.toString(),
+      kecamatan: json['kecamatan']?.toString(),
     );
   }
 
@@ -50,6 +60,11 @@ class ProfileModel extends Profile {
     if (pekerjaan != null) map['pekerjaan'] = pekerjaan;
     if (golonganDarah != null) map['golongan_darah'] = golonganDarah;
     if (photoUrl != null) map['photo'] = photoUrl;
+    if (pendapatanKeluarga != null) map['pendapatan_keluarga'] = pendapatanKeluarga;
+    if (statusKandungan != null) map['status_kandungan'] = statusKandungan;
+    if (provinsi != null) map['provinsi'] = provinsi;
+    if (kota != null) map['kota'] = kota;
+    if (kecamatan != null) map['kecamatan'] = kecamatan;
     return map;
   }
 }

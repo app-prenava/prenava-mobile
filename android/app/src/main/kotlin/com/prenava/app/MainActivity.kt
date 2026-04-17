@@ -1,4 +1,4 @@
-package com.example.prenava_mobile
+package com.prenava.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/shared_prefs_helper.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -61,9 +62,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted) return;
 
-    // If user is authenticated, go to home
+    // If user is authenticated, check for profile completion
     if (authState.isAuthenticated) {
-      context.go('/home');
+      await ref.read(profileNotifierProvider.notifier).loadProfile();
+      final profileState = ref.read(profileNotifierProvider);
+
+      if (!mounted) return;
+
+      if (profileState.hasProfile) {
+        context.go('/home');
+      } else {
+        context.go('/profile-onboarding');
+      }
       return;
     }
 

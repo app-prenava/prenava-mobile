@@ -83,7 +83,7 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                   child: _SourceButton(
                     icon: Icons.camera_alt_rounded,
                     label: 'Kamera',
-                    color: const Color(0xFFF06292), // Primary Pink
+                    color: const Color(0xFFFA6978),
                     onTap: () {
                       Navigator.pop(ctx);
                       _pickImage(ImageSource.camera);
@@ -117,21 +117,29 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF06292), // Primary Pink
+        backgroundColor: Colors.white,
         elevation: 0,
+        surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFA6978), size: 20),
           onPressed: () => context.pop(),
         ),
         title: const Text(
           'Deteksi Anemia',
           style: TextStyle(
-            color: Colors.white,
+            color: Color(0xFF2D3748),
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 16,
           ),
         ),
         centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.withValues(alpha: 0.1),
+            height: 1,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -140,50 +148,53 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
             children: [
               // Title section
               const Text(
-                'Eye Scan Analysis',
+                'Analisis Pemindaian Mata',
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFD81B60), // Darker pink
+                  color: Color(0xFF2D3748),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Ambil foto area mata (konjungtiva) untuk analisis indikasi anemia',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                  height: 1.4,
+              const SizedBox(height: 10),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Ambil foto area mata (konjungtiva) untuk analisis indikasi anemia secara instan.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF718096),
+                    height: 1.5,
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               // Image preview area
               GestureDetector(
                 onTap: _showImageSourcePicker,
                 child: Container(
                   width: double.infinity,
-                  height: 320,
+                  height: 340,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: state.selectedImagePath != null
-                          ? const Color(0xFFF06292).withValues(alpha: 0.3)
-                          : Colors.grey[300]!,
-                      width: 2,
+                          ? const Color(0xFFFA6978).withValues(alpha: 0.3)
+                          : Colors.grey.shade200,
+                      width: 1.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFF06292).withValues(alpha: 0.08),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 20,
-                        offset: const Offset(0, 8),
+                        offset: const Offset(0, 10),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(22),
                     child: state.selectedImagePath != null
                         ? Image.file(
                             File(state.selectedImagePath!),
@@ -193,30 +204,30 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Container(
-                                width: 80,
-                                height: 80,
+                                width: 84,
+                                height: 84,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF06292).withValues(alpha: 0.1),
+                                  color: const Color(0xFFFA6978).withValues(alpha: 0.05),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.remove_red_eye,
-                                  size: 40,
-                                  color: Color(0xFFF06292),
+                                  Icons.camera_enhance_outlined,
+                                  size: 38,
+                                  color: Color(0xFFFA6978),
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               const Text(
                                 'Ketuk untuk mengambil foto',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFF06292),
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFFA6978),
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
-                                'Pastikan area mata terlihat jelas',
+                                'Pastikan area mata terlihat dengan jelas',
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey[500],
@@ -260,57 +271,57 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
               // Scan button
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: state.selectedImagePath != null && !state.isScanning
                       ? _startScan
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF06292), // Primary Pink
-                    disabledBackgroundColor: Colors.grey[300],
+                    backgroundColor: const Color(0xFFFA6978),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey[200],
+                    disabledForegroundColor: Colors.grey[400],
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     elevation: 0,
                   ),
                   child: state.isScanning
                       ? const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2.5,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            'Menganalisis...',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                            SizedBox(width: 14),
+                            Text(
+                              'Menganalisis...',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
-                      )
+                          ],
+                        )
                       : const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search_rounded, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text(
-                            'Mulai Analisis',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.auto_awesome_outlined, size: 20),
+                            SizedBox(width: 10),
+                            Text(
+                              'Mulai Analisis Sekarang',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -332,24 +343,25 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
 
               // Disclaimer
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFBEB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFBD38D)),
+                  color: Colors.amber.shade50.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.amber.shade100),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info_outline, color: Color(0xFFD69E2E), size: 18),
-                    const SizedBox(width: 10),
+                    Icon(Icons.info_outline_rounded, color: Colors.amber.shade800, size: 18),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Hasil scan bukan diagnosis medis. Merupakan indikator awal berdasarkan analisis konjungtiva mata.',
+                        'PENTING: Hasil analisis bukan merupakan diagnosis medis. Harap konsultasikan dengan tenaga medis untuk hasil yang akurat.',
                         style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[700],
-                          height: 1.4,
+                          fontSize: 11,
+                          color: Colors.amber.shade900,
+                          height: 1.5,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),

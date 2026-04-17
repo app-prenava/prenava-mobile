@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.prenava_mobile"
+    namespace = "com.prenava.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,21 +24,45 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.prenava_mobile"
+        // Play Store Application ID - must be unique
+        applicationId = "com.prenava.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        // Release signing configuration for Play Store
+        // Create keystore using: keytool -genkey -v -keystore prenava-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias release
+        // Store keystore in: android/keystore/prenava-release.jks
+        // Set environment variables: KEYSTORE_PASSWORD and KEY_PASSWORD
+        create("release") {
+            // Uncomment and configure when keystore is ready
+            // storeFile = file("../../keystore/prenava-release.jks")
+            // storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            // keyAlias = "release"
+            // keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Use release signing config when keystore is configured
+            // For now, using debug keys for testing
             signingConfig = signingConfigs.getByName("debug")
+
+            // Enable code shrinking and obfuscation
+            isMinifyEnabled = true
+            isShrinkResources = true
+
+            // ProGuard rules file
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 

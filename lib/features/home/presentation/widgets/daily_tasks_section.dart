@@ -16,27 +16,24 @@ class DailyTasksSection extends ConsumerWidget {
       data: (progress) {
         if (progress.tasks.isEmpty) {
           return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4)),
-              ],
-            ),
+            padding: const EdgeInsets.all(20),
             child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                  Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.local_fire_department, color: Colors.amber, size: 24),
+                    Icon(Icons.local_fire_department, color: Colors.amber, size: 32),
                     SizedBox(width: 8),
-                    Text('Daily Tasks & Streak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Daily Tasks', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                   ],
                 ),
-                SizedBox(height: 12),
-                Text('Belum ada tugas/misi hari ini.', style: TextStyle(color: Colors.grey)),
+                SizedBox(height: 20),
+                Text(
+                  'Belum ada tugas/misi hari ini.\nKembalilah besok untuk misi baru!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
               ],
             ),
           );
@@ -47,19 +44,7 @@ class DailyTasksSection extends ConsumerWidget {
         final progressVal = totalCount > 0 ? completedCount / totalCount : 0.0;
 
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -68,46 +53,95 @@ class DailyTasksSection extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 24),
+                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
                       const SizedBox(width: 8),
                       Text(
-                        'Daily Streak: ${progress.streak} Hari',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        'Streak: ${progress.streak} Hari',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                       ),
                     ],
                   ),
-                  Text(
-                    '$completedCount / $totalCount',
-                    style: TextStyle(color: Colors.grey[600], fontWeight: FontWeight.bold),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFA6978).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$completedCount / $totalCount',
+                      style: const TextStyle(color: Color(0xFFFA6978), fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
               LinearProgressIndicator(
                 value: progressVal,
                 backgroundColor: Colors.grey[200],
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFA6978)),
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
+                minHeight: 10,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Tugas Hari Ini',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.grey),
               ),
               const SizedBox(height: 8),
               ...progress.tasks.map((task) {
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Icon(
-                    task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                    color: task.isCompleted ? Colors.green : Colors.grey,
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
                   ),
-                  title: Text(task.title, style: TextStyle(
-                    decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-                  )),
-                  subtitle: task.description != null ? Text(task.description!) : null,
-                  trailing: Text('+${task.points} pts', style: const TextStyle(color: const Color(0xFFFA6978), fontWeight: FontWeight.bold)),
-                  onTap: () {
-                    if (!task.isCompleted) {
-                      ref.read(completeTaskProvider)(task.id);
-                    }
-                  },
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: task.isCompleted ? Colors.green.withValues(alpha: 0.1) : Colors.grey[200],
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        task.isCompleted ? Icons.check : Icons.radio_button_off,
+                        color: task.isCompleted ? Colors.green : Colors.grey[600],
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      task.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+                        color: task.isCompleted ? Colors.grey : const Color(0xFF424242),
+                      ),
+                    ),
+                    subtitle: task.description != null 
+                        ? Text(task.description!, style: const TextStyle(fontSize: 13)) 
+                        : null,
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '+${task.points}',
+                          style: const TextStyle(
+                            color: Color(0xFFFA6978),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const Text('pts', style: TextStyle(fontSize: 10, color: Colors.grey)),
+                      ],
+                    ),
+                    onTap: () {
+                      if (!task.isCompleted) {
+                        ref.read(completeTaskProvider)(task.id);
+                      }
+                    },
+                  ),
                 );
               }),
             ],

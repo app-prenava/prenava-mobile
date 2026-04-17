@@ -65,19 +65,6 @@ class LainnyaModal extends StatelessWidget {
                       context.push('/appointments');
                     },
                   ),
-                  MenuGridItem(
-                    // Using an existing image temporarily or we can use a Flutter icon for now.
-                    // Let's use 'assets/images/tips.png' as a placeholder if no specific image exists for Rekomendasi Gerakan.
-                    // Actually, the user might want a specific image, but I will use a placeholder for now.
-                    // Wait, let's use a Flutter Icon since it's cleaner if no image exists. No, MenuGridItem expects an imagePath.
-                    // I will use `assets/images/tips.png` for now.
-                    imagePath: 'assets/images/tips.png',
-                    label: 'Rekomendasi Gerakan',
-                    onTap: () {
-                      context.pop(); // Close modal first
-                      context.push('/rekomendasi-gerakan');
-                    },
-                  ),
                 ],
               ),
             ),

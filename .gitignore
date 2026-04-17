@@ -44,5 +44,17 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Keystore and signing files (NEVER commit these!)
+*.jks
+*.keystore
+keystore/
+keystore.properties
+/android/keystore/
+
+# Firebase config files (may contain sensitive data)
+# Uncomment if using Firebase and don't want to commit config
+# /android/app/google-services.json
+# /lib/firebase_options.dart
+
 /.agent
 /.claudekit

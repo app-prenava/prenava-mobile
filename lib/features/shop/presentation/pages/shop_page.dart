@@ -60,47 +60,41 @@ class _ShopPageState extends ConsumerState<ShopPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
-        color: const Color(0xFFFA6978),
-        child: SafeArea(
-          bottom: false,
-          child: Container(
-            color: Colors.white,
-            child: Column(
+      body: Column(
+        children: [
+          // Header Section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
+            decoration: const BoxDecoration(
+              color: Color(0xFFFA6978),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header Section
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFA6978),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(24),
-                      bottomRight: Radius.circular(24),
-                    ),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Belanja',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 1),
-                      Text(
-                        'Hari ini mau beli apa momsi?',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
+                Text(
+                  'Belanja',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
+                SizedBox(height: 4),
+                Text(
+                  'Kebutuhan Bunda & Si Kecil Ada Disini',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
 
                 // Search Bar
                 Padding(
@@ -230,9 +224,6 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -378,20 +369,25 @@ class _ShopPageState extends ConsumerState<ShopPage> {
             color: Colors.grey[300],
           ),
           const SizedBox(height: 16),
-                  Text(
-            'Belum ada produk',
+          Text(
+            'Belum ada produk saat ini.',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-            'Mulai tambahkan produk untuk dijual',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Text(
+              'Di fitur Belanja, Anda bisa menemukan perlengkapan bayi dan ibu hamil. Silakan tambah produk baru untuk mulai berjualan atau berbelanja!',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[500],
+                height: 1.5,
+              ),
             ),
           ),
           const SizedBox(height: 24),

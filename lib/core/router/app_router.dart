@@ -8,6 +8,7 @@ import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/main/presentation/pages/main_scaffold.dart';
 import '../../features/profile/presentation/pages/edit_profile_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_onboarding_page.dart';
 import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
 import '../../features/shop/presentation/pages/shop_detail_page.dart';
 import '../../features/community/presentation/pages/community_detail_page.dart';
@@ -60,6 +61,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/profile-onboarding',
+        builder: (context, state) => const ProfileOnboardingPage(),
       ),
       GoRoute(
         path: '/change-password',

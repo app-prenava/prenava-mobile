@@ -14,6 +14,7 @@ import '../widgets/menu_grid_item.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/lainnya_modal.dart';
 import '../widgets/daily_tasks_section.dart';
+import '../providers/daily_features_provider.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 
@@ -28,7 +29,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   final GlobalKey _headerKey = GlobalKey();
   final GlobalKey _dailyKey = GlobalKey();
   final GlobalKey _olahragaKey = GlobalKey();
-  final GlobalKey _makananKey = GlobalKey();
+  final GlobalKey _hidrasiKey = GlobalKey();
+  final GlobalKey _tipsKey = GlobalKey();
   final GlobalKey _anemiaKey = GlobalKey();
   final GlobalKey _hplKey = GlobalKey();
   final GlobalKey _lainnyaKey = GlobalKey();
@@ -107,28 +109,59 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           child: Showcase(
                                             key: _headerKey,
                                             description: 'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
-                                            child: UserHeader(
-                                              greeting: _getGreeting(),
-                                              userName: user?.name ?? 'User',
-                                              avatarUrl: profilePhoto,
+                                            child: GestureDetector(
+                                              onTap: () => context.push('/profile'),
+                                              child: UserHeader(
+                                                greeting: _getGreeting(),
+                                                userName: user?.name ?? 'User',
+                                                avatarUrl: profilePhoto,
+                                              ),
                                             ),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 8, right: 8),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.help_outline, color: Colors.white),
-                                            onPressed: () {
-                                              _startTutorial(innerContext);
-                                            },
+                                          padding: const EdgeInsets.only(top: 8, right: 4),
+                                          child: Row(
+                                            children: [
+                                              Showcase(
+                                                key: _dailyKey,
+                                                description: 'Pantau streak dan selesaikan misi harian di sini!',
+                                                child: IconButton(
+                                                  icon: Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
+                                                      ref.watch(dailyProgressProvider).when(
+                                                        data: (p) => p.streak > 0 
+                                                          ? Positioned(
+                                                              right: 0,
+                                                              top: 0,
+                                                              child: Container(
+                                                                padding: const EdgeInsets.all(2),
+                                                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                                                constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                                                                child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                                                              ),
+                                                            )
+                                                          : const SizedBox(),
+                                                        loading: () => const SizedBox(),
+                                                        error: (_, __) => const SizedBox(),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  onPressed: _showDailyTasksBottomSheet,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.help_outline, color: Colors.white),
+                                                onPressed: () {
+                                                  _startTutorial(innerContext);
+                                                },
+                                              ),
+                                            ],
                                           ),
                                         )
                                       ],
-                                    ),
-                                    Showcase(
-                                      key: _dailyKey,
-                                      description: 'Cek misi harianmu di sini! Selesaikan untuk membangun streak harian.',
-                                      child: const DailyTasksSection(),
                                     ),
                                     _buildMenuGrid(user?.category ?? 'umum'),
                                     const SizedBox(height: 16),
@@ -152,12 +185,61 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  void _showDailyTasksBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.95,
+        builder: (_, controller) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              const SizedBox(height: 12),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Misi & Progres Harian',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF424242),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: controller,
+                  child: const DailyTasksSection(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _startTutorial(BuildContext context) {
     ShowCaseWidget.of(context).startShowCase([
       _headerKey, 
       _dailyKey, 
       _olahragaKey, 
-      _makananKey,
+      _hidrasiKey,
+      _tipsKey,
       _anemiaKey,
       _hplKey,
       _lainnyaKey
@@ -192,19 +274,29 @@ class _HomePageState extends ConsumerState<HomePage> {
       key: _olahragaKey,
       description: 'Dapatkan rekomendasi olahraga ringan yang aman.',
       child: MenuGridItem(
-        imagePath: 'assets/images/hidrasi.png',
+        imagePath: 'assets/images/kunjungan.png',
         label: 'Rekomendasi Olahraga',
         onTap: () => _handleMenuTap('/rekomendasi-olahraga', requiresPregnancy: true),
       ),
     ));
 
     items.add(Showcase(
-      key: _makananKey,
-      description: 'Panduan gizi dan kalori harian untuk kesehatanmu.',
+      key: _hidrasiKey,
+      description: 'Pantau asupan air harian Anda agar tetap terhidrasi.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/glass water.png',
+        label: 'Rekomendasi Hidrasi',
+        onTap: () => context.push('/hydration'),
+      ),
+    ));
+
+    items.add(Showcase(
+      key: _tipsKey,
+      description: 'Tips harian untuk kesehatan ibu dan janin.',
       child: MenuGridItem(
         imagePath: 'assets/images/tips.png',
-        label: 'Rekomendasi Makanan',
-        onTap: () {},
+        label: 'Tips & Gizi',
+        onTap: () => context.push('/tips'),
       ),
     ));
 
@@ -242,7 +334,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     ));
 
     items.add(MenuGridItem(
-      imagePath: 'assets/images/kunjungan.png',
+      imagePath: 'assets/images/risiko stunting.png',
       label: 'Cek Kualitas Udara',
       onTap: () {},
     ));
