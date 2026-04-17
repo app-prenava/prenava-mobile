@@ -93,7 +93,7 @@ class _VerifyOtpPageState extends ConsumerState<VerifyOtpPage> {
                 const SizedBox(height: 40),
                 _buildOtpField(),
                 const SizedBox(height: 48),
-                _buildVerifyButton(),
+                _buildVerifyButton(authState),
               ],
             ),
           ),
@@ -181,7 +181,7 @@ class _VerifyOtpPageState extends ConsumerState<VerifyOtpPage> {
     );
   }
 
-  Widget _buildVerifyButton() {
+  Widget _buildVerifyButton(AuthState authState) {
     return SizedBox(
       width: double.infinity,
       height: 56,

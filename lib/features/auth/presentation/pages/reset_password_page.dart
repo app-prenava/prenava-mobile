@@ -95,7 +95,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
                 const SizedBox(height: 20),
                 _buildPasswordConfirmField(),
                 const SizedBox(height: 48),
-                _buildResetButton(),
+                _buildResetButton(authState),
               ],
             ),
           ),
@@ -257,7 +257,7 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
     );
   }
 
-  Widget _buildResetButton() {
+  Widget _buildResetButton(AuthState authState) {
     return SizedBox(
       width: double.infinity,
       height: 56,

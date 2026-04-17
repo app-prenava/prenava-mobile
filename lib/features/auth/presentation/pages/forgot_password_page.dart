@@ -78,7 +78,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 const SizedBox(height: 40),
                 _buildEmailField(),
                 const SizedBox(height: 48),
-                _buildSendButton(),
+                _buildSendButton(authState),
               ],
             ),
           ),
@@ -163,7 +163,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     );
   }
 
-  Widget _buildSendButton() {
+  Widget _buildSendButton(AuthState authState) {
     return SizedBox(
       width: double.infinity,
       height: 56,
