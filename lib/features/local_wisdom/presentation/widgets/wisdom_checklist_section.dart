@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/wisdom_provider.dart';
 import '../../domain/entities/wisdom_item.dart';
 
-final selectedRegionProvider = StateProvider<String>((ref) => 'Semua');
-
 class WisdomChecklistSection extends ConsumerWidget {
   const WisdomChecklistSection({super.key});
 

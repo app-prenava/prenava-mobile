@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/wisdom_item.dart';
 
+/// Provider untuk menyimpan filter region yang dipilih
+final selectedRegionProvider = StateProvider<String>((ref) => 'Semua');
+
 class WisdomNotifier extends AsyncNotifier<List<WisdomItem>> {
   @override
   Future<List<WisdomItem>> build() async {
