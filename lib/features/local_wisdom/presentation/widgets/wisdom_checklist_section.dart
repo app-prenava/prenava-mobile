@@ -51,7 +51,7 @@ class WisdomChecklistSection extends ConsumerWidget {
                       label: Text(region),
                       selected: isSelected,
                       onSelected: (selected) {
-                        ref.read(selectedRegionProvider.notifier).state = region;
+                        ref.read(selectedRegionProvider.notifier).updateRegion(region);
                       },
                       selectedColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
                       labelStyle: TextStyle(
