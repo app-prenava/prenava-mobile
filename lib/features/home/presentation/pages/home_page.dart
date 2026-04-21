@@ -136,11 +136,44 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(top: 8, right: 4),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.help_outline, color: Colors.white),
-                                            onPressed: () {
-                                              _startTutorial(innerContext);
-                                            },
+                                          child: Row(
+                                            children: [
+                                              Showcase(
+                                                key: _dailyKey,
+                                                description: 'Pantau streak dan selesaikan misi harian di sini!',
+                                                child: IconButton(
+                                                  icon: Stack(
+                                                    alignment: Alignment.center,
+                                                    children: [
+                                                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
+                                                      ref.watch(dailyProgressProvider).when(
+                                                        data: (p) => p.streak > 0 
+                                                          ? Positioned(
+                                                              right: 0,
+                                                              top: 0,
+                                                              child: Container(
+                                                                padding: const EdgeInsets.all(2),
+                                                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                                                constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                                                                child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                                                              ),
+                                                            )
+                                                          : const SizedBox(),
+                                                        loading: () => const SizedBox(),
+                                                        error: (_, __) => const SizedBox(),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  onPressed: _showDailyTasksBottomSheet,
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(Icons.help_outline, color: Colors.white),
+                                                onPressed: () {
+                                                  _startTutorial(innerContext);
+                                                },
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
@@ -241,7 +274,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('🌿', style: TextStyle(fontSize: 14)),
                             SizedBox(width: 6),
                             Text('Kearifan Lokal'),
                           ],

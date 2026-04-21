@@ -108,7 +108,6 @@ class _WisdomHeader extends StatelessWidget {
             children: [
               const Row(
                 children: [
-                  Text('🌿', style: TextStyle(fontSize: 22)),
                   SizedBox(width: 8),
                   Text(
                     'Kearifan Lokal',
@@ -139,7 +138,7 @@ class _WisdomHeader extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Pahami mitos agar Bunda lebih bijak & tenang 🤍',
+            'Ketahui mitos & fakta agar Bunda lebih tenang 🤍',
             style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
           const SizedBox(height: 12),
