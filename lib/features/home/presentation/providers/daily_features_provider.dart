@@ -8,6 +8,8 @@ class DailyTaskItem {
   final String taskType;
   final int points;
   final bool isCompleted;
+  /// True when this task is auto-completed on feature navigation.
+  final bool isAuto;
 
   DailyTaskItem({
     required this.id,
@@ -16,6 +18,7 @@ class DailyTaskItem {
     required this.taskType,
     required this.points,
     required this.isCompleted,
+    this.isAuto = false,
   });
 
   factory DailyTaskItem.fromJson(Map<String, dynamic> json) {
@@ -26,6 +29,7 @@ class DailyTaskItem {
       taskType: json['task_type'] ?? '',
       points: json['points'] ?? 0,
       isCompleted: json['is_completed'] ?? false,
+      isAuto: json['is_auto'] ?? false,
     );
   }
 }

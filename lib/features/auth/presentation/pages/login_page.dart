@@ -60,6 +60,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  Future<void> _handleGoogleLogin() async {
+    // TODO: Connect to backend google auth endpoint
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fitur Google Login sedang dalam persiapan (Setup Console API).'),
+        backgroundColor: Colors.blueGrey,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
@@ -89,6 +99,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       _buildRememberAndForgot(),
                       const SizedBox(height: 32),
                       _buildLoginButton(authState),
+                      const SizedBox(height: 16),
+                      _buildCustomDivider(),
+                      const SizedBox(height: 16),
+                      _buildGoogleLoginButton(authState),
                       const SizedBox(height: 24),
                       _buildRegisterLink(),
                     ],
@@ -342,6 +356,63 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   letterSpacing: 0.5,
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDivider() {
+    return Row(
+      children: [
+        const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Atau',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+      ],
+    );
+  }
+
+  Widget _buildGoogleLoginButton(AuthState authState) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: OutlinedButton(
+        onPressed: authState.isLoading ? null : _handleGoogleLogin,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFFE0E0E0), width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/google_logo.png',
+              height: 24,
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Lanjutkan dengan Google',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF424242),
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

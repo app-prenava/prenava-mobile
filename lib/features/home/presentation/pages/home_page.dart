@@ -15,6 +15,8 @@ import '../widgets/banner_carousel.dart';
 import '../widgets/lainnya_modal.dart';
 import '../widgets/daily_tasks_section.dart';
 import '../providers/daily_features_provider.dart';
+import '../providers/feature_tracker_provider.dart';
+import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_section.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 
@@ -134,46 +136,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         ),
                                         Padding(
                                           padding: const EdgeInsets.only(top: 8, right: 4),
-                                          child: Row(
-                                            children: [
-                                              Showcase(
-                                                key: _dailyKey,
-                                                description: 'Pantau streak dan selesaikan misi harian di sini!',
-                                                child: IconButton(
-                                                  icon: Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-                                                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
-                                                      ref.watch(dailyProgressProvider).when(
-                                                        data: (p) => p.streak > 0 
-                                                          ? Positioned(
-                                                              right: 0,
-                                                              top: 0,
-                                                              child: Container(
-                                                                padding: const EdgeInsets.all(2),
-                                                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                                                constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                                                                child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                                                              ),
-                                                            )
-                                                          : const SizedBox(),
-                                                        loading: () => const SizedBox(),
-                                                        error: (_, __) => const SizedBox(),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: _showDailyTasksBottomSheet,
-                                                ),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(Icons.help_outline, color: Colors.white),
-                                                onPressed: () {
-                                                  _startTutorial(innerContext);
-                                                },
-                                              ),
-                                            ],
+                                          child: IconButton(
+                                            icon: const Icon(Icons.help_outline, color: Colors.white),
+                                            onPressed: () {
+                                              _startTutorial(innerContext);
+                                            },
                                           ),
-                                        )
+                                        ),
                                       ],
                                     ),
                                     _buildMenuGrid(user?.category ?? 'umum'),
@@ -203,43 +172,104 @@ class _HomePageState extends ConsumerState<HomePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.95,
-        builder: (_, controller) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+      builder: (context) => DefaultTabController(
+        length: 2,
+        child: DraggableScrollableSheet(
+          initialChildSize: 0.65,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          builder: (_, controller) => Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Misi & Progres Harian',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF424242),
+                const SizedBox(height: 12),
+                // Tab bar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TabBar(
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    dividerColor: Colors.transparent,
+                    labelColor: const Color(0xFF424242),
+                    unselectedLabelColor: Colors.grey,
+                    labelStyle: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontWeight: FontWeight.normal,
+                      fontSize: 13,
+                    ),
+                    tabs: const [
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('🔥', style: TextStyle(fontSize: 14)),
+                            SizedBox(width: 6),
+                            Text('Misi Harian'),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('🌿', style: TextStyle(fontSize: 14)),
+                            SizedBox(width: 6),
+                            Text('Kearifan Lokal'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: controller,
-                  child: const DailyTasksSection(),
+                const SizedBox(height: 8),
+                // Tab content
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      // Tab 1: Daily Tasks (existing)
+                      SingleChildScrollView(
+                        controller: controller,
+                        child: const DailyTasksSection(),
+                      ),
+                      // Tab 2: Local Wisdom
+                      SingleChildScrollView(
+                        controller: controller,
+                        child: const WisdomChecklistSection(),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -261,7 +291,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     ]);
   }
 
-  void _handleMenuTap(String route, {bool requiresPregnancy = false}) async {
+  void _handleMenuTap(String route, {bool requiresPregnancy = false, AppFeature? feature}) async {
+    // Auto-track feature access (fire-and-forget)
+    if (feature != null) {
+      ref.read(featureTrackerProvider).track(feature);
+    }
+
     if (requiresPregnancy) {
       final pregnancyState = ref.read(pregnancyNotifierProvider);
       if (pregnancyState.isLoading) return;
@@ -291,7 +326,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: MenuGridItem(
         imagePath: 'assets/images/kunjungan.png',
         label: 'Rekomendasi Olahraga',
-        onTap: () => _handleMenuTap('/rekomendasi-olahraga', requiresPregnancy: true),
+        onTap: () => _handleMenuTap('/rekomendasi-olahraga',
+            requiresPregnancy: true, feature: AppFeature.olahraga),
       ),
     ));
 
@@ -301,7 +337,23 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: MenuGridItem(
         imagePath: 'assets/images/glass water.png',
         label: 'Rekomendasi Hidrasi',
-        onTap: () => context.push('/hydration'),
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.hidrasi);
+          context.push('/hydration');
+        },
+      ),
+    ));
+
+    items.add(Showcase(
+      key: _hplKey,
+      description: 'Hitung dan pantau Hari Perkiraan Lahir (HPL) serta perkembangan janin.',
+      child: MenuGridItem(
+        imagePath: 'assets/images/kalkulator hpl.png',
+        label: 'Kalkulator HPL',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.kalkulatorHpl);
+          context.push('/pregnancy-calculator');
+        },
       ),
     ));
 
@@ -311,26 +363,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: MenuGridItem(
         imagePath: 'assets/images/tips.png',
         label: 'Tips & Gizi',
-        onTap: () => context.push('/tips'),
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.tips);
+          context.push('/tips');
+        },
       ),
     ));
-
-    if (category == 'ibu_hamil' || category == 'bidan') {
-      items.add(Showcase(
-        key: _hplKey,
-        description: 'Fitur ibu hamil: prediksi hari kelahiran dan informasi trimester.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/kalkulator hpl.png',
-          label: 'Kalkulator HPL',
-          onTap: () => context.push('/pregnancy-calculator'),
-        ),
-      ));
-      items.add(MenuGridItem(
-        imagePath: 'assets/images/kunjungan.png',
-        label: 'Prediksi Persalinan',
-        onTap: () {},
-      ));
-    }
 
     items.add(Showcase(
       key: _anemiaKey,
@@ -338,7 +376,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: MenuGridItem(
         imagePath: 'assets/images/anemia.png',
         label: 'Prediksi Anemia',
-        onTap: () => context.push('/deteksi-anemia'),
+        onTap: () => _handleMenuTap('/deteksi-anemia', feature: AppFeature.anemia),
       ),
     ));
 
@@ -348,7 +386,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: MenuGridItem(
         imagePath: 'assets/images/deteksi depresi.png',
         label: 'Prediksi Depresi',
-        onTap: () => context.push('/deteksi-depresi'),
+        onTap: () => _handleMenuTap('/deteksi-depresi', feature: AppFeature.depresi),
       ),
     ));
 

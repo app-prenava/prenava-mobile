@@ -439,44 +439,82 @@ class _PregnancyCalculatorPageState
                 children: [
                   // Sparkle decorations
                   SizedBox(
-                    width: 120,
-                    height: 80,
+                    width: 150,
+                    height: 150,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
+                        // Background glow for the 3D baby
+                        Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        // 3D Baby Image
+                        Image.asset(
+                          pregnancy?.trimester == 1
+                              ? 'assets/images/baby_trimester_1.png'
+                              : pregnancy?.trimester == 2
+                                  ? 'assets/images/baby_trimester_2.png'
+                                  : 'assets/images/baby_trimester_3.png',
+                          width: 140,
+                          height: 140,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            Icons.child_care,
+                            size: 80,
+                            color: Color(0xFFFA6978),
+                          ),
+                        ),
+                        // Small fruit icon as secondary info
+                        Positioned(
+                          bottom: 0,
+                          right: 10,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              phaseData.fruitIcon,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                        // Sparkles
                         Positioned(
                           top: 0,
-                          right: 15,
-                          child: _buildSparkle(14),
+                          right: 0,
+                          child: _buildSparkle(16),
                         ),
                         Positioned(
-                          top: 10,
-                          left: 20,
-                          child: _buildSparkle(10),
-                        ),
-                        Positioned(
-                          bottom: 5,
-                          right: 30,
-                          child: _buildSparkle(8),
-                        ),
-                        Center(
-                          child: Text(
-                            phaseData.fruitIcon,
-                            style: const TextStyle(fontSize: 48),
-                          ),
+                          top: 20,
+                          left: 0,
+                          child: _buildSparkle(12),
                         ),
                       ],
                     ),
                   ),
-                  // Glow/shadow circle under the fruit
+                  const SizedBox(height: 8),
+                  // Glow/shadow circle under the baby
                   Container(
-                    width: 80,
-                    height: 16,
+                    width: 100,
+                    height: 12,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(50),
                       gradient: RadialGradient(
                         colors: [
-                          const Color(0xFFFA6978).withValues(alpha: 0.15),
+                          const Color(0xFFFA6978).withValues(alpha: 0.2),
                           Colors.transparent,
                         ],
                       ),
