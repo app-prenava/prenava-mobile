@@ -11,6 +11,9 @@
 -keep class com.google.firebase.** { *; }
 -keep class com.crashlytics.android.** { *; }
 
+# Google Play Core (Fixes R8 missing classes error)
+-dontwarn com.google.android.play.core.**
+
 # Gson (if used for JSON serialization)
 -keepattributes Signature
 -keepattributes *Annotation*
