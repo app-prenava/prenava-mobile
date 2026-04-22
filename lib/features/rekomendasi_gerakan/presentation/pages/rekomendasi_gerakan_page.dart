@@ -183,6 +183,12 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
             fontWeight: FontWeight.w600,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: Colors.white),
+            onPressed: () => _showAssessmentSheet(showUpdateBanner: true),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -199,34 +205,28 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       color: const Color(0xFFF5F5F5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE0E0E0)),
-            ),
-            child: Row(
-              children: [
-                _buildTabButton(
-                  title: 'Rekomendasi',
-                  index: 0,
-                ),
-                _buildTabButton(
-                  title: 'Semua Olahraga',
-                  index: 1,
-                ),
-              ],
-            ),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
           ),
-          IconButton(
-            icon: const Icon(Icons.settings, color: Color(0xFF333333)),
-            onPressed: () => _showAssessmentSheet(showUpdateBanner: true),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildTabButton(
+                title: 'Rekomendasi',
+                index: 0,
+              ),
+              _buildTabButton(
+                title: 'Semua Olahraga',
+                index: 1,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -420,12 +420,18 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
       final uri = Uri.parse(url);
       String? videoId;
       if (uri.host.contains('youtube.com')) {
-        videoId = uri.queryParameters['v'];
+        if (uri.queryParameters.containsKey('v')) {
+          videoId = uri.queryParameters['v'];
+        } else if (uri.pathSegments.contains('live')) {
+          videoId = uri.pathSegments.last;
+        } else if (uri.pathSegments.contains('shorts')) {
+          videoId = uri.pathSegments.last;
+        }
       } else if (uri.host.contains('youtu.be')) {
         videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
       }
       if (videoId != null && videoId.isNotEmpty) {
-        return 'https://img.youtube.com/vi/$videoId/0.jpg';
+        return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
       }
     } catch (_) {}
     return null;

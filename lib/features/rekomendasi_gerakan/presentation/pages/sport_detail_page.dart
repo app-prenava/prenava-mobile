@@ -34,12 +34,18 @@ class SportDetailPage extends StatelessWidget {
       final uri = Uri.parse(url);
       String? videoId;
       if (uri.host.contains('youtube.com')) {
-        videoId = uri.queryParameters['v'];
+        if (uri.queryParameters.containsKey('v')) {
+          videoId = uri.queryParameters['v'];
+        } else if (uri.pathSegments.contains('live')) {
+          videoId = uri.pathSegments.last;
+        } else if (uri.pathSegments.contains('shorts')) {
+          videoId = uri.pathSegments.last;
+        }
       } else if (uri.host.contains('youtu.be')) {
         videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
       }
       if (videoId != null && videoId.isNotEmpty) {
-        return 'https://img.youtube.com/vi/$videoId/0.jpg';
+        return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
       }
     } catch (_) {}
     return null;
@@ -57,6 +63,13 @@ class SportDetailPage extends StatelessWidget {
     
     final longText = sport.longText ?? 'Belum ada deskripsi mendetail untuk olahraga ini.';
     final youtubeThumbnail = _getYoutubeThumbnail(sport.videoLink);
+
+    // Filter non-null pictures
+    final List<String> availablePictures = [
+      sport.picture1,
+      sport.picture2,
+      sport.picture3,
+    ].where((pic) => pic != null && pic.isNotEmpty && pic != 'data not found').cast<String>().toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -128,16 +141,22 @@ class SportDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               
-              // Small Images Row
-              Row(
-                children: [
-                  Expanded(child: _buildSmallImage(sport.picture1)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSmallImage(sport.picture2)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSmallImage(sport.picture3)),
-                ],
-              ),
+              // Small Images Row (Only show if available)
+              if (availablePictures.isNotEmpty)
+                SizedBox(
+                  height: 80,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: availablePictures.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      return SizedBox(
+                        width: (MediaQuery.of(context).size.width - 40 - (12 * (availablePictures.length - 1))) / availablePictures.length,
+                        child: _buildSmallImage(availablePictures[index]),
+                      );
+                    },
+                  ),
+                ),
               
               const SizedBox(height: 24),
               
