@@ -64,6 +64,25 @@ class SportRecommendationRemoteDatasource {
     }
   }
 
+  /// GET /api/recomendation/sports/assessment
+  /// Fetches existing assessment data for auto-filling the form.
+  Future<Map<String, dynamic>?> getExistingAssessment() async {
+    try {
+      final response = await _dio.get('/recomendation/sports/assessment');
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data is Map<String, dynamic> && data['has_assessment'] == true) {
+          return data['assessment'] as Map<String, dynamic>;
+        }
+        return null;
+      }
+      return null;
+    } on DioException {
+      return null;
+    }
+  }
+
   /// GET /api/recomendation/sports/all
   /// Fetches all sports from admin data (fallback when ML is unavailable)
   Future<List<SportRecommendation>> getAllSports() async {
@@ -74,7 +93,11 @@ class SportRecommendationRemoteDatasource {
         final data = response.data;
         if (data is Map<String, dynamic> && data['data'] is List) {
           return (data['data'] as List)
-              .map((e) => SportRecommendationModel.fromJson(e as Map<String, dynamic>))
+              .map(
+                (e) => SportRecommendationModel.fromJson(
+                  e as Map<String, dynamic>,
+                ),
+              )
               .toList();
         }
         throw Exception('Invalid response format');

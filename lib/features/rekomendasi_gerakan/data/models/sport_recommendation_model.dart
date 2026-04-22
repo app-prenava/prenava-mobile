@@ -34,12 +34,17 @@ class SportRecommendationResponseModel extends SportRecommendationResponse {
 
   factory SportRecommendationResponseModel.fromJson(Map<String, dynamic> json) {
     bool? needUpdate = json['need_update_data'];
-    
+
     // Parse model_response.recommendations
     List<SportRecommendation> parsedRecommendations = [];
-    if (json['model_response'] != null && json['model_response']['recommendations'] != null) {
+    if (json['model_response'] != null &&
+        json['model_response']['recommendations'] != null) {
       final recs = json['model_response']['recommendations'] as List;
-      parsedRecommendations = recs.map((e) => SportRecommendationModel.fromJson(e as Map<String, dynamic>)).toList();
+      parsedRecommendations = recs
+          .map(
+            (e) => SportRecommendationModel.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
     }
 
     return SportRecommendationResponseModel(

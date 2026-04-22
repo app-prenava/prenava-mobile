@@ -39,4 +39,9 @@ class SportRecommendationRepositoryImpl
   Future<List<SportRecommendation>> getAllSports() async {
     return await _datasource.getAllSports();
   }
+
+  @override
+  Future<Map<String, dynamic>?> getExistingAssessment() async {
+    return await _datasource.getExistingAssessment();
+  }
 }

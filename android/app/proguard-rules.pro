@@ -44,8 +44,10 @@
 -keep class **_Bloc { *; }
 
 # Riverpod
--keep class **.{ @com.riverpod_annotate.Provider, @com.riverpod_annotate.ProviderHolder } { *; }
--keep class **.{@riverpod.Provider, @riverpod.ProviderHolder} { *; }
+-keep class * { @com.riverpod_annotate.Provider *; }
+-keep class * { @com.riverpod_annotate.ProviderHolder *; }
+-keep class * { @riverpod.Provider *; }
+-keep class * { @riverpod.ProviderHolder *; }
 
 # Go Router
 -keep class go_router.** { *; }

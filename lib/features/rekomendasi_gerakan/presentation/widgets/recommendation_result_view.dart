@@ -22,10 +22,10 @@ class RecommendationResultView extends StatelessWidget {
         children: [
           _buildHeader(),
           const SizedBox(height: 20),
-          ...recommendations
-              .asMap()
-              .entries
-              .map((entry) => _buildRecommendationCard(context, entry.value, entry.key + 1)),
+          ...recommendations.asMap().entries.map(
+            (entry) =>
+                _buildRecommendationCard(context, entry.value, entry.key + 1),
+          ),
           const SizedBox(height: 16),
           _buildRetakeButton(),
           const SizedBox(height: 24),
@@ -49,18 +49,17 @@ class RecommendationResultView extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'Berikut gerakan olahraga yang direkomendasikan berdasarkan kondisi kesehatan Anda.',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-            height: 1.4,
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.4),
         ),
       ],
     );
   }
 
   Widget _buildRecommendationCard(
-      BuildContext context, SportRecommendation rec, int rank) {
+    BuildContext context,
+    SportRecommendation rec,
+    int rank,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -79,7 +78,9 @@ class RecommendationResultView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Images carousel if available
-          if (rec.picture1 != null || rec.picture2 != null || rec.picture3 != null)
+          if (rec.picture1 != null ||
+              rec.picture2 != null ||
+              rec.picture3 != null)
             _buildImageSection(rec),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -124,8 +125,11 @@ class RecommendationResultView extends StatelessWidget {
                 // Score indicator
                 Row(
                   children: [
-                    const Icon(Icons.star_rounded,
-                        color: Color(0xFFFFB74D), size: 20),
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFFFB74D),
+                      size: 20,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Skor: ${(rec.score * 100).toStringAsFixed(0)}%',
@@ -176,10 +180,11 @@ class RecommendationResultView extends StatelessWidget {
   }
 
   Widget _buildImageSection(SportRecommendation rec) {
-    final images = [rec.picture1, rec.picture2, rec.picture3]
-        .where((img) => img != null && img.isNotEmpty)
-        .cast<String>()
-        .toList();
+    final images = [
+      rec.picture1,
+      rec.picture2,
+      rec.picture3,
+    ].where((img) => img != null && img.isNotEmpty).cast<String>().toList();
 
     if (images.isEmpty) return const SizedBox.shrink();
 
@@ -201,8 +206,11 @@ class RecommendationResultView extends StatelessWidget {
                 return Container(
                   color: const Color(0xFFF5F5F5),
                   child: const Center(
-                    child: Icon(Icons.image_not_supported,
-                        size: 40, color: Color(0xFFBDBDBD)),
+                    child: Icon(
+                      Icons.image_not_supported,
+                      size: 40,
+                      color: Color(0xFFBDBDBD),
+                    ),
                   ),
                 );
               },

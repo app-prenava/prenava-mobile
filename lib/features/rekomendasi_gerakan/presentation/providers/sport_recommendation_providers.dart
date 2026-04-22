@@ -7,15 +7,15 @@ import '../../domain/repositories/sport_recommendation_repository.dart';
 
 final sportRecommendationDatasourceProvider =
     Provider<SportRecommendationRemoteDatasource>((ref) {
-  final dio = ref.watch(appDioProvider);
-  return SportRecommendationRemoteDatasource(dio);
-});
+      final dio = ref.watch(appDioProvider);
+      return SportRecommendationRemoteDatasource(dio);
+    });
 
 final sportRecommendationRepositoryProvider =
     Provider<SportRecommendationRepository>((ref) {
-  final datasource = ref.watch(sportRecommendationDatasourceProvider);
-  return SportRecommendationRepositoryImpl(datasource);
-});
+      final datasource = ref.watch(sportRecommendationDatasourceProvider);
+      return SportRecommendationRepositoryImpl(datasource);
+    });
 
 class SportRecommendationState {
   final bool isLoading;
@@ -26,6 +26,7 @@ class SportRecommendationState {
   final String? successMessage;
   final bool needsLmp;
   final bool needsProfile;
+  final Map<String, dynamic>? existingAssessment;
 
   const SportRecommendationState({
     this.isLoading = false,
@@ -36,17 +37,19 @@ class SportRecommendationState {
     this.successMessage,
     this.needsLmp = false,
     this.needsProfile = false,
+    this.existingAssessment,
   });
 
   const SportRecommendationState.initial()
-      : isLoading = false,
-        isSubmitting = false,
-        needUpdateData = false,
-        recommendations = const [],
-        error = null,
-        successMessage = null,
-        needsLmp = false,
-        needsProfile = false;
+    : isLoading = false,
+      isSubmitting = false,
+      needUpdateData = false,
+      recommendations = const [],
+      error = null,
+      successMessage = null,
+      needsLmp = false,
+      needsProfile = false,
+      existingAssessment = null;
 
   SportRecommendationState copyWith({
     bool? isLoading,
@@ -59,6 +62,8 @@ class SportRecommendationState {
     bool clearSuccess = false,
     bool? needsLmp,
     bool? needsProfile,
+    Map<String, dynamic>? existingAssessment,
+    bool clearAssessment = false,
   }) {
     return SportRecommendationState(
       isLoading: isLoading ?? this.isLoading,
@@ -66,10 +71,14 @@ class SportRecommendationState {
       needUpdateData: needUpdateData ?? this.needUpdateData,
       recommendations: recommendations ?? this.recommendations,
       error: clearError ? null : (error ?? this.error),
-      successMessage:
-          clearSuccess ? null : (successMessage ?? this.successMessage),
+      successMessage: clearSuccess
+          ? null
+          : (successMessage ?? this.successMessage),
       needsLmp: needsLmp ?? this.needsLmp,
       needsProfile: needsProfile ?? this.needsProfile,
+      existingAssessment: clearAssessment
+          ? null
+          : (existingAssessment ?? this.existingAssessment),
     );
   }
 }
@@ -81,7 +90,12 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
   }
 
   Future<void> fetchRecommendations() async {
-    state = state.copyWith(isLoading: true, clearError: true, needsLmp: false, needsProfile: false);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      needsLmp: false,
+      needsProfile: false,
+    );
 
     try {
       final repository = ref.read(sportRecommendationRepositoryProvider);
@@ -95,7 +109,8 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
     } catch (e) {
       final errorStr = e.toString().replaceAll('Exception: ', '');
       final errorMsg = errorStr.toLowerCase();
-      final needsLmp = errorMsg.contains('lmp') || errorMsg.contains('pregnancy');
+      final needsLmp =
+          errorMsg.contains('lmp') || errorMsg.contains('pregnancy');
       final needsProfile = errorMsg.contains('tanggal lahir tidak ditemukan');
 
       state = state.copyWith(
@@ -124,13 +139,12 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
       final errorStr = e.toString().replaceAll('Exception: ', '');
 
       // If ML service fails, fall back to all sports from admin
-      if (errorStr.contains('predict') || errorStr.contains('ML') || errorStr.contains('cURL')) {
+      if (errorStr.contains('predict') ||
+          errorStr.contains('ML') ||
+          errorStr.contains('cURL')) {
         await _fetchAllSportsFallback();
       } else {
-        state = state.copyWith(
-          isSubmitting: false,
-          error: errorStr,
-        );
+        state = state.copyWith(isSubmitting: false, error: errorStr);
       }
     }
   }
@@ -153,6 +167,18 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
     }
   }
 
+  Future<void> fetchExistingAssessment() async {
+    try {
+      final repository = ref.read(sportRecommendationRepositoryProvider);
+      final existing = await repository.getExistingAssessment();
+      if (existing != null) {
+        state = state.copyWith(existingAssessment: existing);
+      }
+    } catch (_) {
+      // Silently fail — form will just show defaults
+    }
+  }
+
   void clearMessages() {
     state = state.copyWith(clearError: true, clearSuccess: true);
   }
@@ -160,5 +186,5 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
 
 final sportRecommendationNotifierProvider =
     NotifierProvider<SportRecommendationNotifier, SportRecommendationState>(
-  SportRecommendationNotifier.new,
-);
+      SportRecommendationNotifier.new,
+    );

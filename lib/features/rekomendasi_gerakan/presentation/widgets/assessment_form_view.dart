@@ -7,6 +7,7 @@ class AssessmentFormView extends StatefulWidget {
   final bool showUpdateBanner;
   final String? errorMessage;
   final ScrollController? scrollController;
+  final Map<String, dynamic>? existingAssessment;
 
   const AssessmentFormView({
     super.key,
@@ -15,6 +16,7 @@ class AssessmentFormView extends StatefulWidget {
     this.showUpdateBanner = false,
     this.errorMessage,
     this.scrollController,
+    this.existingAssessment,
   });
 
   @override
@@ -45,6 +47,35 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
   bool _waterAccess = false;
   bool _backPain = false;
 
+  double? _previousBmi;
+
+  @override
+  void initState() {
+    super.initState();
+    _applyExistingAssessment();
+  }
+
+  void _applyExistingAssessment() {
+    final a = widget.existingAssessment;
+    if (a == null) return;
+
+    _hypertension = a['hypertension'] == true;
+    _isDiabetes = a['is_diabetes'] == true;
+    _gestationalDiabetes = a['gestational_diabetes'] == true;
+    _isFever = a['is_fever'] == true;
+    _isHighHeartRate = a['is_high_heart_rate'] == true;
+    _previousComplications = a['previous_complications'] == true;
+    _mentalHealthIssue = a['mental_health_issue'] == true;
+    _placentaPositionRestriction = a['placenta_position_restriction'] == true;
+    _lowImpactPref = a['low_impact_pref'] == true;
+    _waterAccess = a['water_access'] == true;
+    _backPain = a['back_pain'] == true;
+
+    if (a['bmi'] != null) {
+      _previousBmi = (a['bmi'] as num).toDouble();
+    }
+  }
+
   @override
   void dispose() {
     _beratBadanController.dispose();
@@ -69,7 +100,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
     final berat = double.tryParse(_beratBadanController.text);
     final tinggiCm = double.tryParse(_tinggiBadanController.text);
     if (berat == null || tinggiCm == null) return;
-    
+
     // Calculate BMI: weight (kg) / (height (m))^2
     final tinggiM = tinggiCm / 100;
     final bmi = berat / (tinggiM * tinggiM);
@@ -124,6 +155,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
                     _buildErrorBanner(),
                     const SizedBox(height: 12),
                   ],
+                  if (widget.existingAssessment != null) ...[
+                    _buildAutoFillBanner(),
+                    const SizedBox(height: 12),
+                  ],
                   const Text(
                     'Olahraga yang Tepat Dimulai dari Kamu',
                     style: TextStyle(
@@ -170,7 +205,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           decoration: InputDecoration(
             hintText: 'Contoh: 55',
             hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -185,9 +223,11 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty) return 'Berat badan tidak boleh kosong';
+            if (value == null || value.isEmpty)
+              return 'Berat badan tidak boleh kosong';
             final bb = double.tryParse(value);
-            if (bb == null || bb <= 20 || bb > 200) return 'Masukkan berat badan yang valid';
+            if (bb == null || bb <= 20 || bb > 200)
+              return 'Masukkan berat badan yang valid';
             return null;
           },
         ),
@@ -200,7 +240,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           decoration: InputDecoration(
             hintText: 'Contoh: 160',
             hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -215,12 +258,41 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty) return 'Tinggi badan tidak boleh kosong';
+            if (value == null || value.isEmpty)
+              return 'Tinggi badan tidak boleh kosong';
             final tb = double.tryParse(value);
-            if (tb == null || tb <= 50 || tb > 250) return 'Masukkan tinggi badan yang valid';
+            if (tb == null || tb <= 50 || tb > 250)
+              return 'Masukkan tinggi badan yang valid';
             return null;
           },
         ),
+        if (_previousBmi != null) ...[
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline,
+                  size: 16,
+                  color: Color(0xFF999999),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'BMI terakhir: ${_previousBmi!.toStringAsFixed(1)}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF777777),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
         const SizedBox(height: 20),
         _buildDropdownField(
           label: 'Riwayat Hipertensi',
@@ -319,7 +391,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           DropdownButtonFormField<bool>(
             initialValue: value,
             decoration: InputDecoration(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
@@ -333,21 +408,32 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
                 borderSide: const BorderSide(color: _pink, width: 1.5),
               ),
             ),
-            icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF999999)),
+            icon: const Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF999999),
+            ),
             dropdownColor: Colors.white,
             items: const [
               DropdownMenuItem(
                 value: false,
-                child: Text('Tidak', style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
+                child: Text(
+                  'Tidak',
+                  style: TextStyle(fontSize: 14, color: Color(0xFF333333)),
+                ),
               ),
               DropdownMenuItem(
                 value: true,
-                child: Text('Ya', style: TextStyle(fontSize: 14, color: Color(0xFF333333))),
+                child: Text(
+                  'Ya',
+                  style: TextStyle(fontSize: 14, color: Color(0xFF333333)),
+                ),
               ),
             ],
-            onChanged: widget.isSubmitting ? null : (v) {
-              if (v != null) onChanged(v);
-            },
+            onChanged: widget.isSubmitting
+                ? null
+                : (v) {
+                    if (v != null) onChanged(v);
+                  },
           ),
         ],
       ),
@@ -367,7 +453,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
         children: [
           SizedBox(
             height: 48,
-            child: OutlinedButton(
+            child: ElevatedButton(
               onPressed: widget.isSubmitting
                   ? null
                   : () {
@@ -377,9 +463,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
                         _goToPreviousStep();
                       }
                     },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: _pink,
-                side: const BorderSide(color: _pink),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD9D9D9),
+                foregroundColor: Colors.white,
+                elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -387,7 +474,10 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
               ),
               child: Text(
                 _currentStep == 0 ? 'Nanti' : 'Kembali',
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -478,6 +568,29 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             child: Text(
               widget.errorMessage!,
               style: const TextStyle(fontSize: 13, color: Color(0xFFEF5350)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoFillBanner() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF66BB6A)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.check_circle_outline, color: Color(0xFF43A047), size: 20),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Data sebelumnya sudah terisi otomatis. Silakan periksa dan ubah jika ada perubahan kondisi.',
+              style: TextStyle(fontSize: 13, color: Color(0xFF43A047)),
             ),
           ),
         ],

@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../providers/sport_recommendation_providers.dart';
 import '../widgets/assessment_form_view.dart';
-import '../../../rekomendasi_olahraga/presentation/widgets/lmp_bottom_sheet.dart';
+import '../widgets/lmp_bottom_sheet.dart';
 import '../../domain/entities/sport_recommendation.dart';
+import 'sport_detail_page.dart';
 
 class RekomendasiGerakanPage extends ConsumerStatefulWidget {
   const RekomendasiGerakanPage({super.key});
@@ -14,8 +15,8 @@ class RekomendasiGerakanPage extends ConsumerStatefulWidget {
       _RekomendasiGerakanPageState();
 }
 
-class _RekomendasiGerakanPageState
-    extends ConsumerState<RekomendasiGerakanPage> with SingleTickerProviderStateMixin {
+class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _sheetOpened = false;
 
@@ -24,7 +25,12 @@ class _RekomendasiGerakanPageState
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     Future.microtask(() {
-      ref.read(sportRecommendationNotifierProvider.notifier).fetchRecommendations();
+      ref
+          .read(sportRecommendationNotifierProvider.notifier)
+          .fetchRecommendations();
+      ref
+          .read(sportRecommendationNotifierProvider.notifier)
+          .fetchExistingAssessment();
     });
   }
 
@@ -34,7 +40,10 @@ class _RekomendasiGerakanPageState
     super.dispose();
   }
 
-  void _showAssessmentSheet({bool showUpdateBanner = false, String? errorMessage}) {
+  void _showAssessmentSheet({
+    bool showUpdateBanner = false,
+    String? errorMessage,
+  }) {
     if (_sheetOpened) return;
     _sheetOpened = true;
 
@@ -68,6 +77,9 @@ class _RekomendasiGerakanPageState
               showUpdateBanner: showUpdateBanner,
               errorMessage: errorMessage,
               scrollController: scrollController,
+              existingAssessment: ref
+                  .read(sportRecommendationNotifierProvider)
+                  .existingAssessment,
             ),
           );
         },
@@ -90,10 +102,9 @@ class _RekomendasiGerakanPageState
       builder: (sheetContext) => LmpBottomSheet(
         onSuccess: (hpht, gestationalAge, isMultiple) async {
           // Step 1: Save to pregnancy_calculators
-          final success = await ref.read(pregnancyNotifierProvider.notifier).savePregnancy(
-            hpht: hpht,
-            babyGender: null,
-          );
+          final success = await ref
+              .read(pregnancyNotifierProvider.notifier)
+              .savePregnancy(hpht: hpht, babyGender: null);
 
           if (success && sheetContext.mounted) {
             Navigator.of(sheetContext).pop();
@@ -101,14 +112,18 @@ class _RekomendasiGerakanPageState
 
           if (success && mounted) {
             // Step 2: Create record in pregnancies table for sport recommendations
-            await ref.read(pregnancyNotifierProvider.notifier).createPregnancyRecord(
-              lmpDate: hpht,
-              gestationalAgeWeeks: gestationalAge,
-              multipleGestation: isMultiple,
-            );
+            await ref
+                .read(pregnancyNotifierProvider.notifier)
+                .createPregnancyRecord(
+                  lmpDate: hpht,
+                  gestationalAgeWeeks: gestationalAge,
+                  multipleGestation: isMultiple,
+                );
 
             // Step 3: Refresh pregnancy data
-            await ref.read(pregnancyNotifierProvider.notifier).loadMyPregnancy();
+            await ref
+                .read(pregnancyNotifierProvider.notifier)
+                .loadMyPregnancy();
 
             // Step 4: Small delay then submit default assessment
             await Future.delayed(const Duration(milliseconds: 500));
@@ -136,11 +151,14 @@ class _RekomendasiGerakanPageState
       previousComplications: false,
       mentalHealthIssue: false,
       lowImpactPref: true,
-      waterAccess: false, // water_access_rupture - false means no water rupture issue
+      waterAccess:
+          false, // water_access_rupture - false means no water rupture issue
       backPain: false,
       placentaPositionRestriction: false,
     );
-    ref.read(sportRecommendationNotifierProvider.notifier).submitAssessment(payload);
+    ref
+        .read(sportRecommendationNotifierProvider.notifier)
+        .submitAssessment(payload);
   }
 
   @override
@@ -148,60 +166,93 @@ class _RekomendasiGerakanPageState
     final state = ref.watch(sportRecommendationNotifierProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF5F6),
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) {
-          return [
-            SliverAppBar(
-              expandedHeight: 120,
-              floating: false,
-              pinned: true,
-              backgroundColor: const Color(0xFFFA6978),
-              flexibleSpace: FlexibleSpaceBar(
-                background: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0xFFFA6978), Color(0xFFE85A75)],
-                    ),
-                  ),
-                  child: SafeArea(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            'Rekomendasi Olahraga',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              bottom: TabBar(
-                controller: _tabController,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                tabs: const [
-                  Tab(text: 'Untukmu'),
-                  Tab(text: 'Semua Olahraga'),
-                ],
-              ),
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFA6978),
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: const Text(
+          'Rekomendasi Olahraga',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          _buildCustomTabBar(),
+          Expanded(
+            child: _buildBody(state),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      color: const Color(0xFFF5F5F5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE0E0E0)),
             ),
-          ];
-        },
-        body: _buildBody(state),
+            child: Row(
+              children: [
+                _buildTabButton(
+                  title: 'Rekomendasi',
+                  index: 0,
+                ),
+                _buildTabButton(
+                  title: 'Semua Olahraga',
+                  index: 1,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, color: Color(0xFF333333)),
+            onPressed: () => _showAssessmentSheet(showUpdateBanner: true),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton({required String title, required int index}) {
+    final isSelected = _tabController.index == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _tabController.animateTo(index);
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFA6978) : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : const Color(0xFF666666),
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
@@ -237,13 +288,18 @@ class _RekomendasiGerakanPageState
     if (state.needsProfile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Silakan lengkapi profil Anda terlebih dahulu')),
+          const SnackBar(
+            content: Text('Silakan lengkapi profil Anda terlebih dahulu'),
+          ),
         );
       });
       return _buildPlaceholderBody();
     }
 
-    if (state.error != null && state.recommendations.isEmpty && !state.needsLmp && !state.needsProfile) {
+    if (state.error != null &&
+        state.recommendations.isEmpty &&
+        !state.needsLmp &&
+        !state.needsProfile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!_sheetOpened) {
           _showAssessmentSheet(errorMessage: state.error);
@@ -272,9 +328,7 @@ class _RekomendasiGerakanPageState
 
   Widget _buildRecommendationsList(List recommendations) {
     if (recommendations.isEmpty) {
-      return const Center(
-        child: Text('Belum ada rekomendasi'),
-      );
+      return const Center(child: Text('Belum ada rekomendasi'));
     }
 
     return ListView.builder(
@@ -289,13 +343,12 @@ class _RekomendasiGerakanPageState
 
   Widget _buildAllSportsList(List recommendations) {
     if (recommendations.isEmpty) {
-      return const Center(
-        child: Text('Belum ada data olahraga'),
-      );
+      return const Center(child: Text('Belum ada data olahraga'));
     }
 
     // Sort by score descending for "all sports" view
-    final sortedRecs = List.from(recommendations)..sort((a, b) => b.score.compareTo(a.score));
+    final sortedRecs = List.from(recommendations)
+      ..sort((a, b) => b.score.compareTo(a.score));
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -308,105 +361,106 @@ class _RekomendasiGerakanPageState
   }
 
   Widget _buildSportCard(dynamic item, int rank) {
-    final score = (item.score * 100).round();
     final activity = item.activity ?? 'Tanpa nama';
     final picture = item.picture1;
+    final longText = item.longText ?? 'Belum ada deskripsi untuk olahraga ini.';
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha:0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+    // Format activity name to be title case (e.g., "walking" -> "Walking", "prenatal_yoga" -> "Prenatal Yoga")
+    final formattedTitle = activity
+        .split('_')
+        .map((word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
+            : '')
+        .join(' ');
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SportDetailPage(sport: item),
           ),
-        ],
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image section
+            if (picture != null && picture.isNotEmpty)
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                child: Image.network(
+                  picture,
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildImagePlaceholder();
+                  },
+                ),
+              )
+            else
+              _buildImagePlaceholder(),
+            // Content section
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    formattedTitle,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    longText,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF757575),
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Image section
-          if (picture != null && picture.isNotEmpty)
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              child: Image.network(
-                picture,
-                height: 140,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    height: 140,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                    ),
-                    child: const Center(
-                      child: Icon(Icons.fitness_center, size: 40, color: Color(0xFFBDBDBD)),
-                    ),
-                  );
-                },
-              ),
-            ),
-          // Content section
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        activity,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF424242),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Olahraga aman untuk ibu hamil',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFA6978),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '$score',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Container(
+      height: 160,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE0E0E0),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          topRight: Radius.circular(12),
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: 40,
+          color: Color(0xFF9E9E9E),
+        ),
       ),
     );
   }

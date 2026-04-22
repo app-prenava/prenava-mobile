@@ -6,4 +6,5 @@ abstract class SportRecommendationRepository {
     SportAssessmentPayload payload,
   );
   Future<List<SportRecommendation>> getAllSports();
+  Future<Map<String, dynamic>?> getExistingAssessment();
 }
