@@ -55,25 +55,35 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
     _applyExistingAssessment();
   }
 
+  @override
+  void didUpdateWidget(covariant AssessmentFormView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.existingAssessment != oldWidget.existingAssessment) {
+      _applyExistingAssessment();
+    }
+  }
+
   void _applyExistingAssessment() {
     final a = widget.existingAssessment;
     if (a == null) return;
 
-    _hypertension = a['hypertension'] == true;
-    _isDiabetes = a['is_diabetes'] == true;
-    _gestationalDiabetes = a['gestational_diabetes'] == true;
-    _isFever = a['is_fever'] == true;
-    _isHighHeartRate = a['is_high_heart_rate'] == true;
-    _previousComplications = a['previous_complications'] == true;
-    _mentalHealthIssue = a['mental_health_issue'] == true;
-    _placentaPositionRestriction = a['placenta_position_restriction'] == true;
-    _lowImpactPref = a['low_impact_pref'] == true;
-    _waterAccess = a['water_access'] == true;
-    _backPain = a['back_pain'] == true;
+    setState(() {
+      _hypertension = a['hypertension'] == true;
+      _isDiabetes = a['is_diabetes'] == true;
+      _gestationalDiabetes = a['gestational_diabetes'] == true;
+      _isFever = a['is_fever'] == true;
+      _isHighHeartRate = a['is_high_heart_rate'] == true;
+      _previousComplications = a['previous_complications'] == true;
+      _mentalHealthIssue = a['mental_health_issue'] == true;
+      _placentaPositionRestriction = a['placenta_position_restriction'] == true;
+      _lowImpactPref = a['low_impact_pref'] == true;
+      _waterAccess = a['water_access'] == true;
+      _backPain = a['back_pain'] == true;
 
-    if (a['bmi'] != null) {
-      _previousBmi = (a['bmi'] as num).toDouble();
-    }
+      if (a['bmi'] != null) {
+        _previousBmi = (a['bmi'] as num).toDouble();
+      }
+    });
   }
 
   @override
@@ -389,7 +399,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           _buildLabel(label),
           const SizedBox(height: 6),
           DropdownButtonFormField<bool>(
-            initialValue: value,
+            value: value,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
