@@ -34,6 +34,7 @@ import '../../features/deteksi_depresi/presentation/pages/face_scan_page.dart';
 import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart';
 import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
 import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
+import '../../features/health_history/presentation/pages/health_history_page.dart';
 
 // Removed old bloc imports
 
@@ -212,6 +213,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/deteksi-anemia/result',
         builder: (context, state) => const AnemiaResultPage(),
+      ),
+      // Health History route
+      GoRoute(
+        path: '/health/history',
+        builder: (context, state) => const HealthHistoryPage(),
       ),
       GoRoute(
         path: '/rekomendasi-olahraga',

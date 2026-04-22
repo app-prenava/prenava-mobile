@@ -133,6 +133,12 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history_rounded, color: Color(0xFFFA6978)),
+            onPressed: () => context.push('/health/history'),
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(

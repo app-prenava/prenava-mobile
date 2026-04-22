@@ -252,6 +252,10 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(Icons.history_rounded, color: Color(0xFFFA6978)),
+            onPressed: () => context.push('/health/history'),
+          ),
+          IconButton(
             icon: const Icon(Icons.info_outline, color: Color(0xFFFA6978)),
             onPressed: _showTutorialDialog,
           ),
