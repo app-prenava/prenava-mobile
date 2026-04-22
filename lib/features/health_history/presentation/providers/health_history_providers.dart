@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
-import '../datasources/health_history_remote_datasource.dart';
-import '../repositories/health_history_repository_impl.dart';
+import '../../data/datasources/health_history_remote_datasource.dart';
+import '../../data/repositories/health_history_repository_impl.dart';
 import '../../domain/entities/health_history.dart';
 import '../../domain/repositories/health_history_repository.dart';
 
