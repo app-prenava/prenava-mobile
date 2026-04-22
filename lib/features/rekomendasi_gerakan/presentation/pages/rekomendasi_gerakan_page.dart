@@ -328,35 +328,89 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
 
   Widget _buildRecommendationsList(List recommendations) {
     if (recommendations.isEmpty) {
-      return const Center(child: Text('Belum ada rekomendasi'));
+      return RefreshIndicator(
+        onRefresh: () async {
+          await ref
+              .read(sportRecommendationNotifierProvider.notifier)
+              .fetchRecommendations();
+          await ref
+              .read(sportRecommendationNotifierProvider.notifier)
+              .fetchExistingAssessment();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            alignment: Alignment.center,
+            child: const Text('Belum ada rekomendasi'),
+          ),
+        ),
+      );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: recommendations.length,
-      itemBuilder: (context, index) {
-        final item = recommendations[index];
-        return _buildSportCard(item, index + 1);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .fetchRecommendations();
+        await ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .fetchExistingAssessment();
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: recommendations.length,
+        itemBuilder: (context, index) {
+          final item = recommendations[index];
+          return _buildSportCard(item, index + 1);
+        },
+      ),
     );
   }
 
   Widget _buildAllSportsList(List recommendations) {
     if (recommendations.isEmpty) {
-      return const Center(child: Text('Belum ada data olahraga'));
+      return RefreshIndicator(
+        onRefresh: () async {
+          await ref
+              .read(sportRecommendationNotifierProvider.notifier)
+              .fetchRecommendations();
+          await ref
+              .read(sportRecommendationNotifierProvider.notifier)
+              .fetchExistingAssessment();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.6,
+            alignment: Alignment.center,
+            child: const Text('Belum ada data olahraga'),
+          ),
+        ),
+      );
     }
 
     // Sort by score descending for "all sports" view
     final sortedRecs = List.from(recommendations)
       ..sort((a, b) => b.score.compareTo(a.score));
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: sortedRecs.length,
-      itemBuilder: (context, index) {
-        final item = sortedRecs[index];
-        return _buildSportCard(item, index + 1);
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .fetchRecommendations();
+        await ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .fetchExistingAssessment();
       },
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: sortedRecs.length,
+        itemBuilder: (context, index) {
+          final item = sortedRecs[index];
+          return _buildSportCard(item, index + 1);
+        },
+      ),
     );
   }
 
