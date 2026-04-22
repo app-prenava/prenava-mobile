@@ -414,9 +414,28 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     );
   }
 
+  String? _getYoutubeThumbnail(String? url) {
+    if (url == null || url.isEmpty) return null;
+    try {
+      final uri = Uri.parse(url);
+      String? videoId;
+      if (uri.host.contains('youtube.com')) {
+        videoId = uri.queryParameters['v'];
+      } else if (uri.host.contains('youtu.be')) {
+        videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
+      }
+      if (videoId != null && videoId.isNotEmpty) {
+        return 'https://img.youtube.com/vi/$videoId/0.jpg';
+      }
+    } catch (_) {}
+    return null;
+  }
+
   Widget _buildSportCard(dynamic item, int rank) {
     final activity = item.activity ?? 'Tanpa nama';
-    final picture = item.picture1;
+    final picture = (item.picture1 != null && item.picture1 != 'data not found') 
+        ? item.picture1 
+        : _getYoutubeThumbnail(item.videoLink);
     final longText = item.longText ?? 'Belum ada deskripsi untuk olahraga ini.';
 
     // Format activity name to be title case (e.g., "walking" -> "Walking", "prenatal_yoga" -> "Prenatal Yoga")
@@ -453,14 +472,25 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
-                child: Image.network(
-                  picture,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildImagePlaceholder();
-                  },
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Image.network(
+                      picture,
+                      height: 160,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _buildImagePlaceholder();
+                      },
+                    ),
+                    if (picture.contains('youtube.com') || picture.contains('img.youtube.com'))
+                      const Icon(
+                        Icons.play_circle_outline,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                  ],
                 ),
               )
             else
@@ -503,7 +533,7 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     return Container(
       height: 160,
       decoration: const BoxDecoration(
-        color: Color(0xFFE0E0E0),
+        color: Color(0xFFF5F5F5),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(12),
           topRight: Radius.circular(12),

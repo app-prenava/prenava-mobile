@@ -28,6 +28,23 @@ class SportDetailPage extends StatelessWidget {
     }
   }
 
+  String? _getYoutubeThumbnail(String? url) {
+    if (url == null || url.isEmpty) return null;
+    try {
+      final uri = Uri.parse(url);
+      String? videoId;
+      if (uri.host.contains('youtube.com')) {
+        videoId = uri.queryParameters['v'];
+      } else if (uri.host.contains('youtu.be')) {
+        videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
+      }
+      if (videoId != null && videoId.isNotEmpty) {
+        return 'https://img.youtube.com/vi/$videoId/0.jpg';
+      }
+    } catch (_) {}
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final activity = sport.activity;
@@ -39,6 +56,7 @@ class SportDetailPage extends StatelessWidget {
         .join(' ');
     
     final longText = sport.longText ?? 'Belum ada deskripsi mendetail untuk olahraga ini.';
+    final youtubeThumbnail = _getYoutubeThumbnail(sport.videoLink);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -73,16 +91,36 @@ class SportDetailPage extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      _buildImage(sport.picture1, height: 220, width: double.infinity),
+                      _buildImage(
+                        (sport.picture1 != null && sport.picture1 != 'data not found') 
+                            ? sport.picture1 
+                            : youtubeThumbnail, 
+                        height: 220, 
+                        width: double.infinity
+                      ),
                       Container(
                         height: 220,
                         width: double.infinity,
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: Colors.black.withValues(alpha: 0.3),
                       ),
-                      const Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 80,
+                      const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.white,
+                            size: 70,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Putar Video Latihan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -131,6 +169,7 @@ class SportDetailPage extends StatelessWidget {
   }
 
   Widget _buildSmallImage(String? url) {
+    if (url == 'data not found') url = null;
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: _buildImage(url, height: 80, width: double.infinity),
@@ -138,7 +177,7 @@ class SportDetailPage extends StatelessWidget {
   }
 
   Widget _buildImage(String? url, {required double height, required double width}) {
-    if (url != null && url.isNotEmpty) {
+    if (url != null && url.isNotEmpty && url != 'data not found') {
       return Image.network(
         url,
         height: height,
