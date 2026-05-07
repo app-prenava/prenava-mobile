@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -88,7 +89,12 @@ class _HomePageState extends ConsumerState<HomePage> {
           appBar: AppBar(
             backgroundColor: const Color(0xFFFA6978),
             elevation: 0,
-            toolbarHeight: 0, 
+            toolbarHeight: 0,
+            systemOverlayStyle: const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
+            ),
           ),
           body: Container(
             color: const Color(0xFFFA6978),
@@ -99,105 +105,104 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: RefreshIndicator(
                   onRefresh: _onRefresh,
                   color: const Color(0xFFFA6978),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                decoration: const BoxDecoration(
-                                  image: DecorationImage(
-                                    image: AssetImage('assets/images/gradien.png'),
-                                    fit: BoxFit.cover,
-                                  ),
+                  backgroundColor: Colors.white,
+                  displacement: 20, // Reduced displacement
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              decoration: const BoxDecoration(
+                                image: DecorationImage(
+                                  image: AssetImage('assets/images/gradien.png'),
+                                  fit: BoxFit.cover,
                                 ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Showcase(
-                                            key: _headerKey,
-                                            description: 'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
-                                            child: GestureDetector(
-                                              onTap: () => context.push('/profile'),
-                                              child: UserHeader(
-                                                greeting: _getGreeting(),
-                                                userName: user?.name ?? 'User',
-                                                avatarUrl: profilePhoto,
-                                              ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: Showcase(
+                                          key: _headerKey,
+                                          description: 'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
+                                          child: GestureDetector(
+                                            onTap: () => context.push('/profile'),
+                                            child: UserHeader(
+                                              greeting: _getGreeting(),
+                                              userName: user?.name ?? 'User',
+                                              avatarUrl: profilePhoto,
                                             ),
                                           ),
                                         ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(top: 8, right: 4),
-                                          child: Row(
-                                            children: [
-                                              Showcase(
-                                                key: _dailyKey,
-                                                description: 'Pantau streak dan selesaikan misi harian di sini!',
-                                                child: IconButton(
-                                                  icon: Stack(
-                                                    alignment: Alignment.center,
-                                                    children: [
-                                                      const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
-                                                      ref.watch(dailyProgressProvider).when(
-                                                        data: (p) => p.streak > 0 
-                                                          ? Positioned(
-                                                              right: 0,
-                                                              top: 0,
-                                                              child: Container(
-                                                                padding: const EdgeInsets.all(2),
-                                                                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                                                constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                                                                child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                                                              ),
-                                                            )
-                                                          : const SizedBox(),
-                                                        loading: () => const SizedBox(),
-                                                        error: (_, __) => const SizedBox(),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  onPressed: _showDailyTasksBottomSheet,
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 8, right: 4),
+                                        child: Row(
+                                          children: [
+                                            Showcase(
+                                              key: _dailyKey,
+                                              description: 'Pantau streak dan selesaikan misi harian di sini!',
+                                              child: IconButton(
+                                                icon: Stack(
+                                                  alignment: Alignment.center,
+                                                  children: [
+                                                    const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
+                                                    ref.watch(dailyProgressProvider).when(
+                                                      data: (p) => p.streak > 0 
+                                                        ? Positioned(
+                                                            right: 0,
+                                                            top: 0,
+                                                            child: Container(
+                                                              padding: const EdgeInsets.all(2),
+                                                              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                                                              constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                                                              child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                                                            ),
+                                                          )
+                                                        : const SizedBox(),
+                                                      loading: () => const SizedBox(),
+                                                      error: (_, __) => const SizedBox(),
+                                                    ),
+                                                  ],
                                                 ),
+                                                onPressed: _showDailyTasksBottomSheet,
                                               ),
-                                              IconButton(
-                                                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                                                onPressed: () {
-                                                  // TODO: Navigate to notifications
-                                                },
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(Icons.help_outline, color: Colors.white),
-                                                onPressed: () {
-                                                  _startTutorial(innerContext);
-                                                },
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                                              onPressed: () {
+                                                // TODO: Navigate to notifications
+                                              },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(Icons.help_outline, color: Colors.white),
+                                              onPressed: () {
+                                                _startTutorial(innerContext);
+                                              },
+                                            ),
+                                          ],
                                         ),
-                                      ],
-                                    ),
-                                    _buildWalletCard(),
-                                    _buildMenuGrid(user?.category ?? 'umum'),
-                                    const SizedBox(height: 16),
-                                  ],
-                                ),
+                                      ),
+                                    ],
+                                  ),
+                                  _buildWalletCard(),
+                                  _buildMenuGrid(user?.category ?? 'umum'),
+                                  const SizedBox(height: 16),
+                                ],
                               ),
-                              _buildPromoSection(),
-                              _buildPopularPostsSection(),
-                            ],
-                          ),
+                            ),
+                            _buildPromoSection(),
+                            _buildPopularPostsSection(),
+                          ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ),
               ),
