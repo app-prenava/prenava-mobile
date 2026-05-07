@@ -64,10 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       return await _remoteDatasource.getCurrentUser(token);
     } catch (e) {
-      // If token is invalid (401), clear it
-      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
-        await _secureStore.delete('jwt_token');
-      }
+      // If token is invalid (401), we do not clear it automatically anymore
       return null;
     }
   }

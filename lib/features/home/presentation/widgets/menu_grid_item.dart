@@ -23,53 +23,58 @@ class MenuGridItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Flexible(
-            child: Container(
-              width: 56,
-              height: 56,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
                 color: backgroundColor ?? const Color(0xFFFCE4EC),
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: imagePath != null
-                  ? Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Image.asset(
-                        imagePath!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.image_not_supported,
-                          color: iconColor ?? const Color(0xFFFA6978),
-                          size: 26,
+              child: Center(
+                child: imagePath != null
+                    ? Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Image.asset(
+                          imagePath!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Icon(
+                            Icons.image_not_supported,
+                            color: iconColor ?? const Color(0xFFFA6978),
+                            size: 26,
+                          ),
                         ),
+                      )
+                    : Icon(
+                        icon ?? Icons.apps,
+                        color: iconColor ?? const Color(0xFFFA6978),
+                        size: 26,
                       ),
-                    )
-                  : Icon(
-                      icon ?? Icons.apps,
-                      color: iconColor ?? const Color(0xFFFA6978),
-                      size: 26,
-                    ),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF424242),
-              height: 1.1,
+            const SizedBox(height: 6),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF424242),
+                  height: 1.1,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

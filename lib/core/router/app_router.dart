@@ -35,11 +35,20 @@ import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart'
 import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
 import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
 import '../../features/health_history/presentation/pages/health_history_page.dart';
+import '../../features/stunting/presentation/pages/stunting_screening_page.dart';
+import '../../features/stunting/presentation/pages/stunting_result_page.dart';
+import '../../features/stunting/presentation/pages/stunting_recommendation_page.dart';
+import '../../features/stunting/presentation/pages/stunting_history_page.dart';
+import '../../features/stunting/presentation/pages/food_catalog_page.dart';
+import '../../features/stunting/data/models/stunting_models.dart';
+
+import 'package:prenava_mobile/core/network/dio_client.dart';
 
 // Removed old bloc imports
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
+    navigatorKey: navigatorKey,
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
@@ -222,6 +231,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/rekomendasi-olahraga',
         builder: (context, state) => const RekomendasiGerakanPage(),
+      ),
+      // Stunting routes
+      GoRoute(
+        path: '/stunting/screening',
+        builder: (context, state) => const StuntingScreeningPage(),
+      ),
+      GoRoute(
+        path: '/stunting/result',
+        builder: (context, state) {
+          final result = state.extra as PredictionResult;
+          return StuntingResultPage(result: result);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/recommendations',
+        builder: (context, state) {
+          final predictionId = state.extra as int;
+          return StuntingRecommendationPage(predictionId: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/history',
+        builder: (context, state) => const StuntingHistoryPage(),
+      ),
+      GoRoute(
+        path: '/stunting/foods',
+        builder: (context, state) => const FoodCatalogPage(),
       ),
     ],
   );

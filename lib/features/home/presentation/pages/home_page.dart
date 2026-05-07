@@ -16,6 +16,7 @@ import '../widgets/lainnya_modal.dart';
 import '../widgets/daily_tasks_section.dart';
 import '../providers/daily_features_provider.dart';
 import '../providers/feature_tracker_provider.dart';
+import '../providers/wallet_provider.dart';
 import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_section.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
@@ -168,6 +169,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                 ),
                                               ),
                                               IconButton(
+                                                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                                                onPressed: () {
+                                                  // TODO: Navigate to notifications
+                                                },
+                                              ),
+                                              IconButton(
                                                 icon: const Icon(Icons.help_outline, color: Colors.white),
                                                 onPressed: () {
                                                   _startTutorial(innerContext);
@@ -178,6 +185,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         ),
                                       ],
                                     ),
+                                    _buildWalletCard(),
                                     _buildMenuGrid(user?.category ?? 'umum'),
                                     const SizedBox(height: 16),
                                   ],
@@ -197,6 +205,144 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildWalletCard() {
+    final walletState = ref.watch(walletProvider);
+    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFFFA6978), size: 28),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currencyFormat.format(walletState.balance),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF424242)),
+                  ),
+                  const Text('Saldo Prenava', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                ],
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Container(
+                height: 32,
+                width: 1,
+                color: Colors.grey[200],
+              ),
+              const SizedBox(width: 16),
+              GestureDetector(
+                onTap: walletState.isWithdrawing ? null : _showWithdrawModal,
+                child: const Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.file_upload_outlined, color: Color(0xFFFA6978), size: 24),
+                    SizedBox(height: 4),
+                    Text('Tarik', style: TextStyle(color: Color(0xFFFA6978), fontWeight: FontWeight.bold, fontSize: 11)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWithdrawModal() {
+    final amountController = TextEditingController();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 32),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text('Tarik Saldo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            const Text('Masukkan nominal penarikan (Min. Rp 10.000)', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            const SizedBox(height: 24),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              decoration: InputDecoration(
+                prefixText: 'Rp ',
+                hintText: '0',
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  final amount = double.tryParse(amountController.text) ?? 0;
+                  if (amount < 10000) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Minimal penarikan Rp 10.000')));
+                    return;
+                  }
+                  ref.read(walletProvider.notifier).withdraw(amount);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Penarikan sedang diproses'),
+                      backgroundColor: Color(0xFFFA6978),
+                      duration: Duration(seconds: 3),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFA6978),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Tarik Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -424,11 +570,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     items.add(Showcase(
       key: _udaraKey,
-      description: 'Cek kualitas udara di sekitar lokasi Bunda untuk memastikan lingkungan yang sehat.',
+      description: 'Dapatkan analisis risiko stunting anak menggunakan AI.',
       child: MenuGridItem(
-        imagePath: 'assets/images/risiko stunting.png',
-        label: 'Cek Kualitas Udara',
-        onTap: () {},
+        imagePath: 'assets/images/stunting icon.png',
+        label: 'Cek Risiko Stunting',
+        onTap: () => _handleMenuTap('/stunting/history'),
       ),
     ));
 
