@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:prenava_mobile/core/theme/app_theme.dart';
 import 'package:prenava_mobile/features/stunting/data/models/stunting_models.dart';
 import 'package:prenava_mobile/features/stunting/data/repositories/stunting_repository_impl.dart';
-import 'package:prenava_mobile/features/stunting/presentation/providers/stunting_providers.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -136,7 +135,7 @@ class _FoodCatalogPageState extends ConsumerState<FoodCatalogPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => _handleCookingGuide(context, food),
+                    onPressed: () => _handleCookingGuide(food),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       backgroundColor: Colors.white,
@@ -182,7 +181,7 @@ class _FoodCatalogPageState extends ConsumerState<FoodCatalogPage> {
     );
   }
 
-  Future<void> _handleCookingGuide(BuildContext context, FoodModel food) async {
+  Future<void> _handleCookingGuide(FoodModel food) async {
     setState(() => _isGeminiLoading = true);
     try {
       final repository = ref.read(stuntingRepositoryProvider);

@@ -148,7 +148,7 @@ class SportDetailPage extends StatelessWidget {
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
                     itemCount: availablePictures.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       return SizedBox(
                         width: (MediaQuery.of(context).size.width - 40 - (12 * (availablePictures.length - 1))) / availablePictures.length,

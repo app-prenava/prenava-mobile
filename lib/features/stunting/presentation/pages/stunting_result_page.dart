@@ -1,30 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:prenava_mobile/core/theme/app_theme.dart';
 import 'package:prenava_mobile/features/stunting/data/models/stunting_models.dart';
-import 'package:prenava_mobile/features/stunting/presentation/providers/stunting_providers.dart';
 import 'package:prenava_mobile/features/stunting/presentation/utils/humanized_mapper.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:dotted_border/dotted_border.dart';
 
-class StuntingResultPage extends ConsumerWidget {
+class StuntingResultPage extends StatelessWidget {
   final PredictionResult result;
 
   const StuntingResultPage({super.key, required this.result});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final isHighRisk = result.riskLabel == 'high_risk';
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Hasil Analisis'),
+        title: const Text(
+          'Hasil Analisis',
+          style: TextStyle(
+            color: Color(0xFF1C1C1E),
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1C1C1E), size: 20),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history),
+            icon: const Icon(Icons.history_rounded, color: Color(0xFF1C1C1E)),
             onPressed: () => context.push('/stunting/history'),
           ),
         ],
@@ -36,19 +46,46 @@ class StuntingResultPage extends ConsumerWidget {
           children: [
             _buildRiskCard(isHighRisk),
             const SizedBox(height: 24),
-            _buildExplanationSection(result.explanation),
+            _buildExplanationSection(context, result.explanation),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                ref.read(stuntingRecommendationProvider.notifier).fetch(result.id);
-                context.push('/stunting/recommendations', extra: result.id);
+                context.push(
+                  '/stunting-food/recommendations',
+                  extra: result.id,
+                );
               },
-              child: const Text('Lihat Rekomendasi & Rencana Makan'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF5A7A),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.restaurant_rounded, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Lihat Rekomendasi Makanan',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () => context.go('/home'),
-              child: const Text('Kembali ke Beranda'),
+              child: const Text(
+                'Kembali ke Beranda',
+                style: TextStyle(
+                  color: Color(0xFF6E6E73),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -57,99 +94,145 @@ class StuntingResultPage extends ConsumerWidget {
   }
 
   Widget _buildRiskCard(bool isHighRisk) {
-    return DottedBorder(
-      options: RoundedRectDottedBorderOptions(
-        radius: const Radius.circular(24),
-        color: isHighRisk ? AppColors.warningRed : AppColors.successGreen,
-        strokeWidth: 2,
-        dashPattern: const [8, 4],
-        padding: EdgeInsets.zero,
+    final Color statusColor =
+        isHighRisk ? const Color(0xFFFF375F) : const Color(0xFF34C759);
+    final Color softStatusColor = statusColor.withValues(alpha: 0.1);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Container(
-        padding: const EdgeInsets.all(32),
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
+      child: Column(
         children: [
-          Icon(
-            isHighRisk ? Icons.warning_amber_rounded : Icons.check_circle_outline_rounded,
-            size: 64,
-            color: isHighRisk ? AppColors.warningRed : AppColors.successGreen,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: softStatusColor,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isHighRisk ? Icons.warning_rounded : Icons.check_circle_rounded,
+              size: 40,
+              color: statusColor,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
             isHighRisk ? 'Risiko Tinggi' : 'Risiko Rendah',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: isHighRisk ? AppColors.warningRed : AppColors.successGreen,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Probabilitas: ${(result.probability * 100).toStringAsFixed(1)}%',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: statusColor,
             ),
           ),
           const SizedBox(height: 24),
-          Text(
-            isHighRisk
-                ? 'Berdasarkan data Anda, terdapat indikasi risiko stunting pada janin. Jangan khawatir, ikuti rekomendasi gizi kami untuk meminimalisir risiko.'
-                : 'Berdasarkan data Anda, risiko stunting pada janin tergolong rendah. Pertahankan pola hidup sehat dan pemeriksaan rutin.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 15,
-              color: AppColors.textPrimary,
-              height: 1.5,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  const Text(
+                    'Probabilitas',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF6E6E73),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(result.probability * 100).toStringAsFixed(1)}%',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      color: statusColor,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F8FA),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              isHighRisk
+                  ? 'Berdasarkan data Anda, terdapat indikasi risiko stunting pada janin. Jangan khawatir, ikuti rekomendasi gizi kami untuk meminimalisir risiko.'
+                  : 'Berdasarkan data Anda, risiko stunting pada janin tergolong rendah. Pertahankan pola hidup sehat dan pemeriksaan rutin.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF1C1C1E),
+                height: 1.5,
+                fontWeight: FontWeight.w400,
+              ),
             ),
           ),
         ],
       ),
-    ),
-    ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate().fadeIn(duration: 500.ms).moveY(begin: 20, end: 0);
   }
 
-  Widget _buildExplanationSection(ShapExplanation? explanation) {
-    if (explanation == null || explanation.topFactors.isEmpty) return const SizedBox();
+  Widget _buildExplanationSection(BuildContext context, ShapExplanation? explanation) {
+    if (explanation == null || explanation.topFactors.isEmpty) {
+      return const SizedBox();
+    }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Faktor Kontribusi Utama',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...explanation.topFactors.map((factor) {
-          final label = HumanizedMapper.getLabel(factor.feature);
-          final isIncreasing = factor.impact == 'increase_risk';
-          return Card(
-            color: Colors.white,
-            margin: const EdgeInsets.only(bottom: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey[200]!),
+    return Card(
+      elevation: 0,
+      color: const Color(0xFFF8F8FA),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          title: const Text(
+            'Faktor Kontribusi Utama',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1C1C1E),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
+          ),
+          // leading icon removed as requested
+          childrenPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          children: explanation.topFactors.map((factor) {
+            final label = HumanizedMapper.getLabel(factor.feature);
+            final isIncreasing = factor.impact == 'increase_risk';
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE5E5EA)),
+              ),
               child: Row(
                 children: [
                   Icon(
-                    isIncreasing ? Icons.trending_up : Icons.trending_down,
-                    size: 24,
-                    color: isIncreasing ? AppColors.warningRed : AppColors.successGreen,
+                    isIncreasing
+                        ? Icons.trending_up_rounded
+                        : Icons.trending_down_rounded,
+                    size: 20,
+                    color: isIncreasing
+                        ? const Color(0xFFFF375F)
+                        : const Color(0xFF34C759),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,18 +240,19 @@ class StuntingResultPage extends ConsumerWidget {
                         Text(
                           label,
                           style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Color(0xFF1C1C1E),
                           ),
                         ),
-                        const SizedBox(height: 4),
                         Text(
-                          HumanizedMapper.getRiskDescription(label, factor.value),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            height: 1.4,
+                          HumanizedMapper.getRiskDescription(
+                            label,
+                            factor.value,
+                          ),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6E6E73),
                           ),
                         ),
                       ],
@@ -176,10 +260,10 @@ class StuntingResultPage extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
-          );
-        }),
-      ],
+            );
+          }).toList(),
+        ),
+      ),
     ).animate().fadeIn(delay: 400.ms, duration: 500.ms);
   }
 }

@@ -111,7 +111,7 @@ class PostCard extends StatelessWidget {
                 ? Image.network(
                     post.user.profileImage!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
+                    errorBuilder: (_, _, _) => _buildDefaultAvatar(),
                   )
                 : _buildDefaultAvatar(),
           ),

@@ -198,5 +198,23 @@ class AuthRemoteDatasource {
       throw Exception(message ?? 'Gagal mereset password. Token tidak valid.');
     }
   }
+
+  Future<LoginResponse> loginWithGoogle(String idToken) async {
+    try {
+      final response = await _dio.post(
+        '/auth/google',
+        data: {'id_token': idToken},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return LoginResponse.fromJson(response.data as Map<String, dynamic>);
+      }
+
+      throw Exception('Google login failed');
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(message ?? 'Gagal masuk dengan Google: ${e.message}');
+    }
+  }
 }
 

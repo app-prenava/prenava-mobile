@@ -14,11 +14,13 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/profile/presentation/pages/profile_onboarding_page.dart';
 import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
 import '../../features/shop/presentation/pages/shop_detail_page.dart';
+import '../../features/shop/presentation/providers/shop_providers.dart';
 import '../../features/community/presentation/pages/community_detail_page.dart';
 import '../../features/community/presentation/pages/create_post_page.dart';
 import '../../features/hydration/presentation/pages/hydration_page.dart';
 import '../../features/tips/presentation/pages/tips_list_page.dart';
 import '../../features/tips/presentation/pages/tips_detail_page.dart';
+import '../../features/home/presentation/pages/notifications_page.dart';
 import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.dart';
 import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
 import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
@@ -37,10 +39,16 @@ import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart
 import '../../features/health_history/presentation/pages/health_history_page.dart';
 import '../../features/stunting/presentation/pages/stunting_screening_page.dart';
 import '../../features/stunting/presentation/pages/stunting_result_page.dart';
-import '../../features/stunting/presentation/pages/stunting_recommendation_page.dart';
 import '../../features/stunting/presentation/pages/stunting_history_page.dart';
 import '../../features/stunting/presentation/pages/food_catalog_page.dart';
 import '../../features/stunting/data/models/stunting_models.dart';
+import '../../features/stunting_food/presentation/pages/food_recommendation_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_current_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_history_page.dart';
+import '../../features/stunting_food/presentation/pages/recipe_detail_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_progress_page.dart';
+import '../../features/stunting_food/presentation/pages/preferences_page.dart';
+import '../../features/stunting_food/recipes/presentation/pages/recipe_home_page.dart';
 
 import 'package:prenava_mobile/core/network/dio_client.dart';
 
@@ -51,6 +59,10 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: navigatorKey,
     initialLocation: '/',
     routes: [
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsPage(),
+      ),
       GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
       GoRoute(
         path: '/onboarding',
@@ -103,8 +115,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/shop/edit/:id',
         builder: (context, state) {
-          // TODO: Get product from state and pass to edit page
-          return const AddEditShopPage();
+          final id = state.pathParameters['id'];
+          final shopState = ProviderScope.containerOf(context).read(shopNotifierProvider);
+          final product = shopState.products.firstWhere(
+            (p) => p.productId.toString() == id,
+            orElse: () => throw Exception('Product not found'),
+          );
+          return AddEditShopPage(product: product);
         },
       ),
       GoRoute(
@@ -248,7 +265,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/stunting/recommendations',
         builder: (context, state) {
           final predictionId = state.extra as int;
-          return StuntingRecommendationPage(predictionId: predictionId);
+          return FoodRecommendationPage(predictionId: predictionId);
         },
       ),
       GoRoute(
@@ -258,6 +275,57 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stunting/foods',
         builder: (context, state) => const FoodCatalogPage(),
+      ),
+      GoRoute(
+        path: '/stunting-food/recommendations',
+        builder: (context, state) {
+          final predictionId = state.extra as int;
+          return FoodRecommendationPage(predictionId: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/preferences',
+        builder: (context, state) {
+          final predictionId = state.extra as int?;
+          return PreferencesPage(predictionId: predictionId);
+        },
+      ),
+
+      GoRoute(
+        path: '/stunting-food/meal-plan/current',
+        builder: (context, state) {
+          final predictionId = state.extra as int?;
+          return MealPlanCurrentPage(predictionIdForCreate: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/meal-plan/history',
+        builder: (context, state) => const MealPlanHistoryPage(),
+      ),
+
+      GoRoute(
+        path: '/stunting-food/meal-plan/progress',
+        builder: (context, state) {
+          final mealPlanId = state.extra as int;
+          return MealPlanProgressPage(mealPlanId: mealPlanId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/recipe',
+        builder: (context, state) {
+          final recipeId = state.extra as int;
+          return RecipeDetailPage(recipeId: recipeId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/recipes',
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map) {
+            return RecipeHomePage(initialSearch: extra['search']?.toString());
+          }
+          return const RecipeHomePage();
+        },
       ),
     ],
   );

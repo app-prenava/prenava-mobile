@@ -44,7 +44,7 @@ class CommentCard extends StatelessWidget {
                       ? Image.network(
                           comment.user!.profileImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
+                          errorBuilder: (_, _, _) => _buildDefaultAvatar(),
                         )
                       : _buildDefaultAvatar(),
                 ),

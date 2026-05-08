@@ -25,10 +25,10 @@ class StuntingRecommendationPage extends ConsumerWidget {
       body: state.isLoading
           ? _buildLoadingState()
           : state.error != null
-              ? _buildErrorState(state.error!)
-              : state.data == null
-                  ? const Center(child: Text('Data tidak tersedia'))
-                  : _buildContent(context, state.data!),
+          ? _buildErrorState(state.error!)
+          : state.data == null
+          ? const Center(child: Text('Data tidak tersedia'))
+          : _buildContent(context, state.data!),
     );
   }
 
@@ -51,7 +51,11 @@ class StuntingRecommendationPage extends ConsumerWidget {
               itemCount: 3,
               itemBuilder: (context, index) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Container(height: 80, width: double.infinity, color: Colors.white),
+                child: Container(
+                  height: 80,
+                  width: double.infinity,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 24),
@@ -72,6 +76,28 @@ class StuntingRecommendationPage extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push(
+                  '/stunting-food/recommendations',
+                  extra: predictionId,
+                );
+              },
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('Buka Versi Baru'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryPink,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
           _buildSummaryHeader(data.predictionSummary),
           const SizedBox(height: 32),
           const Text(
@@ -84,14 +110,56 @@ class StuntingRecommendationPage extends ConsumerWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () => context.push('/stunting/foods'),
-              icon: const Icon(Icons.restaurant_menu),
-              label: const Text('Lihat Semua Katalog Makanan'),
+              onPressed: () => context.push(
+                '/stunting-food/recommendations',
+                extra: predictionId,
+              ),
+              icon: const Icon(Icons.restaurant_menu_rounded),
+              label: const Text('Lihat Rekomendasi (UI Baru)'),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 foregroundColor: AppColors.primaryPink,
                 side: const BorderSide(color: AppColors.primaryPink),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => context.push(
+                '/stunting-food/meal-plan/current',
+                extra: predictionId,
+              ),
+              icon: const Icon(Icons.calendar_month_rounded),
+              label: const Text('Buat / Lihat Meal Plan Baru'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                foregroundColor: AppColors.primaryPink,
+                side: const BorderSide(color: AppColors.primaryPink),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => context.push('/stunting/history'),
+              icon: const Icon(Icons.history_rounded),
+              label: const Text('Riwayat Skrining Stunting'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                foregroundColor: AppColors.primaryPink,
+                side: const BorderSide(color: AppColors.primaryPink),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -106,7 +174,8 @@ class StuntingRecommendationPage extends ConsumerWidget {
             _buildAiSection(
               title: 'Panduan Memasak & Tips',
               icon: Icons.restaurant_menu_rounded,
-              content: data.aiSupport!.cookingGuide ?? data.aiSupport!.nutritionTips,
+              content:
+                  data.aiSupport!.cookingGuide ?? data.aiSupport!.nutritionTips,
             ),
           ],
         ],
@@ -132,7 +201,11 @@ class StuntingRecommendationPage extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, color: AppColors.primaryPink, size: 32),
+          const Icon(
+            Icons.info_outline,
+            color: AppColors.primaryPink,
+            size: 32,
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -140,14 +213,21 @@ class StuntingRecommendationPage extends ConsumerWidget {
               children: [
                 const Text(
                   'Fokus Nutrisi Bunda',
-                  style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   isHighRisk
                       ? 'Rekomendasi ini disusun khusus untuk membantu menurunkan risiko stunting.'
                       : 'Pertahankan status gizi Anda dengan pilihan makanan bernutrisi tinggi berikut.',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -172,7 +252,8 @@ class StuntingRecommendationPage extends ConsumerWidget {
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildFoodPlaceholder(),
+                  errorBuilder: (context, error, stackTrace) =>
+                      _buildFoodPlaceholder(),
                 ),
               )
             else
@@ -184,7 +265,10 @@ class StuntingRecommendationPage extends ConsumerWidget {
                 children: [
                   Text(
                     food.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Wrap(
@@ -199,7 +283,10 @@ class StuntingRecommendationPage extends ConsumerWidget {
                     const SizedBox(height: 8),
                     Text(
                       food.reason!,
-                      style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ],
@@ -233,12 +320,20 @@ class StuntingRecommendationPage extends ConsumerWidget {
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primaryPink),
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.primaryPink,
+        ),
       ),
     );
   }
 
-  Widget _buildAiSection({required String title, required IconData icon, String? content}) {
+  Widget _buildAiSection({
+    required String title,
+    required IconData icon,
+    String? content,
+  }) {
     if (content == null || content.isEmpty) return const SizedBox();
 
     return Column(
@@ -265,7 +360,11 @@ class StuntingRecommendationPage extends ConsumerWidget {
           child: MarkdownBody(
             data: content,
             styleSheet: MarkdownStyleSheet(
-              p: TextStyle(color: AppColors.textPrimary, height: 1.5, fontSize: 14),
+              p: TextStyle(
+                color: AppColors.textPrimary,
+                height: 1.5,
+                fontSize: 14,
+              ),
             ),
           ),
         ),

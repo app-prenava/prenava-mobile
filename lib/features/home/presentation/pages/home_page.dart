@@ -8,7 +8,6 @@ import 'package:showcaseview/showcaseview.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../community/domain/entities/post.dart';
-import '../providers/banner_providers.dart';
 import '../providers/popular_posts_providers.dart';
 import '../widgets/user_header.dart';
 import '../widgets/menu_grid_item.dart';
@@ -21,6 +20,7 @@ import '../providers/wallet_provider.dart';
 import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_section.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
+import '../widgets/meal_plan_home_widget.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -58,14 +58,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
   }
 
-  Future<void> _onRefresh() async {
-    await Future.wait([
-      ref.read(bannerNotifierProvider.notifier).refreshBanners(),
-      ref.read(profileNotifierProvider.notifier).loadProfile(),
-    ]);
-    ref.invalidate(popularPostsProvider);
-  }
-
   @override
   Widget build(BuildContext context) {
     return ShowCaseWidget(
@@ -73,7 +65,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
           final prefs = await SharedPreferences.getInstance();
           final hasSeenTutorial = prefs.getBool('has_seen_tutorial') ?? false;
-          if (!hasSeenTutorial) {
+          if (!hasSeenTutorial && context.mounted) {
             _startTutorial(innerContext);
             await prefs.setBool('has_seen_tutorial', true);
           }
@@ -102,14 +94,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               bottom: false,
               child: Container(
                 color: Colors.white,
-                child: RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  color: const Color(0xFFFA6978),
-                  backgroundColor: Colors.white,
-                  displacement: 20, // Reduced displacement
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
+                child: CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  slivers: [
                       SliverToBoxAdapter(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,22 +104,28 @@ class _HomePageState extends ConsumerState<HomePage> {
                             Container(
                               decoration: const BoxDecoration(
                                 image: DecorationImage(
-                                  image: AssetImage('assets/images/gradien.png'),
+                                  image: AssetImage(
+                                    'assets/images/gradien.png',
+                                  ),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                               child: Column(
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Expanded(
                                         child: Showcase(
                                           key: _headerKey,
-                                          description: 'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
+                                          description:
+                                              'Ini profilmu. Ketuk untuk mengedit atau melihat detail.',
                                           child: GestureDetector(
-                                            onTap: () => context.push('/profile'),
+                                            onTap: () =>
+                                                context.push('/profile'),
                                             child: UserHeader(
                                               greeting: _getGreeting(),
                                               userName: user?.name ?? 'User',
@@ -142,46 +135,95 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         ),
                                       ),
                                       Padding(
-                                        padding: const EdgeInsets.only(top: 8, right: 4),
+                                        padding: const EdgeInsets.only(
+                                          top: 8,
+                                          right: 4,
+                                        ),
                                         child: Row(
                                           children: [
                                             Showcase(
                                               key: _dailyKey,
-                                              description: 'Pantau streak dan selesaikan misi harian di sini!',
+                                              description:
+                                                  'Pantau streak dan selesaikan misi harian di sini!',
                                               child: IconButton(
                                                 icon: Stack(
                                                   alignment: Alignment.center,
                                                   children: [
-                                                    const Icon(Icons.local_fire_department, color: Colors.amber, size: 28),
-                                                    ref.watch(dailyProgressProvider).when(
-                                                      data: (p) => p.streak > 0 
-                                                        ? Positioned(
-                                                            right: 0,
-                                                            top: 0,
-                                                            child: Container(
-                                                              padding: const EdgeInsets.all(2),
-                                                              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                                              constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-                                                              child: Text('${p.streak}', style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                                                            ),
-                                                          )
-                                                        : const SizedBox(),
-                                                      loading: () => const SizedBox(),
-                                                      error: (_, __) => const SizedBox(),
+                                                    const Icon(
+                                                      Icons
+                                                          .local_fire_department,
+                                                      color: Colors.amber,
+                                                      size: 28,
                                                     ),
+                                                    ref
+                                                        .watch(
+                                                          dailyProgressProvider,
+                                                        )
+                                                        .when(
+                                                          data: (p) =>
+                                                              p.streak > 0
+                                                              ? Positioned(
+                                                                  right: 0,
+                                                                  top: 0,
+                                                                  child: Container(
+                                                                    padding:
+                                                                        const EdgeInsets.all(
+                                                                          2,
+                                                                        ),
+                                                                    decoration: const BoxDecoration(
+                                                                      color: Colors
+                                                                          .red,
+                                                                      shape: BoxShape
+                                                                          .circle,
+                                                                    ),
+                                                                    constraints: const BoxConstraints(
+                                                                      minWidth:
+                                                                          14,
+                                                                      minHeight:
+                                                                          14,
+                                                                    ),
+                                                                    child: Text(
+                                                                      '${p.streak}',
+                                                                      style: const TextStyle(
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            8,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                      textAlign:
+                                                                          TextAlign
+                                                                              .center,
+                                                                    ),
+                                                                  ),
+                                                                )
+                                                              : const SizedBox(),
+                                                          loading: () =>
+                                                              const SizedBox(),
+                                                          error: (_, _) =>
+                                                              const SizedBox(),
+                                                        ),
                                                   ],
                                                 ),
-                                                onPressed: _showDailyTasksBottomSheet,
+                                                onPressed:
+                                                    _showDailyTasksBottomSheet,
                                               ),
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.notifications_outlined, color: Colors.white),
+                                              icon: const Icon(
+                                                Icons.notifications_outlined,
+                                                color: Colors.white,
+                                              ),
                                               onPressed: () {
-                                                // TODO: Navigate to notifications
+                                                context.push('/notifications');
                                               },
                                             ),
                                             IconButton(
-                                              icon: const Icon(Icons.help_outline, color: Colors.white),
+                                              icon: const Icon(
+                                                Icons.help_outline,
+                                                color: Colors.white,
+                                              ),
                                               onPressed: () {
                                                 _startTutorial(innerContext);
                                               },
@@ -204,7 +246,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ],
                   ),
-                ),
               ),
             ),
           ),
@@ -215,7 +256,11 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget _buildWalletCard() {
     final walletState = ref.watch(walletProvider);
-    final currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    final currencyFormat = NumberFormat.currency(
+      locale: 'id_ID',
+      symbol: 'Rp ',
+      decimalDigits: 0,
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -236,36 +281,54 @@ class _HomePageState extends ConsumerState<HomePage> {
         children: [
           Row(
             children: [
-              const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFFFA6978), size: 28),
+              const Icon(
+                Icons.account_balance_wallet_rounded,
+                color: Color(0xFFFA6978),
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     currencyFormat.format(walletState.balance),
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF424242)),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF424242),
+                    ),
                   ),
-                  const Text('Saldo Prenava', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  const Text(
+                    'Saldo Prenava',
+                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  ),
                 ],
               ),
             ],
           ),
           Row(
             children: [
-              Container(
-                height: 32,
-                width: 1,
-                color: Colors.grey[200],
-              ),
+              Container(height: 32, width: 1, color: Colors.grey[200]),
               const SizedBox(width: 16),
               GestureDetector(
                 onTap: walletState.isWithdrawing ? null : _showWithdrawModal,
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.file_upload_outlined, color: Color(0xFFFA6978), size: 24),
+                    Icon(
+                      Icons.file_upload_outlined,
+                      color: Color(0xFFFA6978),
+                      size: 24,
+                    ),
                     SizedBox(height: 4),
-                    Text('Tarik', style: TextStyle(color: Color(0xFFFA6978), fontWeight: FontWeight.bold, fontSize: 11)),
+                    Text(
+                      'Tarik',
+                      style: TextStyle(
+                        color: Color(0xFFFA6978),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -283,7 +346,12 @@ class _HomePageState extends ConsumerState<HomePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: EdgeInsets.fromLTRB(24, 20, 24, MediaQuery.of(context).viewInsets.bottom + 32),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          20,
+          24,
+          MediaQuery.of(context).viewInsets.bottom + 32,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -296,13 +364,22 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: Container(
                 width: 40,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Tarik Saldo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Text(
+              'Tarik Saldo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            const Text('Masukkan nominal penarikan (Min. Rp 10.000)', style: TextStyle(fontSize: 13, color: Colors.grey)),
+            const Text(
+              'Masukkan nominal penarikan (Min. Rp 10.000)',
+              style: TextStyle(fontSize: 13, color: Colors.grey),
+            ),
             const SizedBox(height: 24),
             TextField(
               controller: amountController,
@@ -313,7 +390,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 hintText: '0',
                 filled: true,
                 fillColor: Colors.grey[100],
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
             const SizedBox(height: 32),
@@ -323,7 +403,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 onPressed: () {
                   final amount = double.tryParse(amountController.text) ?? 0;
                   if (amount < 10000) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Minimal penarikan Rp 10.000')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Minimal penarikan Rp 10.000'),
+                      ),
+                    );
                     return;
                   }
                   ref.read(walletProvider.notifier).withdraw(amount);
@@ -340,9 +424,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                   backgroundColor: const Color(0xFFFA6978),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text('Tarik Sekarang', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tarik Sekarang',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -357,7 +446,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DefaultTabController(
-        length: 2,
+        length: 3,
         child: DraggableScrollableSheet(
           initialChildSize: 0.65,
           minChildSize: 0.4,
@@ -411,25 +500,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       fontSize: 13,
                     ),
                     tabs: const [
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text('🔥', style: TextStyle(fontSize: 14)),
-                            SizedBox(width: 6),
-                            Text('Misi Harian'),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(width: 6),
-                            Text('Kearifan Lokal'),
-                          ],
-                        ),
-                      ),
+                      Tab(text: 'Misi Harian'),
+                      Tab(text: 'Meal Plan'),
+                      Tab(text: 'Kearifan Lokal'),
                     ],
                   ),
                 ),
@@ -443,7 +516,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                         controller: controller,
                         child: const DailyTasksSection(),
                       ),
-                      // Tab 2: Local Wisdom
+                      // Tab 2: Meal Plan
+                      SingleChildScrollView(
+                        controller: controller,
+                        child: const MealPlanHomeWidget(),
+                      ),
+                      // Tab 3: Local Wisdom
                       SingleChildScrollView(
                         controller: controller,
                         child: const WisdomChecklistSection(),
@@ -461,29 +539,28 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   void _startTutorial(BuildContext context) {
     ShowCaseWidget.of(context).startShowCase([
-      _headerKey, 
-      _dailyKey, 
-      _olahragaKey, 
-      _hidrasiKey,
-      _tipsKey,
+      _headerKey,
+      _dailyKey,
+      _olahragaKey,
       _anemiaKey,
       _depresiKey,
       _udaraKey,
+      _hidrasiKey,
+      _tipsKey,
       _hplKey,
-      _lainnyaKey
+      _lainnyaKey,
     ]);
   }
 
-  void _handleMenuTap(String route, {bool requiresPregnancy = false, AppFeature? feature}) async {
-    // Auto-track feature access (fire-and-forget)
-    if (feature != null) {
-      ref.read(featureTrackerProvider).track(feature);
-    }
-
+  void _handleMenuTap(
+    String route, {
+    bool requiresPregnancy = false,
+    AppFeature? feature,
+  }) async {
     if (requiresPregnancy) {
       final pregnancyState = ref.read(pregnancyNotifierProvider);
       if (pregnancyState.isLoading) return;
-      
+
       if (pregnancyState.pregnancy == null) {
         final result = await showModalBottomSheet<bool>(
           context: context,
@@ -492,10 +569,16 @@ class _HomePageState extends ConsumerState<HomePage> {
           builder: (context) => const PregnancyOnboardingSheet(),
         );
         if (result == true && mounted) {
+          if (feature != null) {
+            ref.read(featureTrackerProvider).track(feature);
+          }
           context.push(route);
         }
         return;
       }
+    }
+    if (feature != null) {
+      ref.read(featureTrackerProvider).track(feature);
     }
     context.push(route);
   }
@@ -503,102 +586,127 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget _buildMenuGrid(String category) {
     final List<Widget> items = [];
 
-    items.add(Showcase(
-      key: _olahragaKey,
-      description: 'Dapatkan rekomendasi olahraga ringan yang aman.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/kunjungan.png',
-        label: 'Rekomendasi Olahraga',
-        onTap: () => _handleMenuTap('/rekomendasi-olahraga',
-            requiresPregnancy: true, feature: AppFeature.olahraga),
+    items.add(
+      Showcase(
+        key: _olahragaKey,
+        description: 'Dapatkan rekomendasi olahraga ringan yang aman.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/kunjungan.png',
+          label: 'Rekomendasi Olahraga',
+          onTap: () => _handleMenuTap(
+            '/rekomendasi-olahraga',
+            requiresPregnancy: true,
+            feature: AppFeature.olahraga,
+          ),
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _hidrasiKey,
-      description: 'Pantau asupan air harian Anda agar tetap terhidrasi.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/glass water.png',
-        label: 'Rekomendasi Hidrasi',
-        onTap: () {
-          ref.read(featureTrackerProvider).track(AppFeature.hidrasi);
-          context.push('/hydration');
-        },
+    items.add(
+      Showcase(
+        key: _anemiaKey,
+        description: 'Ketahui risiko Anemia dengan mengisi form observasi.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/anemia.png',
+          label: 'Prediksi Anemia',
+          onTap: () =>
+              _handleMenuTap('/deteksi-anemia', feature: AppFeature.anemia),
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _hplKey,
-      description: 'Hitung dan pantau Hari Perkiraan Lahir (HPL) serta perkembangan janin.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/kalkulator hpl.png',
-        label: 'Kalkulator HPL',
-        onTap: () {
-          ref.read(featureTrackerProvider).track(AppFeature.kalkulatorHpl);
-          context.push('/pregnancy-calculator');
-        },
+    items.add(
+      Showcase(
+        key: _depresiKey,
+        description:
+            'Deteksi risiko depresi pasca melahirkan melalui analisis foto wajah menggunakan AI.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/deteksi depresi.png',
+          label: 'Prediksi Depresi',
+          onTap: () =>
+              _handleMenuTap('/deteksi-depresi', feature: AppFeature.depresi),
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _tipsKey,
-      description: 'Tips harian untuk kesehatan ibu dan janin.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/tips.png',
-        label: 'Tips & Gizi',
-        onTap: () {
-          ref.read(featureTrackerProvider).track(AppFeature.tips);
-          context.push('/tips');
-        },
+    items.add(
+      Showcase(
+        key: _udaraKey,
+        description: 'Dapatkan analisis risiko stunting anak menggunakan AI.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/stunting icon.png',
+          label: 'Risiko Stunting',
+          onTap: () =>
+              _handleMenuTap('/stunting/history', feature: AppFeature.stunting),
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _anemiaKey,
-      description: 'Ketahui risiko Anemia dengan mengisi form observasi.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/anemia.png',
-        label: 'Prediksi Anemia',
-        onTap: () => _handleMenuTap('/deteksi-anemia', feature: AppFeature.anemia),
+    items.add(
+      Showcase(
+        key: _hidrasiKey,
+        description: 'Pantau asupan air harian Anda agar tetap terhidrasi.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/glass water.png',
+          label: 'Rekomendasi Hidrasi',
+          onTap: () {
+            ref.read(featureTrackerProvider).track(AppFeature.hidrasi);
+            context.push('/hydration');
+          },
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _depresiKey,
-      description: 'Deteksi risiko depresi pasca melahirkan melalui analisis foto wajah menggunakan AI.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/deteksi depresi.png',
-        label: 'Prediksi Depresi',
-        onTap: () => _handleMenuTap('/deteksi-depresi', feature: AppFeature.depresi),
+    items.add(
+      Showcase(
+        key: _hplKey,
+        description:
+            'Hitung dan pantau Hari Perkiraan Lahir (HPL) serta perkembangan janin.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/kalkulator hpl.png',
+          label: 'Kalkulator HPL',
+          onTap: () {
+            ref.read(featureTrackerProvider).track(AppFeature.kalkulatorHpl);
+            context.push('/pregnancy-calculator');
+          },
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _udaraKey,
-      description: 'Dapatkan analisis risiko stunting anak menggunakan AI.',
-      child: MenuGridItem(
-        imagePath: 'assets/images/stunting icon.png',
-        label: 'Cek Risiko Stunting',
-        onTap: () => _handleMenuTap('/stunting/history'),
+    items.add(
+      Showcase(
+        key: _tipsKey,
+        description: 'Tips harian untuk kesehatan ibu dan janin.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/tips.png',
+          label: 'Tips & Gizi',
+          onTap: () {
+            ref.read(featureTrackerProvider).track(AppFeature.tips);
+            context.push('/tips');
+          },
+        ),
       ),
-    ));
+    );
 
-    items.add(Showcase(
-      key: _lainnyaKey,
-      description: 'Buka ini untuk melihat semua fitur tambahan yang tersedia!',
-      child: MenuGridItem(
-        imagePath: 'assets/images/lainnya.png',
-        label: 'Lainnya',
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => const LainnyaModal(),
-          );
-        },
+    items.add(
+      Showcase(
+        key: _lainnyaKey,
+        description:
+            'Buka ini untuk melihat semua fitur tambahan yang tersedia!',
+        child: MenuGridItem(
+          imagePath: 'assets/images/lainnya.png',
+          label: 'Lainnya',
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: Colors.transparent,
+              builder: (context) => const LainnyaModal(),
+            );
+          },
+        ),
       ),
-    ));
+    );
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -653,7 +761,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: CircularProgressIndicator(color: Color(0xFFFA6978)),
               ),
             ),
-            error: (_, __) => const SizedBox(
+            error: (_, _) => const SizedBox(
               height: 130,
               child: Center(
                 child: Text(
@@ -735,7 +843,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ? NetworkImage(post.user.profileImage!)
                       : null,
                   child: post.user.profileImage == null
-                      ? const Icon(Icons.person, size: 14, color: Color(0xFFFA6978))
+                      ? const Icon(
+                          Icons.person,
+                          size: 14,
+                          color: Color(0xFFFA6978),
+                        )
                       : null,
                 ),
                 const SizedBox(width: 8),
@@ -755,10 +867,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                       Text(
                         timeAgo,
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 10, color: Colors.grey[500]),
                       ),
                     ],
                   ),
@@ -796,14 +905,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Icon(Icons.chat_bubble_outline, size: 14, color: Colors.grey[500]),
+                Icon(
+                  Icons.chat_bubble_outline,
+                  size: 14,
+                  color: Colors.grey[500],
+                ),
                 const SizedBox(width: 4),
                 Text(
                   '${post.komentar}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
 import '../../domain/entities/pregnancy.dart';
 
 class PregnancyModel {
+  final int? id;
   final String hpht;
   final String hphtFormatted;
   final String hpl;
@@ -17,6 +18,7 @@ class PregnancyModel {
   final FetalSize? fetalSize;
 
   PregnancyModel({
+    this.id,
     required this.hpht,
     required this.hphtFormatted,
     required this.hpl,
@@ -35,6 +37,7 @@ class PregnancyModel {
 
   factory PregnancyModel.fromJson(Map<String, dynamic> json) {
     return PregnancyModel(
+      id: (json['id'] as num?)?.toInt(),
       hpht: json['hpht']?.toString() ?? '',
       hphtFormatted: json['hpht_formatted']?.toString() ?? '',
       hpl: json['hpl']?.toString() ?? '',
@@ -56,6 +59,7 @@ class PregnancyModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'hpht': hpht,
       'hpht_formatted': hphtFormatted,
       'hpl': hpl,
@@ -75,6 +79,7 @@ class PregnancyModel {
 
   Pregnancy toEntity() {
     return Pregnancy(
+      id: id,
       hpht: hpht,
       hphtFormatted: hphtFormatted,
       hpl: hpl,

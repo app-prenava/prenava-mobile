@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/profile_providers.dart';
+import '../../domain/entities/profile.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -100,7 +101,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _buildProfileContent(BuildContext context, profile) {
+  Widget _buildProfileContent(BuildContext context, Profile profile) {
     return SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -201,7 +202,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     );
   }
 
-  Widget _buildProfileDetails(profile) {
+  Widget _buildProfileDetails(Profile profile) {
     return Card(
       elevation: 0,
       color: Colors.grey[50],

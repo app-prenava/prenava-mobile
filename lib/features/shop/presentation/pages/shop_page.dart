@@ -6,6 +6,7 @@ import 'package:prenava_mobile/shared/widgets/widgets.dart';
 import 'package:prenava_mobile/shared/widgets/feature_guide_page.dart';
 import 'package:prenava_mobile/shared/providers/guide_provider.dart';
 import '../providers/shop_providers.dart';
+import '../../domain/entities/product.dart';
 
 class ShopPage extends ConsumerStatefulWidget {
   const ShopPage({super.key});
@@ -199,7 +200,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 10),
+                      separatorBuilder: (_, _) => const SizedBox(width: 10),
                       itemBuilder: (context, index) {
                         final bool active = _selectedCategory == index;
                         return GestureDetector(
@@ -292,7 +293,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
     );
   }
 
-  Widget _buildProductCard(product) {
+  Widget _buildProductCard(Product product) {
     return GestureDetector(
       onTap: () => context.push('/shop/detail/${product.productId}'),
       child: Container(

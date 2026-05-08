@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/community_providers.dart';
 import '../widgets/comment_card.dart';
+import '../../domain/entities/post.dart';
 
 class CommunityDetailPage extends ConsumerStatefulWidget {
   final int postId;
@@ -258,7 +259,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
     );
   }
 
-  Widget _buildPostContent(post, int commentCount) {
+  Widget _buildPostContent(Post post, int commentCount) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -302,7 +303,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                       ? Image.network(
                           post.user.profileImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildDefaultAvatar(),
+                          errorBuilder: (_, _, _) => _buildDefaultAvatar(),
                         )
                       : _buildDefaultAvatar(),
                 ),
@@ -433,7 +434,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 ),
               ),
             ),
-            error: (_, __) => Center(
+            error: (_, _) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
@@ -458,7 +459,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: comments.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final comment = comments[index];
                   final isMine =

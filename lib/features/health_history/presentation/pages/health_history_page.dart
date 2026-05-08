@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,7 +34,11 @@ class _HealthHistoryPageState extends ConsumerState<HealthHistoryPage> {
         elevation: 0,
         surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFA6978), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFFFA6978),
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -46,47 +52,60 @@ class _HealthHistoryPageState extends ConsumerState<HealthHistoryPage> {
         centerTitle: true,
       ),
       body: state.isLoading && state.history.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFA6978)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFFA6978)),
+            )
           : state.error != null && state.history.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text('Gagal memuat riwayat', style: TextStyle(color: Colors.grey[600])),
-                      TextButton(
-                        onPressed: () => ref.read(healthHistoryNotifierProvider.notifier).fetchHistory(),
-                        child: const Text('Coba Lagi'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Gagal memuat riwayat',
+                    style: TextStyle(color: Colors.grey[600]),
                   ),
-                )
-              : state.history.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.history_toggle_off_rounded, size: 64, color: Colors.grey[300]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Belum ada riwayat pemindaian',
-                            style: TextStyle(color: Colors.grey[500], fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () => ref.read(healthHistoryNotifierProvider.notifier).fetchHistory(),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: state.history.length,
-                        itemBuilder: (context, index) {
-                          final item = state.history[index];
-                          return _HistoryCard(item: item);
-                        },
-                      ),
-                    ),
+                  TextButton(
+                    onPressed: () => ref
+                        .read(healthHistoryNotifierProvider.notifier)
+                        .fetchHistory(),
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            )
+          : state.history.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.history_toggle_off_rounded,
+                    size: 64,
+                    color: Colors.grey[300],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada riwayat pemindaian',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                  ),
+                ],
+              ),
+            )
+          : RefreshIndicator(
+              onRefresh: () => ref
+                  .read(healthHistoryNotifierProvider.notifier)
+                  .fetchHistory(),
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: state.history.length,
+                itemBuilder: (context, index) {
+                  final item = state.history[index];
+                  return _HistoryCard(item: item);
+                },
+              ),
+            ),
     );
   }
 }
@@ -100,20 +119,32 @@ class _HistoryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isAnemia = item.type == 'anemia';
     final date = DateFormat('dd MMM yyyy, HH:mm').format(item.createdAt);
-    
+
     // Extract results safely
     String summary = '';
     Color resultColor = Colors.grey;
-    
+
     if (isAnemia) {
-      summary = item.result['prediction'] ?? 'Tidak diketahui';
-      resultColor = summary.toLowerCase().contains('anemia') && !summary.toLowerCase().contains('non')
+      summary =
+          item.result['prediction']?.toString() ??
+          item.result['label']?.toString() ??
+          item.result['status']?.toString() ??
+          'Hasil tersedia';
+      resultColor =
+          summary.toLowerCase().contains('anemia') &&
+              !summary.toLowerCase().contains('non')
           ? const Color(0xFFE53E3E)
           : const Color(0xFF48BB78);
     } else {
-      summary = item.result['prediction'] ?? 'Tidak diketahui';
+      summary =
+          item.result['prediction']?.toString() ??
+          item.result['level']?.toString() ??
+          item.result['status']?.toString() ??
+          'Hasil tersedia';
       // Basic heuristic for depression results
-      resultColor = summary.toLowerCase().contains('depressed') || summary.toLowerCase().contains('stres')
+      resultColor =
+          summary.toLowerCase().contains('depressed') ||
+              summary.toLowerCase().contains('stres')
           ? const Color(0xFFE53E3E)
           : const Color(0xFF48BB78);
     }
@@ -123,13 +154,7 @@ class _HistoryCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: const Color(0xFFE5E7EB)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -140,10 +165,19 @@ class _HistoryCard extends ConsumerWidget {
             color: (isAnemia ? Colors.red : Colors.blue).withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            isAnemia ? Icons.remove_red_eye_rounded : Icons.face_rounded,
-            color: isAnemia ? Colors.red : Colors.blue,
-            size: 24,
+          child: ClipOval(
+            child:
+                item.localImagePath != null &&
+                    item.localImagePath!.isNotEmpty &&
+                    File(item.localImagePath!).existsSync()
+                ? Image.file(File(item.localImagePath!), fit: BoxFit.cover)
+                : Icon(
+                    isAnemia
+                        ? Icons.remove_red_eye_rounded
+                        : Icons.face_rounded,
+                    color: isAnemia ? Colors.red : Colors.blue,
+                    size: 24,
+                  ),
           ),
         ),
         title: Text(
@@ -157,10 +191,7 @@ class _HistoryCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text(
-              date,
-              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-            ),
+            Text(date, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
             const SizedBox(height: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -180,7 +211,11 @@ class _HistoryCard extends ConsumerWidget {
           ],
         ),
         trailing: IconButton(
-          icon: Icon(Icons.delete_outline_rounded, color: Colors.grey[400], size: 20),
+          icon: Icon(
+            Icons.delete_outline_rounded,
+            color: Colors.grey[400],
+            size: 20,
+          ),
           onPressed: () {
             _showDeleteConfirmation(context, ref);
           },
@@ -197,7 +232,9 @@ class _HistoryCard extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Hapus Riwayat?'),
-        content: const Text('Data ini akan dihapus permanen dari riwayat Anda.'),
+        content: const Text(
+          'Data ini akan dihapus permanen dari riwayat Anda.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -205,7 +242,9 @@ class _HistoryCard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              ref.read(healthHistoryNotifierProvider.notifier).deleteHistory(item.id);
+              ref
+                  .read(healthHistoryNotifierProvider.notifier)
+                  .deleteHistory(item.id);
               Navigator.pop(ctx);
             },
             child: const Text('Hapus', style: TextStyle(color: Colors.red)),

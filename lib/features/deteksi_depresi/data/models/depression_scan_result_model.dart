@@ -4,6 +4,7 @@ class DepressionScanResultModel extends DepressionScanResult {
   const DepressionScanResultModel({
     required super.success,
     required super.faceDetected,
+    super.historyId,
     super.faceConfidence,
     super.score,
     super.level,
@@ -22,6 +23,7 @@ class DepressionScanResultModel extends DepressionScanResult {
       return DepressionScanResultModel(
         success: false,
         faceDetected: false,
+        historyId: (json['history']?['id'] as num?)?.toInt(),
         error: json['message'] as String? ?? 'Unknown error',
       );
     }
@@ -33,6 +35,7 @@ class DepressionScanResultModel extends DepressionScanResult {
       return DepressionScanResultModel(
         success: success,
         faceDetected: faceDetected,
+        historyId: (json['history']?['id'] as num?)?.toInt(),
         error: data['error'] as String?,
       );
     }
@@ -48,16 +51,19 @@ class DepressionScanResultModel extends DepressionScanResult {
     return DepressionScanResultModel(
       success: true,
       faceDetected: true,
+      historyId: (json['history']?['id'] as num?)?.toInt(),
       faceConfidence: (data['face_confidence'] as num?)?.toDouble(),
       score: (data['score'] as num?)?.toDouble(),
       level: data['level'] as String?,
       disclaimer: data['disclaimer'] as String?,
       expressionScore: (expression?['score'] as num?)?.toDouble(),
       fatigueScore: (fatigue?['score'] as num?)?.toDouble(),
-      expressionProbabilities:
-          parseProbs(expression?['probabilities'] as Map<String, dynamic>?),
-      fatigueProbabilities:
-          parseProbs(fatigue?['probabilities'] as Map<String, dynamic>?),
+      expressionProbabilities: parseProbs(
+        expression?['probabilities'] as Map<String, dynamic>?,
+      ),
+      fatigueProbabilities: parseProbs(
+        fatigue?['probabilities'] as Map<String, dynamic>?,
+      ),
     );
   }
 }

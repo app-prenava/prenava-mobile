@@ -6,7 +6,7 @@ import '../../../profile/presentation/providers/profile_providers.dart';
 class LmpBottomSheet extends ConsumerStatefulWidget {
   final Future<void> Function(String hpht, int gestationalAge, bool isMultiple) onSuccess;
 
-  const LmpBottomSheet({Key? key, required this.onSuccess}) : super(key: key);
+  const LmpBottomSheet({super.key, required this.onSuccess});
 
   @override
   ConsumerState<LmpBottomSheet> createState() => _LmpBottomSheetState();

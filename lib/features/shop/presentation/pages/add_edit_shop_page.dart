@@ -381,7 +381,7 @@ class _AddEditShopPageState extends ConsumerState<AddEditShopPage> {
                             height: 140,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildPhotoPlaceholder(),
+                            errorBuilder: (_, _, _) => _buildPhotoPlaceholder(),
                           ),
                   ),
                   // Edit overlay

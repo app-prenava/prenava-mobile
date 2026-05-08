@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/appointment_providers.dart';
+import '../../domain/entities/consent_info.dart';
 
 class ConsentPage extends ConsumerStatefulWidget {
   const ConsentPage({super.key});
@@ -111,7 +112,7 @@ class _ConsentPageState extends ConsumerState<ConsentPage> {
     );
   }
 
-  Widget _buildConsentText(consentInfo) {
+  Widget _buildConsentText(ConsentInfo consentInfo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -142,7 +143,7 @@ class _ConsentPageState extends ConsumerState<ConsentPage> {
     );
   }
 
-  Widget _buildSharedFieldsSection(consentInfo) {
+  Widget _buildSharedFieldsSection(ConsentInfo consentInfo) {
     final fieldLabels = {
       'name': 'Nama Lengkap',
       'email': 'Email',

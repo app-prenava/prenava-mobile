@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../providers/shop_providers.dart';
 
@@ -18,6 +19,7 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
   int _currentRating = 0;
   final TextEditingController _reviewController = TextEditingController();
   bool _isSubmittingReview = false;
+  bool _isFavorited = false;
 
   @override
   void dispose() {
@@ -431,7 +433,18 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // TODO: favorite
+                        setState(() {
+                          _isFavorited = !_isFavorited;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(_isFavorited
+                                ? 'Produk ditambahkan ke favorit'
+                                : 'Produk dihapus dari favorit'),
+                            backgroundColor: const Color(0xFFFA6978),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
                       },
                       child: Container(
                         width: 40,
@@ -440,9 +453,9 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.favorite_border,
-                          color: Colors.black87,
+                        child: Icon(
+                          _isFavorited ? Icons.favorite : Icons.favorite_border,
+                          color: _isFavorited ? Colors.red : Colors.black87,
                           size: 20,
                         ),
                       ),
@@ -450,7 +463,14 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
                     const SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
-                        // TODO: share
+                        final allProducts = ref.read(shopNotifierProvider).products;
+                        final product = allProducts.firstWhere(
+                          (p) => p.productId.toString() == widget.productId,
+                        );
+                        Share.share(
+                          'Lihat produk ini di Prenava: ${product.productName}\n${product.url}',
+                          subject: 'Rekomendasi Produk Prenava',
+                        );
                       },
                       child: Container(
                         width: 40,
@@ -533,7 +553,7 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: reviews.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final review = reviews[index];
                 final isMine =

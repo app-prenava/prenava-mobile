@@ -59,7 +59,7 @@ class ArticleCard extends StatelessWidget {
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => _defaultAvatar(),
+                                errorBuilder: (_, _, _) => _defaultAvatar(),
                               ),
                             )
                           : _defaultAvatar(),

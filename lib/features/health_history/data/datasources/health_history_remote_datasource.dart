@@ -14,6 +14,19 @@ class HealthHistoryRemoteDatasource {
         return list.map((e) => HealthHistoryModel.fromJson(e)).toList();
       }
       throw Exception(response.data['message'] ?? 'Failed to fetch history');
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      final data = e.response?.data;
+      if (data is Map<String, dynamic>) {
+        final message = data['message']?.toString();
+        if (message != null && message.isNotEmpty) {
+          throw Exception(message);
+        }
+      }
+      if (statusCode != null) {
+        throw Exception('Server error ($statusCode) saat memuat riwayat');
+      }
+      throw Exception('Gagal terhubung ke server');
     } catch (e) {
       rethrow;
     }

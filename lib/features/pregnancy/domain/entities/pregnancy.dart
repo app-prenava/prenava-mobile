@@ -1,4 +1,5 @@
 class Pregnancy {
+  final int? id;
   final String hpht;
   final String hphtFormatted;
   final String hpl;
@@ -15,6 +16,7 @@ class Pregnancy {
   final FetalSize? fetalSize;
 
   Pregnancy({
+    this.id,
     required this.hpht,
     required this.hphtFormatted,
     required this.hpl,
@@ -32,6 +34,7 @@ class Pregnancy {
   });
 
   Pregnancy copyWith({
+    int? id,
     String? hpht,
     String? hphtFormatted,
     String? hpl,
@@ -48,6 +51,7 @@ class Pregnancy {
     FetalSize? fetalSize,
   }) {
     return Pregnancy(
+      id: id ?? this.id,
       hpht: hpht ?? this.hpht,
       hphtFormatted: hphtFormatted ?? this.hphtFormatted,
       hpl: hpl ?? this.hpl,

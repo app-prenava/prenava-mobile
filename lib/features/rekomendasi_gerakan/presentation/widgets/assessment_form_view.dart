@@ -233,11 +233,13 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty)
+            if (value == null || value.isEmpty) {
               return 'Berat badan tidak boleh kosong';
+            }
             final bb = double.tryParse(value);
-            if (bb == null || bb <= 20 || bb > 200)
+            if (bb == null || bb <= 20 || bb > 200) {
               return 'Masukkan berat badan yang valid';
+            }
             return null;
           },
         ),
@@ -268,11 +270,13 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             ),
           ),
           validator: (value) {
-            if (value == null || value.isEmpty)
+            if (value == null || value.isEmpty) {
               return 'Tinggi badan tidak boleh kosong';
+            }
             final tb = double.tryParse(value);
-            if (tb == null || tb <= 50 || tb > 250)
+            if (tb == null || tb <= 50 || tb > 250) {
               return 'Masukkan tinggi badan yang valid';
+            }
             return null;
           },
         ),
@@ -399,7 +403,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
           _buildLabel(label),
           const SizedBox(height: 6),
           DropdownButtonFormField<bool>(
-            value: value,
+            initialValue: value,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

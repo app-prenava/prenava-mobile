@@ -86,44 +86,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Widget _buildBottomSection() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final screenWidth = constraints.maxWidth;
-
-        return Container(
-          color: Colors.white,
-          padding: EdgeInsets.symmetric(
-            horizontal: screenWidth * 0.08,
-            vertical: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildPageIndicators(screenWidth),
-              const SizedBox(height: 30),
-              _buildStartButton(),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(30, 0, 30, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPageIndicators(),
+          const SizedBox(height: 40),
+          _buildStartButton(),
+        ],
+      ),
     );
   }
 
-  Widget _buildPageIndicators(double screenWidth) {
+  Widget _buildPageIndicators() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(
         _pages.length,
-        (index) => Container(
-          margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.01),
-          width: screenWidth * 0.03,
-          height: screenWidth * 0.03,
+        (index) => AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: _currentPage == index ? 24 : 8,
+          height: 8,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(4),
             color: _currentPage == index
                 ? const Color(0xFFFA6978)
-                : const Color(0xFFFFB3C6),
+                : const Color(0xFFE5E7EB),
           ),
         ),
       ),

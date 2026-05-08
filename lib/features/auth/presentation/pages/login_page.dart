@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 
@@ -16,7 +17,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -61,13 +61,56 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handleGoogleLogin() async {
-    // TODO: Connect to backend google auth endpoint
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Fitur Google Login sedang dalam persiapan (Setup Console API).'),
-        backgroundColor: Colors.blueGrey,
-      ),
-    );
+    try {
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw Exception('Gagal mendapatkan ID Token dari Google');
+      }
+
+      if (!mounted) return;
+
+      final success = await ref.read(authNotifierProvider.notifier).loginWithGoogle(idToken);
+
+      if (!mounted) return;
+
+      if (success) {
+        await ref.read(profileNotifierProvider.notifier).loadProfile();
+        final profileState = ref.read(profileNotifierProvider);
+        
+        if (!mounted) return;
+        
+        if (profileState.hasProfile) {
+          context.go('/home');
+        } else {
+          context.go('/profile-onboarding');
+        }
+      } else {
+        final error = ref.read(authNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? 'Login Google gagal'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -96,7 +139,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 20),
                       _buildPasswordField(),
                       const SizedBox(height: 16),
-                      _buildRememberAndForgot(),
+                      _buildForgotPassword(),
                       const SizedBox(height: 32),
                       _buildLoginButton(authState),
                       const SizedBox(height: 16),
@@ -271,56 +314,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _buildRememberAndForgot() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: Checkbox(
-                value: _rememberMe,
-                onChanged: (value) {
-                  setState(() {
-                    _rememberMe = value ?? false;
-                  });
-                },
-                activeColor: const Color(0xFFFA6978),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                visualDensity: VisualDensity.compact,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Ingatkan saya',
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF424242),
-              ),
-            ),
-          ],
+  Widget _buildForgotPassword() {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: TextButton(
+        onPressed: () {
+          context.push('/forgot-password');
+        },
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          minimumSize: const Size(0, 0),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        TextButton(
-          onPressed: () {
-            context.push('/forgot-password');
-          },
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.zero,
-            minimumSize: const Size(0, 0),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: const Text(
-            'Lupa kata sandi?',
-            style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFFFA6978),
-              fontWeight: FontWeight.w600,
-            ),
+        child: const Text(
+          'Lupa kata sandi?',
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFFFA6978),
+            fontWeight: FontWeight.w600,
           ),
         ),
-      ],
+      ),
     );
   }
 

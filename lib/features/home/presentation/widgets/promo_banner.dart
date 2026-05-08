@@ -56,7 +56,7 @@ class _PromoBannerState extends State<PromoBanner> {
                   child: Image.asset(
                     widget.bannerImages[index],
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
+                    errorBuilder: (_, _, _) => Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFE8EC),
                         borderRadius: BorderRadius.circular(16),

@@ -219,7 +219,7 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
   }
 
   Widget _buildStep1Welcome() {
-    final userName = ref.watch(authNotifierProvider).user?.name?.split(' ')[0] ?? 'Bunda';
+    final userName = ref.watch(authNotifierProvider).user?.name.split(' ')[0] ?? 'Bunda';
     return _buildStepWrapper(
       title: 'Selamat datang, $userName! 👋',
       subtitle: 'Mari lengkapi profilmu agar kami bisa memberikan rekomendasi terbaik.',
@@ -265,7 +265,7 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: options.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final option = options[index];
           return _buildOptionTile(option, _statusKandungan == option, () => setState(() => _statusKandungan = option));

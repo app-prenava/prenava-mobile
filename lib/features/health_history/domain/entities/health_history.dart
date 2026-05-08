@@ -6,6 +6,7 @@ class HealthHistory extends Equatable {
   final String type;
   final Map<String, dynamic> result;
   final String? imagePath;
+  final String? localImagePath;
   final DateTime createdAt;
 
   const HealthHistory({
@@ -14,9 +15,18 @@ class HealthHistory extends Equatable {
     required this.type,
     required this.result,
     this.imagePath,
+    this.localImagePath,
     required this.createdAt,
   });
 
   @override
-  List<Object?> get props => [id, userId, type, result, imagePath, createdAt];
+  List<Object?> get props => [
+    id,
+    userId,
+    type,
+    result,
+    imagePath,
+    localImagePath,
+    createdAt,
+  ];
 }

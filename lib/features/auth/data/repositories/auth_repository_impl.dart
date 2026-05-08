@@ -124,4 +124,15 @@ class AuthRepositoryImpl implements AuthRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<User> loginWithGoogle(String idToken) async {
+    try {
+      final loginResponse = await _remoteDatasource.loginWithGoogle(idToken);
+      await _secureStore.write('jwt_token', loginResponse.token);
+      return loginResponse.user;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

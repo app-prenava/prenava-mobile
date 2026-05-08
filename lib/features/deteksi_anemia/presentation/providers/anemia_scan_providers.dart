@@ -1,20 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/utils/health_history_image_store.dart';
 import '../../data/datasources/anemia_scan_remote_datasource.dart';
 import '../../data/repositories/anemia_scan_repository_impl.dart';
 import '../../domain/entities/anemia_scan_result.dart';
 import '../../domain/repositories/anemia_scan_repository.dart';
 
-final anemiaScanDatasourceProvider =
-    Provider<AnemiaScanRemoteDatasource>((ref) {
+final anemiaScanDatasourceProvider = Provider<AnemiaScanRemoteDatasource>((
+  ref,
+) {
   final dio = ref.watch(appDioProvider);
   return AnemiaScanRemoteDatasource(dio);
 });
 
-final anemiaScanRepositoryProvider =
-    Provider<AnemiaScanRepository>((ref) {
+final anemiaScanRepositoryProvider = Provider<AnemiaScanRepository>((ref) {
   final datasource = ref.watch(anemiaScanDatasourceProvider);
   return AnemiaScanRepositoryImpl(datasource);
+});
+
+final healthHistoryImageStoreProvider = Provider<HealthHistoryImageStore>((
+  ref,
+) {
+  return HealthHistoryImageStore();
 });
 
 class AnemiaScanState {
@@ -31,10 +38,10 @@ class AnemiaScanState {
   });
 
   const AnemiaScanState.initial()
-      : isScanning = false,
-        result = null,
-        error = null,
-        selectedImagePath = null;
+    : isScanning = false,
+      result = null,
+      error = null,
+      selectedImagePath = null;
 
   AnemiaScanState copyWith({
     bool? isScanning,
@@ -49,8 +56,9 @@ class AnemiaScanState {
       isScanning: isScanning ?? this.isScanning,
       result: clearResult ? null : (result ?? this.result),
       error: clearError ? null : (error ?? this.error),
-      selectedImagePath:
-          clearImage ? null : (selectedImagePath ?? this.selectedImagePath),
+      selectedImagePath: clearImage
+          ? null
+          : (selectedImagePath ?? this.selectedImagePath),
     );
   }
 }
@@ -60,17 +68,33 @@ class AnemiaScanNotifier extends Notifier<AnemiaScanState> {
   AnemiaScanState build() => const AnemiaScanState.initial();
 
   void setImagePath(String path) {
-    state = state.copyWith(selectedImagePath: path, clearError: true, clearResult: true);
+    state = state.copyWith(
+      selectedImagePath: path,
+      clearError: true,
+      clearResult: true,
+    );
   }
 
   Future<void> scanEye() async {
     if (state.selectedImagePath == null) return;
 
-    state = state.copyWith(isScanning: true, clearError: true, clearResult: true);
+    state = state.copyWith(
+      isScanning: true,
+      clearError: true,
+      clearResult: true,
+    );
 
     try {
       final repository = ref.read(anemiaScanRepositoryProvider);
       final result = await repository.scanEye(state.selectedImagePath!);
+      final historyId = result.historyId;
+      if (historyId != null) {
+        final imageStore = ref.read(healthHistoryImageStoreProvider);
+        final localPath = await imageStore.saveImageToAppDir(
+          state.selectedImagePath!,
+        );
+        await imageStore.saveHistoryImagePath(historyId, localPath);
+      }
       state = state.copyWith(isScanning: false, result: result);
     } catch (e) {
       state = state.copyWith(
@@ -87,5 +111,5 @@ class AnemiaScanNotifier extends Notifier<AnemiaScanState> {
 
 final anemiaScanNotifierProvider =
     NotifierProvider<AnemiaScanNotifier, AnemiaScanState>(
-  AnemiaScanNotifier.new,
-);
+      AnemiaScanNotifier.new,
+    );

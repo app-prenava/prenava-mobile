@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/tips_providers.dart';
+import '../../domain/entities/pregnancy_tip.dart';
 
 class TipsListPage extends ConsumerStatefulWidget {
   const TipsListPage({super.key});
@@ -72,7 +73,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
             categoriesAsync.when(
               data: (categories) => _buildCategoryFilter(categories),
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
             ),
             // Tips List (background putih)
             Expanded(
@@ -160,7 +161,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                   child: Image.asset(
                     'assets/images/tips.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => const Icon(
+                    errorBuilder: (_, _, _) => const Icon(
                       Icons.lightbulb,
                       color: Colors.yellow,
                       size: 24,
@@ -272,7 +273,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                         category.iconUrl!,
                         width: 20,
                         height: 20,
-                        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
                       ),
                     ),
                   Text(category.name),
@@ -340,7 +341,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
     );
   }
 
-  Widget _buildTipCard(tip) {
+  Widget _buildTipCard(PregnancyTip tip) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -378,7 +379,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                             width: 40,
                             height: 40,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, __, ___) => const Icon(
+                            errorBuilder: (_, _, _) => const Icon(
                               Icons.lightbulb,
                               color: Color(0xFFFA6978),
                               size: 28,

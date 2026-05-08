@@ -1,6 +1,7 @@
 class DepressionScanResult {
   final bool success;
   final bool faceDetected;
+  final int? historyId;
   final double? faceConfidence;
   final double? score;
   final String? level;
@@ -14,6 +15,7 @@ class DepressionScanResult {
   const DepressionScanResult({
     required this.success,
     required this.faceDetected,
+    this.historyId,
     this.faceConfidence,
     this.score,
     this.level,
@@ -24,5 +26,4 @@ class DepressionScanResult {
     this.fatigueProbabilities,
     this.error,
   });
-
 }

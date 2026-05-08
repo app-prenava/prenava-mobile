@@ -1,5 +1,6 @@
 class AnemiaScanResult {
   final String prediction;
+  final int? historyId;
   final double? confidence;
   final double? probabilityAnemia;
   final double? probabilityNonAnemia;
@@ -8,6 +9,7 @@ class AnemiaScanResult {
 
   const AnemiaScanResult({
     required this.prediction,
+    this.historyId,
     this.confidence,
     this.probabilityAnemia,
     this.probabilityNonAnemia,

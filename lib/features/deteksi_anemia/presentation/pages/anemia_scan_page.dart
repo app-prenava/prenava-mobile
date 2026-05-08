@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
 import '../providers/anemia_scan_providers.dart';
 
 class AnemiaScanPage extends ConsumerStatefulWidget {
@@ -121,7 +122,11 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
         elevation: 0,
         surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFA6978), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFFFA6978),
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -179,68 +184,57 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
               // Image preview area
               GestureDetector(
                 onTap: _showImageSourcePicker,
-                child: Container(
-                  width: double.infinity,
-                  height: 340,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: state.selectedImagePath != null
-                          ? const Color(0xFFFA6978).withValues(alpha: 0.3)
-                          : Colors.grey.shade200,
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+                child: DottedBorder(
+                  options: RoundedRectDottedBorderOptions(
+                    radius: const Radius.circular(24),
+                    color: state.selectedImagePath != null
+                        ? const Color(0xFFFA6978)
+                        : Colors.grey.shade300,
+                    strokeWidth: 1.6,
+                    dashPattern: const [7, 5],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: state.selectedImagePath != null
-                        ? Image.file(
-                            File(state.selectedImagePath!),
-                            fit: BoxFit.cover,
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 84,
-                                height: 84,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFA6978).withValues(alpha: 0.05),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
+                  child: Container(
+                    width: double.infinity,
+                    height: 340,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: state.selectedImagePath != null
+                          ? Image.file(
+                              File(state.selectedImagePath!),
+                              fit: BoxFit.cover,
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
                                   Icons.camera_enhance_outlined,
-                                  size: 38,
+                                  size: 44,
                                   color: Color(0xFFFA6978),
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Ketuk untuk mengambil foto',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFFA6978),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Ketuk untuk mengambil foto',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFFA6978),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Pastikan area mata terlihat dengan jelas',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[500],
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Pastikan area mata terlihat dengan jelas',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[500],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                    ),
                   ),
                 ),
               ),
@@ -259,7 +253,11 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Color(0xFFE53E3E), size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFE53E3E),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -279,7 +277,8 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: state.selectedImagePath != null && !state.isScanning
+                  onPressed:
+                      state.selectedImagePath != null && !state.isScanning
                       ? _startScan
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -314,19 +313,12 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                             ),
                           ],
                         )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.auto_awesome_outlined, size: 20),
-                            SizedBox(width: 10),
-                            Text(
-                              'Mulai Analisis Sekarang',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                      : const Text(
+                          'Mulai Analisis Sekarang',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
@@ -349,7 +341,10 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
 
               // Disclaimer
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.amber.shade50.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(16),
@@ -358,7 +353,11 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline_rounded, color: Colors.amber.shade800, size: 18),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.amber.shade800,
+                      size: 18,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

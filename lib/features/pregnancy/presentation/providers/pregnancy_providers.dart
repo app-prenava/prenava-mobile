@@ -193,9 +193,9 @@ class PregnancyNotifier extends Notifier<PregnancyState> {
         return false;
       }
 
-      // Extract ID from pregnancy data if available
+      // Extract ID from pregnancy data
       final updatedPregnancy = await repository.updatePregnancy(
-        id: 1, // TODO: Get actual pregnancy ID
+        id: state.pregnancy!.id ?? 0,
         hpht: hpht,
         babyName: babyName,
         babyGender: babyGender,

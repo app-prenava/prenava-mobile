@@ -10,6 +10,7 @@ enum AppFeature {
   kalkulatorHpl,
   anemia,
   depresi,
+  stunting,
   komunitas,
   kunjungan,
   appointment,
@@ -31,6 +32,8 @@ extension AppFeatureSlug on AppFeature {
         return 'anemia';
       case AppFeature.depresi:
         return 'depresi';
+      case AppFeature.stunting:
+        return 'stunting';
       case AppFeature.komunitas:
         return 'komunitas';
       case AppFeature.kunjungan:
@@ -54,12 +57,25 @@ class FeatureTracker {
 
   FeatureTracker(this._ref);
 
+  Future<bool> _trackSlug(String slug) async {
+    try {
+      final dio = _ref.read(appDioProvider);
+      await dio.post('/user/feature-track', data: {'feature': slug});
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Call this whenever user navigates to a feature.
   /// Silent — never throws, never blocks UI.
   Future<void> track(AppFeature feature) async {
     try {
-      final dio = _ref.read(appDioProvider);
-      await dio.post('/user/feature-track', data: {'feature': feature.slug});
+      final tracked = await _trackSlug(feature.slug);
+      if (!tracked && feature == AppFeature.stunting) {
+        // Backward compatibility while backend still uses legacy 'udara' task key.
+        await _trackSlug('udara');
+      }
       // Refresh progress so bottom sheet updates if open
       _ref.invalidate(dailyProgressProvider);
     } catch (_) {

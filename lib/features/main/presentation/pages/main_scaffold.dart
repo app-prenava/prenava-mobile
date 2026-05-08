@@ -36,27 +36,40 @@ class _MainScaffoldState extends State<MainScaffold> {
             index: _currentIndex,
             children: _pages,
           ),
+          floatingActionButton: _showCenterButton
+              ? FloatingActionButton(
+                  onPressed: () {
+                    final String route = _currentIndex == 1 ? '/community/create' : '/shop/add';
+                    context.push(route);
+                  },
+                  backgroundColor: const Color(0xFFFA6978),
+                  elevation: 4,
+                  shape: const CircleBorder(),
+                  child: const Icon(Icons.add, color: Colors.white, size: 30),
+                )
+              : null,
           bottomNavigationBar: (isGuideVisible && (_currentIndex == 1 || _currentIndex == 2))
               ? null
-              : Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.2),
-                        blurRadius: 10,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    child: SizedBox(
-                      height: 70,
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                  child: Container(
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: _showCenterButton
-                            ? _buildNavWithCenterButton()
-                            : _buildNavWithoutCenterButton(),
+                        children: _buildNavWithoutCenterButton(),
                       ),
                     ),
                   ),
@@ -66,7 +79,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
-  // 4 nav items only (for Beranda & Akun Saya pages)
+  // 4 nav items only (for all pages)
   List<Widget> _buildNavWithoutCenterButton() {
     return [
       _buildNavItem(
@@ -96,37 +109,6 @@ class _MainScaffoldState extends State<MainScaffold> {
     ];
   }
 
-  // 4 nav items + center button (for Komunitas & Belanja pages)
-  List<Widget> _buildNavWithCenterButton() {
-    return [
-      _buildNavItem(
-        icon: Icons.home_outlined,
-        activeIcon: Icons.home,
-        label: 'Beranda',
-        index: 0,
-      ),
-      _buildNavItem(
-        icon: Icons.people_outline,
-        activeIcon: Icons.people,
-        label: 'Komunitas',
-        index: 1,
-      ),
-      _buildCenterAddButton(),
-      _buildNavItem(
-        icon: Icons.shopping_bag_outlined,
-        activeIcon: Icons.shopping_bag,
-        label: 'Belanja',
-        index: 2,
-      ),
-      _buildNavItem(
-        icon: Icons.person_outline,
-        activeIcon: Icons.person,
-        label: 'Akun Saya',
-        index: 3,
-      ),
-    ];
-  }
-
   Widget _buildNavItem({
     required IconData icon,
     required IconData activeIcon,
@@ -135,79 +117,44 @@ class _MainScaffoldState extends State<MainScaffold> {
   }) {
     final isActive = _currentIndex == index;
 
-    return Expanded(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      padding: EdgeInsets.symmetric(
+        horizontal: isActive ? 16 : 8,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFFFA6978) : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: InkWell(
         onTap: () {
           setState(() {
             _currentIndex = index;
           });
         },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               isActive ? activeIcon : icon,
-              color: isActive ? const Color(0xFFFA6978) : Colors.grey[600],
-              size: 26,
+              color: isActive ? Colors.white : Colors.grey[600],
+              size: 24,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                color: isActive ? const Color(0xFFFA6978) : Colors.grey[600],
+            if (isActive) ...[
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
-            ),
+            ],
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCenterAddButton() {
-    final String route = _currentIndex == 1 ? '/community/create' : '/shop/add';
-    final String label = _currentIndex == 1 ? 'Post' : 'Jual';
-
-    return GestureDetector(
-      onTap: () => context.push(route),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFA6978), Color(0xFFFF8A95)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFA6978).withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFFA6978),
-            ),
-          ),
-        ],
       ),
     );
   }

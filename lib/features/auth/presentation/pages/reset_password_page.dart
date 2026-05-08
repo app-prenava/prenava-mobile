@@ -18,7 +18,6 @@ class _ResetPasswordPageState extends ConsumerState<ResetPasswordPage> {
   final _passwordConfirmController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscurePasswordConfirm = true;
-  bool _isLoading = false;
 
   @override
   void dispose() {

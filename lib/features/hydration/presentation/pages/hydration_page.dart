@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/hydration_providers.dart';
 import '../widgets/hydration_glass_item.dart';
+import '../../domain/entities/water_intake_today.dart';
+import '../../domain/entities/water_intake_history.dart';
+import '../../domain/entities/water_intake_stats.dart';
 
 class HydrationPage extends ConsumerStatefulWidget {
   const HydrationPage({super.key});
@@ -98,7 +101,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                       waterIntakeAsync.when(
                         data: (data) => _buildHeader(data.today),
                         loading: () => _buildHeader(null),
-                        error: (_, __) => _buildHeader(null),
+                        error: (_, _) => _buildHeader(null),
                       ),
                       // Card: Pantau Konsumsi Air
                       waterIntakeAsync.when(
@@ -108,7 +111,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                           addWaterIntakeState,
                         ),
                         loading: () => const SizedBox.shrink(),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
@@ -121,7 +124,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                   data.statistik,
                 ),
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
               ),
               const SizedBox(height: 20),
             ],
@@ -131,7 +134,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
     );
   }
 
-  Widget _buildHeader(today) {
+  Widget _buildHeader(WaterIntakeToday? today) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Column(
@@ -173,7 +176,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
     );
   }
 
-  Widget _buildTodayCard(today, WidgetRef ref, AsyncValue<void> addWaterIntakeState) {
+  Widget _buildTodayCard(WaterIntakeToday today, WidgetRef ref, AsyncValue<void> addWaterIntakeState) {
     return Container(
       margin: const EdgeInsets.only(top: 20),
       decoration: const BoxDecoration(
@@ -347,7 +350,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
     );
   }
 
-  Widget _buildHistoryCard(history, stats) {
+  Widget _buildHistoryCard(List<WaterIntakeHistory> history, WaterIntakeStats stats) {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(20),

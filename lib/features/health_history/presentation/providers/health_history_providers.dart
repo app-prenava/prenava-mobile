@@ -1,18 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/utils/health_history_image_store.dart';
 import '../../data/datasources/health_history_remote_datasource.dart';
 import '../../data/repositories/health_history_repository_impl.dart';
 import '../../domain/entities/health_history.dart';
 import '../../domain/repositories/health_history_repository.dart';
 
-final healthHistoryDatasourceProvider = Provider<HealthHistoryRemoteDatasource>((ref) {
-  final dio = ref.watch(appDioProvider);
-  return HealthHistoryRemoteDatasource(dio);
-});
+final healthHistoryDatasourceProvider = Provider<HealthHistoryRemoteDatasource>(
+  (ref) {
+    final dio = ref.watch(appDioProvider);
+    return HealthHistoryRemoteDatasource(dio);
+  },
+);
 
-final healthHistoryRepositoryProvider = Provider<HealthHistoryRepository>((ref) {
+final healthHistoryRepositoryProvider = Provider<HealthHistoryRepository>((
+  ref,
+) {
   final datasource = ref.watch(healthHistoryDatasourceProvider);
-  return HealthHistoryRepositoryImpl(datasource);
+  final imageStore = HealthHistoryImageStore();
+  return HealthHistoryRepositoryImpl(datasource, imageStore);
 });
 
 class HealthHistoryState {
@@ -70,4 +76,6 @@ class HealthHistoryNotifier extends Notifier<HealthHistoryState> {
 }
 
 final healthHistoryNotifierProvider =
-    NotifierProvider<HealthHistoryNotifier, HealthHistoryState>(HealthHistoryNotifier.new);
+    NotifierProvider<HealthHistoryNotifier, HealthHistoryState>(
+      HealthHistoryNotifier.new,
+    );

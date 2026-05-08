@@ -22,19 +22,33 @@ class WisdomChecklistSection extends ConsumerWidget {
       data: (items) {
         final filteredItems = selectedRegion == 'Semua'
             ? items
-            : items.where((item) => item.region.contains(selectedRegion)).toList();
+            : items
+                  .where((item) => item.region.contains(selectedRegion))
+                  .toList();
 
         final checkedCount = items.where((e) => e.isChecked).length;
         final total = items.length;
         final progress = total > 0 ? checkedCount / total : 0.0;
 
-        final regions = ['Semua', 'Jawa', 'Sunda', 'Bali', 'Sumatera', 'Bugis', 'Betawi'];
+        final regions = [
+          'Semua',
+          'Jawa',
+          'Sunda',
+          'Bali',
+          'Sumatera',
+          'Bugis',
+          'Betawi',
+        ];
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _WisdomHeader(checkedCount: checkedCount, total: total, progress: progress),
-            
+            _WisdomHeader(
+              checkedCount: checkedCount,
+              total: total,
+              progress: progress,
+            ),
+
             // Region Filter
             SizedBox(
               height: 40,
@@ -51,20 +65,28 @@ class WisdomChecklistSection extends ConsumerWidget {
                       label: Text(region),
                       selected: isSelected,
                       onSelected: (selected) {
-                        ref.read(selectedRegionProvider.notifier).updateRegion(region);
+                        ref
+                            .read(selectedRegionProvider.notifier)
+                            .updateRegion(region);
                       },
-                      selectedColor: const Color(0xFF4CAF50).withValues(alpha: 0.2),
+                      selectedColor: const Color(
+                        0xFF4CAF50,
+                      ).withValues(alpha: 0.2),
                       labelStyle: TextStyle(
                         fontSize: 12,
-                        color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[600],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        color: isSelected
+                            ? const Color(0xFF2E7D32)
+                            : Colors.grey[600],
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   );
                 },
               ),
             ),
-            
+
             const SizedBox(height: 16),
             if (filteredItems.isEmpty)
               const Center(
@@ -120,7 +142,10 @@ class _WisdomHeader extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4CAF50).withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12),
@@ -149,7 +174,9 @@ class _WisdomHeader extends StatelessWidget {
             builder: (context, value, _) => LinearProgressIndicator(
               value: value,
               backgroundColor: Colors.grey[200],
-              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                Color(0xFF4CAF50),
+              ),
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),
             ),
@@ -249,7 +276,8 @@ class _WisdomTileState extends ConsumerState<_WisdomTile>
                 children: [
                   // Checkbox
                   GestureDetector(
-                    onTap: () => ref.read(wisdomProvider.notifier).toggle(item.id),
+                    onTap: () =>
+                        ref.read(wisdomProvider.notifier).toggle(item.id),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       width: 26,
@@ -267,7 +295,11 @@ class _WisdomTileState extends ConsumerState<_WisdomTile>
                         ),
                       ),
                       child: item.isChecked
-                          ? const Icon(Icons.check, color: Colors.white, size: 16)
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 16,
+                            )
                           : null,
                     ),
                   ),
@@ -293,10 +325,13 @@ class _WisdomTileState extends ConsumerState<_WisdomTile>
                         const SizedBox(height: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: _regionColor(item.region)
-                                .withValues(alpha: 0.12),
+                            color: _regionColor(
+                              item.region,
+                            ).withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -333,7 +368,6 @@ class _WisdomTileState extends ConsumerState<_WisdomTile>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('💡 ', style: TextStyle(fontSize: 13)),
                   Expanded(
                     child: Text(
                       item.reason,

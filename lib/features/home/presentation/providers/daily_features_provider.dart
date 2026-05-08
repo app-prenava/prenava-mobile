@@ -8,6 +8,7 @@ class DailyTaskItem {
   final String taskType;
   final int points;
   final bool isCompleted;
+
   /// True when this task is auto-completed on feature navigation.
   final bool isAuto;
 
@@ -22,11 +23,21 @@ class DailyTaskItem {
   });
 
   factory DailyTaskItem.fromJson(Map<String, dynamic> json) {
+    final taskType = (json['task_type'] ?? '').toString();
+    final rawTitle = (json['title'] ?? '').toString();
+    final rawDescription = json['description']?.toString();
+
+    final isLegacyUdaraTask =
+        taskType == 'feature_udara' ||
+        rawTitle.toLowerCase().contains('kualitas udara');
+
     return DailyTaskItem(
       id: json['id'],
-      title: json['title'] ?? '',
-      description: json['description'],
-      taskType: json['task_type'] ?? '',
+      title: isLegacyUdaraTask ? 'Cek Risiko Stunting' : rawTitle,
+      description: isLegacyUdaraTask
+          ? 'Lakukan skrining risiko stunting untuk memantau kesehatan anak.'
+          : rawDescription,
+      taskType: taskType,
       points: json['points'] ?? 0,
       isCompleted: json['is_completed'] ?? false,
       isAuto: json['is_auto'] ?? false,
@@ -46,15 +57,17 @@ class DailyProgress {
   });
 }
 
-final dailyProgressProvider = FutureProvider.autoDispose<DailyProgress>((ref) async {
+final dailyProgressProvider = FutureProvider.autoDispose<DailyProgress>((
+  ref,
+) async {
   final dio = ref.watch(appDioProvider);
   final response = await dio.get('/user/daily-progress');
-  
+
   final data = response.data;
   final tasks = (data['tasks'] as List)
       .map((t) => DailyTaskItem.fromJson(t))
       .toList();
-      
+
   return DailyProgress(
     tasks: tasks,
     streak: data['streak'] ?? 0,
@@ -65,9 +78,10 @@ final dailyProgressProvider = FutureProvider.autoDispose<DailyProgress>((ref) as
 final completeTaskProvider = Provider((ref) {
   return (int taskId) async {
     final dio = ref.read(appDioProvider);
-    await dio.post('/user/daily-task/complete', data: {
-      'daily_task_id': taskId,
-    });
+    await dio.post(
+      '/user/daily-task/complete',
+      data: {'daily_task_id': taskId},
+    );
     ref.invalidate(dailyProgressProvider);
   };
 });

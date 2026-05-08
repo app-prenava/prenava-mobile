@@ -89,8 +89,7 @@ class _BidanUpdatePageState extends ConsumerState<BidanUpdatePage> {
     if (confirmed != true) return;
 
     // Call provider to update health status
-    // TODO: Get actual pregnancy ID from the data
-    final pregnancyId = 1; // This should come from pregnancy.id
+    final pregnancyId = widget.pregnancy.id ?? 0;
 
     final success = await ref.read(pregnancyNotifierProvider.notifier).updateHealthStatus(
       id: pregnancyId,

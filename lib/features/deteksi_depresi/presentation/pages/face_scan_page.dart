@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/depression_scan_providers.dart';
 
@@ -22,7 +23,8 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(depressionScanNotifierProvider.notifier).reset();
       final prefs = await SharedPreferences.getInstance();
-      final hasSeenTutorial = prefs.getBool('has_seen_depresi_tutorial') ?? false;
+      final hasSeenTutorial =
+          prefs.getBool('has_seen_depresi_tutorial') ?? false;
       if (!hasSeenTutorial && mounted) {
         _showTutorialDialog();
         await prefs.setBool('has_seen_depresi_tutorial', true);
@@ -38,7 +40,9 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
       imageQuality: 85,
     );
     if (picked != null) {
-      ref.read(depressionScanNotifierProvider.notifier).setImagePath(picked.path);
+      ref
+          .read(depressionScanNotifierProvider.notifier)
+          .setImagePath(picked.path);
     }
   }
 
@@ -136,11 +140,31 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
           children: [
             Text('Untuk hasil analisis yang akurat, pastikan:'),
             SizedBox(height: 10),
-            Row(children: [Icon(Icons.check_circle, size: 16, color: Colors.green), SizedBox(width: 8), Expanded(child: Text('Pencahayaan cukup terang'))]),
+            Row(
+              children: [
+                Icon(Icons.check_circle, size: 16, color: Colors.green),
+                SizedBox(width: 8),
+                Expanded(child: Text('Pencahayaan cukup terang')),
+              ],
+            ),
             SizedBox(height: 6),
-            Row(children: [Icon(Icons.check_circle, size: 16, color: Colors.green), SizedBox(width: 8), Expanded(child: Text('Wajah terlihat penuh dan jelas'))]),
+            Row(
+              children: [
+                Icon(Icons.check_circle, size: 16, color: Colors.green),
+                SizedBox(width: 8),
+                Expanded(child: Text('Wajah terlihat penuh dan jelas')),
+              ],
+            ),
             SizedBox(height: 6),
-            Row(children: [Icon(Icons.check_circle, size: 16, color: Colors.green), SizedBox(width: 8), Expanded(child: Text('Tidak menggunakan kacamata gelap / masker'))]),
+            Row(
+              children: [
+                Icon(Icons.check_circle, size: 16, color: Colors.green),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text('Tidak menggunakan kacamata gelap / masker'),
+                ),
+              ],
+            ),
           ],
         ),
         actions: [
@@ -156,7 +180,9 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFA6978),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Lanjutkan'),
           ),
@@ -179,22 +205,46 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
             children: [
               const Row(
                 children: [
-                   Icon(Icons.volunteer_activism, color: Color(0xFFFA6978), size: 28),
-                   SizedBox(width: 12),
-                   Text('Panduan Analisis', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3748))),
-                ]
+                  Icon(
+                    Icons.volunteer_activism,
+                    color: Color(0xFFFA6978),
+                    size: 28,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Panduan Analisis',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               const Text(
                 'Kesehatan mental selama kehamilan sangatlah penting. Fitur ini dirancang untuk mendeteksi indikator stres atau depresi dari ekspresi wajah Anda.',
-                style: TextStyle(fontSize: 14, color: Color(0xFF4A5568), height: 1.5),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF4A5568),
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 20),
-              _buildTutorialRow(Icons.camera_front, 'Pastikan cahaya terang & wajah terlihat jelas.'),
+              _buildTutorialRow(
+                Icons.camera_front,
+                'Pastikan cahaya terang & wajah terlihat jelas.',
+              ),
               const SizedBox(height: 12),
-              _buildTutorialRow(Icons.face, 'Lepas masker atau kacamata gelap.'),
+              _buildTutorialRow(
+                Icons.face,
+                'Lepas masker atau kacamata gelap.',
+              ),
               const SizedBox(height: 12),
-              _buildTutorialRow(Icons.security, 'Privasi terjaga 100%. Foto tidak disimpan.'),
+              _buildTutorialRow(
+                Icons.security,
+                'Privasi terjaga. Foto disimpan lokal di perangkat Anda.',
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -203,10 +253,15 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFA6978),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('Mengerti', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Mengerti',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -222,7 +277,12 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
       children: [
         Icon(icon, size: 20, color: const Color(0xFFFA6978)),
         const SizedBox(width: 12),
-        Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748)))),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748)),
+          ),
+        ),
       ],
     );
   }
@@ -238,7 +298,11 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
         elevation: 0,
         surfaceTintColor: Colors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFA6978), size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFFFA6978),
+            size: 20,
+          ),
           onPressed: () => context.pop(),
         ),
         title: const Text(
@@ -279,68 +343,57 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
               // Image preview area
               GestureDetector(
                 onTap: _showQualityCheck,
-                child: Container(
-                  width: double.infinity,
-                  height: 340,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: state.selectedImagePath != null
-                          ? const Color(0xFFFA6978).withValues(alpha: 0.3)
-                          : Colors.grey.shade200,
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+                child: DottedBorder(
+                  options: RoundedRectDottedBorderOptions(
+                    radius: const Radius.circular(24),
+                    color: state.selectedImagePath != null
+                        ? const Color(0xFFFA6978)
+                        : Colors.grey.shade300,
+                    strokeWidth: 1.6,
+                    dashPattern: const [7, 5],
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: state.selectedImagePath != null
-                        ? Image.file(
-                            File(state.selectedImagePath!),
-                            fit: BoxFit.cover,
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 84,
-                                height: 84,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFA6978).withValues(alpha: 0.05),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
+                  child: Container(
+                    width: double.infinity,
+                    height: 340,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: state.selectedImagePath != null
+                          ? Image.file(
+                              File(state.selectedImagePath!),
+                              fit: BoxFit.cover,
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
                                   Icons.face_retouching_natural_outlined,
-                                  size: 38,
+                                  size: 44,
                                   color: Color(0xFFFA6978),
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              const Text(
-                                'Ketuk untuk mengambil foto',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFFA6978),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Ketuk untuk mengambil foto',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFFA6978),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Pastikan wajah terlihat dengan jelas',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey[500],
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Pastikan wajah terlihat dengan jelas',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.grey[500],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
+                    ),
                   ),
                 ),
               ),
@@ -359,7 +412,11 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.error_outline, color: Color(0xFFE53E3E), size: 20),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFE53E3E),
+                        size: 20,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -379,7 +436,8 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: state.selectedImagePath != null && !state.isScanning
+                  onPressed:
+                      state.selectedImagePath != null && !state.isScanning
                       ? _startScan
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -414,19 +472,12 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                             ),
                           ],
                         )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.auto_awesome_outlined, size: 20),
-                            SizedBox(width: 10),
-                            Text(
-                              'Mulai Analisis Sekarang',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                      : const Text(
+                          'Mulai Analisis Sekarang',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
@@ -449,7 +500,10 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
 
               // Disclaimer
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.amber.shade50.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(16),
@@ -458,7 +512,11 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.info_outline_rounded, color: Colors.amber.shade800, size: 18),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Colors.amber.shade800,
+                      size: 18,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

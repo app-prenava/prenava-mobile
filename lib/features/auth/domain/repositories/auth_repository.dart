@@ -16,5 +16,6 @@ abstract class AuthRepository {
   Future<String> sendOtp(String email);
   Future<String> verifyOtp(String email, String otp);
   Future<void> resetPassword(String email, String resetToken, String password);
+  Future<User> loginWithGoogle(String idToken);
 }
 

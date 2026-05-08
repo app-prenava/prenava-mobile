@@ -15,7 +15,6 @@ class VerifyOtpPage extends ConsumerStatefulWidget {
 class _VerifyOtpPageState extends ConsumerState<VerifyOtpPage> {
   final _formKey = GlobalKey<FormState>();
   final _otpController = TextEditingController();
-  bool _isLoading = false;
 
   @override
   void dispose() {

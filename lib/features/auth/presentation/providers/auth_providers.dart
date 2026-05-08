@@ -81,12 +81,20 @@ class AuthNotifier extends Notifier<AuthState> {
       final hasValidToken = await repository.hasValidToken();
 
       if (hasValidToken) {
-        final user = await repository.getCurrentUser();
-        state = AuthState(
+        // Optimistically set authenticated if token exists
+        state = const AuthState(
           isInitialized: true,
-          isAuthenticated: user != null,
-          user: user,
+          isAuthenticated: true,
         );
+
+        try {
+          final user = await repository.getCurrentUser();
+          if (user != null) {
+            state = state.copyWith(user: user);
+          }
+        } catch (_) {
+          // Ignore fetch error, keep isAuthenticated = true
+        }
       } else {
         state = const AuthState(
           isInitialized: true,
@@ -126,6 +134,31 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<bool> loginWithGoogle(String idToken) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.loginWithGoogle(idToken);
+      
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
   Future<void> logout() async {
     try {
       final repository = ref.read(authRepositoryProvider);
@@ -136,6 +169,15 @@ class AuthNotifier extends Notifier<AuthState> {
         isAuthenticated: false,
       );
     }
+  }
+
+  Future<void> forceLogout() async {
+    final repository = ref.read(authRepositoryProvider);
+    await repository.clearToken();
+    state = const AuthState(
+      isInitialized: true,
+      isAuthenticated: false,
+    );
   }
 
   Future<bool> register({

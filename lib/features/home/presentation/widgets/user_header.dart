@@ -55,7 +55,7 @@ class UserHeader extends StatelessWidget {
                         width: 40,
                         height: 40,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _defaultAvatar(),
+                        errorBuilder: (_, _, _) => _defaultAvatar(),
                       )
                     : _defaultAvatar(),
               ),
