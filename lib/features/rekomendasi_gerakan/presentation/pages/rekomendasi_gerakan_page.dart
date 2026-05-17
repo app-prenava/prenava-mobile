@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:prenava_mobile/core/utils/image_url_helper.dart';
+
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
+import '../../../profile/presentation/pages/edit_profile_page.dart';
 import '../providers/sport_recommendation_providers.dart';
 import '../widgets/assessment_form_view.dart';
 import '../widgets/lmp_bottom_sheet.dart';
@@ -19,19 +23,15 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _sheetOpened = false;
+  bool _assessmentSheetDismissed = false;
+  bool _assessmentSheetScheduled = false;
+  bool _redirectedToProfile = false;
+  bool _redirectedToLogin = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    Future.microtask(() {
-      ref
-          .read(sportRecommendationNotifierProvider.notifier)
-          .fetchRecommendations();
-      ref
-          .read(sportRecommendationNotifierProvider.notifier)
-          .fetchExistingAssessment();
-    });
   }
 
   @override
@@ -40,19 +40,26 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     super.dispose();
   }
 
+  // ─── bottom sheets ────────────────────────────────────────────────────────
+
   void _showAssessmentSheet({
     bool showUpdateBanner = false,
     String? errorMessage,
+    bool allowDismissAndShowData = false,
   }) {
     if (_sheetOpened) return;
+
     _sheetOpened = true;
+    _assessmentSheetScheduled = false;
+
+    bool submitted = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       isDismissible: false,
-      enableDrag: true,
+      enableDrag: false,
       builder: (_) => DraggableScrollableSheet(
         initialChildSize: 0.85,
         minChildSize: 0.5,
@@ -68,6 +75,7 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
             ),
             child: AssessmentFormView(
               onSubmit: (payload) {
+                submitted = true;
                 Navigator.of(context).pop();
                 ref
                     .read(sportRecommendationNotifierProvider.notifier)
@@ -86,12 +94,35 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
       ),
     ).whenComplete(() {
       _sheetOpened = false;
+      _assessmentSheetScheduled = false;
+
+      if (submitted) {
+        _assessmentSheetDismissed = allowDismissAndShowData;
+
+        ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .clearAssessmentFlag();
+
+        return;
+      }
+
+      _assessmentSheetDismissed = true;
+
+      if (allowDismissAndShowData) {
+        return;
+      }
+
+      if (mounted) {
+        context.go('/home');
+      }
     });
   }
 
   void _showLmpSheet() {
-    if (_sheetOpened) return;
+    if (_sheetOpened || _assessmentSheetDismissed) return;
     _sheetOpened = true;
+
+    bool submitted = false;
 
     showModalBottomSheet(
       context: context,
@@ -101,7 +132,8 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
       enableDrag: false,
       builder: (sheetContext) => LmpBottomSheet(
         onSuccess: (hpht, gestationalAge, isMultiple) async {
-          // Step 1: Save to pregnancy_calculators
+          submitted = true;
+
           final success = await ref
               .read(pregnancyNotifierProvider.notifier)
               .savePregnancy(hpht: hpht, babyGender: null);
@@ -111,7 +143,6 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
           }
 
           if (success && mounted) {
-            // Step 2: Create record in pregnancies table for sport recommendations
             await ref
                 .read(pregnancyNotifierProvider.notifier)
                 .createPregnancyRecord(
@@ -120,46 +151,147 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
                   multipleGestation: isMultiple,
                 );
 
-            // Step 3: Refresh pregnancy data
             await ref
                 .read(pregnancyNotifierProvider.notifier)
                 .loadMyPregnancy();
 
-            // Step 4: Small delay then submit default assessment
-            await Future.delayed(const Duration(milliseconds: 500));
-            if (mounted) {
-              _submitDefaultAssessment();
-            }
+            ref
+                .read(sportRecommendationNotifierProvider.notifier)
+                .clearLmpFlag();
+
+            await ref
+                .read(sportRecommendationNotifierProvider.notifier)
+                .fetchRecommendations();
+
+            await ref
+                .read(sportRecommendationNotifierProvider.notifier)
+                .fetchExistingAssessment();
           }
         },
       ),
     ).whenComplete(() {
       _sheetOpened = false;
+      _assessmentSheetScheduled = false;
+
+      if (!submitted) {
+        _assessmentSheetDismissed = true;
+
+        ref
+            .read(sportRecommendationNotifierProvider.notifier)
+            .clearLmpFlag();
+
+        if (mounted) {
+          context.go('/home');
+        }
+
+        return;
+      }
     });
   }
 
-  void _submitDefaultAssessment() {
-    // Submit with default values to get recommendations
-    // BMI 22.0 is considered normal/healthy range
-    final payload = SportAssessmentPayload(
-      bmi: 22.0,
-      hypertension: false,
-      isDiabetes: false,
-      gestationalDiabetes: false,
-      isFever: false,
-      isHighHeartRate: false,
-      previousComplications: false,
-      mentalHealthIssue: false,
-      lowImpactPref: true,
-      waterAccess:
-          false, // water_access_rupture - false means no water rupture issue
-      backPain: false,
-      placentaPositionRestriction: false,
-    );
-    ref
-        .read(sportRecommendationNotifierProvider.notifier)
-        .submitAssessment(payload);
+  void _scheduleAssessmentSheet({
+    bool showUpdateBanner = false,
+    String? errorMessage,
+    bool allowDismissAndShowData = false,
+  }) {
+    if (_sheetOpened || _assessmentSheetDismissed || _assessmentSheetScheduled) {
+      return;
+    }
+
+    _assessmentSheetScheduled = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        _assessmentSheetScheduled = false;
+        return;
+      }
+
+      if (_sheetOpened || _assessmentSheetDismissed) {
+        _assessmentSheetScheduled = false;
+        return;
+      }
+
+      _showAssessmentSheet(
+        showUpdateBanner: showUpdateBanner,
+        errorMessage: errorMessage,
+        allowDismissAndShowData: allowDismissAndShowData,
+      );
+    });
   }
+
+  // ─── helpers ──────────────────────────────────────────────────────────────
+
+  void _redirectToProfile() {
+    if (_redirectedToProfile) return;
+    _redirectedToProfile = true;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const EditProfilePage()),
+    );
+  }
+
+  void _redirectToLogin() {
+    if (_redirectedToLogin) return;
+    _redirectedToLogin = true;
+
+    if (_sheetOpened) {
+      Navigator.of(context).pop();
+      _sheetOpened = false;
+    }
+
+    context.go('/login');
+  }
+
+  Future<void> _refresh() async {
+    _assessmentSheetDismissed = false;
+    _assessmentSheetScheduled = false;
+
+    await ref
+        .read(sportRecommendationNotifierProvider.notifier)
+        .fetchRecommendations();
+    await ref
+        .read(sportRecommendationNotifierProvider.notifier)
+        .fetchExistingAssessment();
+  }
+
+  bool _isServiceUnavailableError(String? error) {
+    if (error == null) return false;
+
+    final lowerError = error.toLowerCase();
+
+    return error.contains('Layanan sedang tidak tersedia') ||
+        lowerError.contains('500') ||
+        lowerError.contains('internal server error') ||
+        lowerError.contains('failed to fetch sport recommendations') ||
+        lowerError.contains('failed to fetch all sports');
+  }
+
+  String? _normalizeSportImageUrl(String? url) {
+    if (url == null || url.isEmpty || url == 'data not found') {
+      return null;
+    }
+
+    var fixedUrl = ImageUrlHelper.normalizeImageUrl(url);
+
+    if (fixedUrl == null || fixedUrl.isEmpty || fixedUrl == 'data not found') {
+      return null;
+    }
+
+    fixedUrl = fixedUrl.replaceFirst('/api/storage/', '/storage/');
+
+    fixedUrl = fixedUrl.replaceFirst(
+      'http://localhost:8000',
+      'http://10.0.2.2:8000',
+    );
+    fixedUrl = fixedUrl.replaceFirst(
+      'https://localhost:8000',
+      'http://10.0.2.2:8000',
+    );
+
+    return fixedUrl;
+  }
+
+  // ─── build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -186,20 +318,23 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
         actions: [
           IconButton(
             icon: const Icon(Icons.settings, color: Colors.white),
-            onPressed: () => _showAssessmentSheet(showUpdateBanner: true),
+            onPressed: () => _showAssessmentSheet(
+              showUpdateBanner: false,
+              allowDismissAndShowData: true,
+            ),
           ),
         ],
       ),
       body: Column(
         children: [
           _buildCustomTabBar(),
-          Expanded(
-            child: _buildBody(state),
-          ),
+          Expanded(child: _buildBody(state)),
         ],
       ),
     );
   }
+
+  // ─── tab bar ──────────────────────────────────────────────────────────────
 
   Widget _buildCustomTabBar() {
     return Container(
@@ -216,14 +351,8 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildTabButton(
-                title: 'Rekomendasi',
-                index: 0,
-              ),
-              _buildTabButton(
-                title: 'Semua Olahraga',
-                index: 1,
-              ),
+              _buildTabButton(title: 'Rekomendasi', index: 0),
+              _buildTabButton(title: 'Semua Olahraga', index: 1),
             ],
           ),
         ),
@@ -233,6 +362,7 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
 
   Widget _buildTabButton({required String title, required int index}) {
     final isSelected = _tabController.index == index;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -257,6 +387,8 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     );
   }
 
+  // ─── body routing ─────────────────────────────────────────────────────────
+
   Widget _buildBody(SportRecommendationState state) {
     if (state.isLoading) {
       return const Center(
@@ -274,46 +406,63 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
       );
     }
 
-    // Check if LMP is needed first
+    if (state.tokenExpired) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _redirectToLogin();
+      });
+      return _buildPlaceholderBody();
+    }
+
     if (state.needsLmp) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_sheetOpened) {
+        if (!_sheetOpened && !_assessmentSheetDismissed) {
           _showLmpSheet();
         }
       });
       return _buildPlaceholderBody();
     }
 
-    // Check if Profile is needed
     if (state.needsProfile) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Silakan lengkapi profil Anda terlebih dahulu'),
-          ),
+        if (mounted) _redirectToProfile();
+      });
+      return _buildPlaceholderBody();
+    }
+
+    if (state.needsAssessment) {
+      _scheduleAssessmentSheet();
+      return _buildPlaceholderBody();
+    }
+
+    if (state.error != null && state.recommendations.isEmpty) {
+      if (_isServiceUnavailableError(state.error)) {
+        return _buildServiceUnavailableBody();
+      }
+
+      _scheduleAssessmentSheet(errorMessage: state.error);
+      return _buildPlaceholderBody();
+    }
+
+    if (state.needUpdateData) {
+      _scheduleAssessmentSheet(
+        showUpdateBanner: true,
+        allowDismissAndShowData: true,
+      );
+
+      if (state.recommendations.isNotEmpty) {
+        return TabBarView(
+          controller: _tabController,
+          children: [
+            _buildRecommendationsList(state.recommendations),
+            _buildAllSportsList(state.recommendations),
+          ],
         );
-      });
+      }
+
       return _buildPlaceholderBody();
     }
 
-    if (state.error != null &&
-        state.recommendations.isEmpty &&
-        !state.needsLmp &&
-        !state.needsProfile) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_sheetOpened) {
-          _showAssessmentSheet(errorMessage: state.error);
-        }
-      });
-      return _buildPlaceholderBody();
-    }
-
-    if (state.needUpdateData || state.recommendations.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!_sheetOpened) {
-          _showAssessmentSheet(showUpdateBanner: state.needUpdateData);
-        }
-      });
+    if (state.recommendations.isEmpty) {
       return _buildPlaceholderBody();
     }
 
@@ -326,99 +475,70 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     );
   }
 
-  Widget _buildRecommendationsList(List recommendations) {
-    if (recommendations.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: () async {
-          await ref
-              .read(sportRecommendationNotifierProvider.notifier)
-              .fetchRecommendations();
-          await ref
-              .read(sportRecommendationNotifierProvider.notifier)
-              .fetchExistingAssessment();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.6,
-            alignment: Alignment.center,
-            child: const Text('Belum ada rekomendasi'),
-          ),
-        ),
-      );
+  // ─── list builders ────────────────────────────────────────────────────────
+
+  Widget _buildRecommendationsList(List<SportRecommendation> recommendations) {
+    final filtered = recommendations.where((item) {
+      return item.recommendationLevel == 'highly_recommended' ||
+          item.recommendationLevel == 'allowed_with_caution';
+    }).toList();
+
+    if (filtered.isEmpty) {
+      return _buildRefreshableEmpty('Belum ada rekomendasi');
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        await ref
-            .read(sportRecommendationNotifierProvider.notifier)
-            .fetchRecommendations();
-        await ref
-            .read(sportRecommendationNotifierProvider.notifier)
-            .fetchExistingAssessment();
-      },
+      onRefresh: _refresh,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: filtered.length,
+        itemBuilder: (context, index) => _buildSportCard(filtered[index]),
+      ),
+    );
+  }
+
+  Widget _buildAllSportsList(List<SportRecommendation> recommendations) {
+    if (recommendations.isEmpty) {
+      return _buildRefreshableEmpty('Belum ada data olahraga');
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: recommendations.length,
-        itemBuilder: (context, index) {
-          final item = recommendations[index];
-          return _buildSportCard(item, index + 1);
-        },
+        itemBuilder: (context, index) =>
+            _buildSportCard(recommendations[index]),
       ),
     );
   }
 
-  Widget _buildAllSportsList(List recommendations) {
-    if (recommendations.isEmpty) {
-      return RefreshIndicator(
-        onRefresh: () async {
-          await ref
-              .read(sportRecommendationNotifierProvider.notifier)
-              .fetchRecommendations();
-          await ref
-              .read(sportRecommendationNotifierProvider.notifier)
-              .fetchExistingAssessment();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.6,
-            alignment: Alignment.center,
-            child: const Text('Belum ada data olahraga'),
+  Widget _buildRefreshableEmpty(String message) {
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Text(
+              message,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF757575)),
+            ),
           ),
         ),
-      );
-    }
-
-    // Sort by score descending for "all sports" view
-    final sortedRecs = List.from(recommendations)
-      ..sort((a, b) => b.score.compareTo(a.score));
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await ref
-            .read(sportRecommendationNotifierProvider.notifier)
-            .fetchRecommendations();
-        await ref
-            .read(sportRecommendationNotifierProvider.notifier)
-            .fetchExistingAssessment();
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: sortedRecs.length,
-        itemBuilder: (context, index) {
-          final item = sortedRecs[index];
-          return _buildSportCard(item, index + 1);
-        },
       ),
     );
   }
+
+  // ─── sport card ───────────────────────────────────────────────────────────
 
   String? _getYoutubeThumbnail(String? url) {
     if (url == null || url.isEmpty) return null;
     try {
       final uri = Uri.parse(url);
       String? videoId;
+
       if (uri.host.contains('youtube.com')) {
         if (uri.queryParameters.containsKey('v')) {
           videoId = uri.queryParameters['v'];
@@ -430,6 +550,7 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
       } else if (uri.host.contains('youtu.be')) {
         videoId = uri.pathSegments.isNotEmpty ? uri.pathSegments[0] : null;
       }
+
       if (videoId != null && videoId.isNotEmpty) {
         return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
       }
@@ -437,28 +558,27 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     return null;
   }
 
-  Widget _buildSportCard(dynamic item, int rank) {
-    final activity = item.activity ?? 'Tanpa nama';
-    final picture = (item.picture1 != null && item.picture1 != 'data not found') 
-        ? item.picture1 
-        : _getYoutubeThumbnail(item.videoLink);
-    final longText = item.longText ?? 'Belum ada deskripsi untuk olahraga ini.';
+  Widget _buildSportCard(SportRecommendation item) {
+    final activity = item.name.isNotEmpty ? item.name : 'Tanpa nama';
 
-    // Format activity name to be title case (e.g., "walking" -> "Walking", "prenatal_yoga" -> "Prenatal Yoga")
-    final formattedTitle = activity
-        .split('_')
-        .map((word) => word.isNotEmpty
-            ? '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
-            : '')
-        .join(' ');
+    final rawPicture =
+        (item.picture1 != null && item.picture1 != 'data not found')
+            ? item.picture1
+            : _getYoutubeThumbnail(item.videoLink);
+
+    final picture = _normalizeSportImageUrl(rawPicture);
+
+    final longText =
+        item.longText ?? 'Belum ada deskripsi untuk olahraga ini.';
+
+    final isWarning = item.recommendationLevel == 'allowed_with_caution';
+    final isDanger = item.recommendationLevel == 'avoid';
 
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => SportDetailPage(sport: item),
-          ),
+          MaterialPageRoute(builder: (_) => SportDetailPage(sport: item)),
         );
       },
       child: Container(
@@ -468,52 +588,42 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFE0E0E0)),
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image section
-            if (picture != null && picture.isNotEmpty)
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  topRight: Radius.circular(12),
-                ),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Image.network(
-                      picture,
-                      height: 160,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return _buildImagePlaceholder();
-                      },
-                    ),
-                    if (picture.contains('youtube.com') || picture.contains('img.youtube.com'))
-                      const Icon(
-                        Icons.play_circle_outline,
-                        color: Colors.white,
-                        size: 40,
-                      ),
-                  ],
-                ),
-              )
-            else
-              _buildImagePlaceholder(),
-            // Content section
+            _buildCardImage(picture),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    formattedTitle,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          activity,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF333333),
+                          ),
+                        ),
+                      ),
+                      if (isWarning)
+                        _buildBadge(
+                          label: 'Dengan Pengawasan',
+                          bg: const Color(0xFFFFF3CD),
+                          fg: const Color(0xFF856404),
+                        ),
+                      if (isDanger)
+                        _buildBadge(
+                          label: 'Tidak Disarankan',
+                          bg: const Color(0xFFF8D7DA),
+                          fg: const Color(0xFF721C24),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -535,21 +645,113 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
     );
   }
 
+  Widget _buildCardImage(String? picture) {
+    if (picture == null || picture.isEmpty) {
+      return _buildImagePlaceholder();
+    }
+
+    return SizedBox(
+      height: 160,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        alignment: Alignment.center,
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              picture,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+
+                return Container(
+                  color: const Color(0xFFF5F5F5),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFFFA6978),
+                      strokeWidth: 2,
+                    ),
+                  ),
+                );
+              },
+              errorBuilder: (_, __, ___) => _buildImagePlaceholder(),
+            ),
+          ),
+          if (picture.contains('youtube.com') || picture.contains('img.youtube.com'))
+            const Center(
+              child: Icon(
+                Icons.play_circle_outline,
+                color: Colors.white,
+                size: 40,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadge({
+    required String label,
+    required Color bg,
+    required Color fg,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: fg,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   Widget _buildImagePlaceholder() {
     return Container(
       height: 160,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
-      ),
+      width: double.infinity,
+      color: const Color(0xFFF5F5F5),
       child: const Center(
         child: Icon(
           Icons.image_outlined,
           size: 40,
           color: Color(0xFF9E9E9E),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceUnavailableBody() {
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7,
+          width: double.infinity,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Center(
+              child: Text(
+                'Layanan sedang tidak tersedia.\nSilakan coba beberapa saat lagi.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF9E9E9E),
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

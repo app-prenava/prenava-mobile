@@ -2,8 +2,10 @@ import '../../domain/entities/sport_recommendation.dart';
 
 class SportRecommendationModel extends SportRecommendation {
   const SportRecommendationModel({
-    required super.activity,
-    required super.score,
+    required super.code,
+    required super.name,
+    required super.category,
+    required super.recommendationLevel,
     super.videoLink,
     super.longText,
     super.picture1,
@@ -13,8 +15,10 @@ class SportRecommendationModel extends SportRecommendation {
 
   factory SportRecommendationModel.fromJson(Map<String, dynamic> json) {
     return SportRecommendationModel(
-      activity: json['activity'] ?? '',
-      score: (json['score'] as num?)?.toDouble() ?? 0.0,
+      code: json['code'] ?? '',
+      name: json['name'] ?? '',
+      category: json['category'] ?? '',
+      recommendationLevel: json['recommendation_level'] ?? '',
       videoLink: json['video_link'],
       longText: json['long_text'],
       picture1: json['picture_1'],
@@ -30,28 +34,48 @@ class SportRecommendationResponseModel extends SportRecommendationResponse {
     required super.message,
     super.needUpdateData,
     required super.recommendations,
+    required super.highlyRecommended,
+    required super.allowedWithCaution,
+    required super.avoid,
+    required super.all,
   });
 
-  factory SportRecommendationResponseModel.fromJson(Map<String, dynamic> json) {
-    bool? needUpdate = json['need_update_data'];
+  factory SportRecommendationResponseModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final recommendationMap =
+        json['recommendations'] as Map<String, dynamic>? ?? {};
 
-    // Parse model_response.recommendations
-    List<SportRecommendation> parsedRecommendations = [];
-    if (json['model_response'] != null &&
-        json['model_response']['recommendations'] != null) {
-      final recs = json['model_response']['recommendations'] as List;
-      parsedRecommendations = recs
-          .map(
-            (e) => SportRecommendationModel.fromJson(e as Map<String, dynamic>),
-          )
+    List<SportRecommendation> parseList(String key) {
+      final data = recommendationMap[key];
+
+      if (data is! List) return [];
+
+      return data
+          .whereType<Map<String, dynamic>>()
+          .map((e) => SportRecommendationModel.fromJson(e))
           .toList();
     }
+
+    final highlyRecommended = parseList('highly_recommended');
+    final allowedWithCaution = parseList('allowed_with_caution');
+    final avoid = parseList('avoid');
+
+    final processedAll = [
+      ...highlyRecommended,
+      ...allowedWithCaution,
+      ...avoid,
+    ];
 
     return SportRecommendationResponseModel(
       status: json['status'] ?? '',
       message: json['message'] ?? '',
-      needUpdateData: needUpdate,
-      recommendations: parsedRecommendations,
+      needUpdateData: json['need_update_data'] ?? false,
+      recommendations: processedAll,
+      highlyRecommended: highlyRecommended,
+      allowedWithCaution: allowedWithCaution,
+      avoid: avoid,
+      all: processedAll,
     );
   }
 }

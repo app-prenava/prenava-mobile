@@ -307,7 +307,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: _categories.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          separatorBuilder: (context, index) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
             final category = _categories[index];
             final bool active = state.selectedCategory == category;

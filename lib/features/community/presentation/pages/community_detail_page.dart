@@ -303,7 +303,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                       ? Image.network(
                           post.user.profileImage!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => _buildDefaultAvatar(),
+                          errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
                         )
                       : _buildDefaultAvatar(),
                 ),
@@ -434,7 +434,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 ),
               ),
             ),
-            error: (_, _) => Center(
+            error: (context, index) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
@@ -459,7 +459,7 @@ class _CommunityDetailPageState extends ConsumerState<CommunityDetailPage> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: comments.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final comment = comments[index];
                   final isMine =

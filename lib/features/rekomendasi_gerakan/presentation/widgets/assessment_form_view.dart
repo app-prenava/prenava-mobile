@@ -106,6 +106,11 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
     }
   }
 
+  void _closeBottomSheet() {
+    if (!mounted) return;
+    Navigator.of(context).pop();
+  }
+
   void _onSubmit() {
     final berat = double.tryParse(_beratBadanController.text);
     final tinggiCm = double.tryParse(_tinggiBadanController.text);
@@ -165,10 +170,6 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
                     _buildErrorBanner(),
                     const SizedBox(height: 12),
                   ],
-                  if (widget.existingAssessment != null) ...[
-                    _buildAutoFillBanner(),
-                    const SizedBox(height: 12),
-                  ],
                   const Text(
                     'Olahraga yang Tepat Dimulai dari Kamu',
                     style: TextStyle(
@@ -207,7 +208,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('Berat Badan Sebelum Hamil (kg)'),
+        _buildLabel('Berat Badan (kg)'),
         const SizedBox(height: 6),
         TextFormField(
           controller: _beratBadanController,
@@ -472,7 +473,7 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
                   ? null
                   : () {
                       if (_currentStep == 0) {
-                        Navigator.of(context).pop();
+                        _closeBottomSheet();
                       } else {
                         _goToPreviousStep();
                       }
@@ -582,29 +583,6 @@ class _AssessmentFormViewState extends State<AssessmentFormView> {
             child: Text(
               widget.errorMessage!,
               style: const TextStyle(fontSize: 13, color: Color(0xFFEF5350)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAutoFillBanner() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF66BB6A)),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.check_circle_outline, color: Color(0xFF43A047), size: 20),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Data sebelumnya sudah terisi otomatis. Silakan periksa dan ubah jika ada perubahan kondisi.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF43A047)),
             ),
           ),
         ],

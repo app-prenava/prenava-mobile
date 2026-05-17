@@ -73,7 +73,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
             categoriesAsync.when(
               data: (categories) => _buildCategoryFilter(categories),
               loading: () => const SizedBox.shrink(),
-              error: (_, _) => const SizedBox.shrink(),
+              error: (context, index) => const SizedBox.shrink(),
             ),
             // Tips List (background putih)
             Expanded(
@@ -161,7 +161,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                   child: Image.asset(
                     'assets/images/tips.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) => const Icon(
+                    errorBuilder: (context, error, stackTrace) => const Icon(
                       Icons.lightbulb,
                       color: Colors.yellow,
                       size: 24,
@@ -273,7 +273,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                         category.iconUrl!,
                         width: 20,
                         height: 20,
-                        errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                       ),
                     ),
                   Text(category.name),
@@ -379,7 +379,7 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
                             width: 40,
                             height: 40,
                             fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => const Icon(
+                            errorBuilder: (context, error, stackTrace) => const Icon(
                               Icons.lightbulb,
                               color: Color(0xFFFA6978),
                               size: 28,

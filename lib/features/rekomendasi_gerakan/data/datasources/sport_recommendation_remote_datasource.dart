@@ -7,6 +7,9 @@ class SportRecommendationRemoteDatasource {
 
   SportRecommendationRemoteDatasource(this._dio);
 
+  static const String serviceUnavailableMessage =
+      'Layanan sedang tidak tersedia. Silakan coba beberapa saat lagi.';
+
   /// GET /api/recomendation/sports/get
   /// Fetches existing sport recommendations based on user's stored assessment data.
   Future<SportRecommendationResponseModel> getRecommendations() async {
@@ -23,13 +26,18 @@ class SportRecommendationRemoteDatasource {
         throw Exception('Failed to fetch sport recommendations');
       }
     } on DioException catch (e) {
+      if (e.response?.statusCode != null && e.response!.statusCode! >= 500) {
+        throw Exception(serviceUnavailableMessage);
+      }
+
       if (e.response != null) {
         final msg = e.response?.data is Map
             ? e.response?.data['message']
             : null;
         throw Exception(msg ?? 'Failed to fetch sport recommendations');
       }
-      throw Exception('Network error: ${e.message}');
+
+      throw Exception(serviceUnavailableMessage);
     }
   }
 
@@ -54,13 +62,18 @@ class SportRecommendationRemoteDatasource {
         throw Exception('Failed to create sport recommendation');
       }
     } on DioException catch (e) {
+      if (e.response?.statusCode != null && e.response!.statusCode! >= 500) {
+        throw Exception(serviceUnavailableMessage);
+      }
+
       if (e.response != null) {
         final msg = e.response?.data is Map
             ? e.response?.data['message'] ?? e.response?.data.toString()
             : null;
         throw Exception(msg ?? 'Failed to create sport recommendation');
       }
-      throw Exception('Network error: ${e.message}');
+
+      throw Exception(serviceUnavailableMessage);
     }
   }
 
@@ -105,13 +118,18 @@ class SportRecommendationRemoteDatasource {
         throw Exception('Failed to fetch all sports');
       }
     } on DioException catch (e) {
+      if (e.response?.statusCode != null && e.response!.statusCode! >= 500) {
+        throw Exception(serviceUnavailableMessage);
+      }
+
       if (e.response != null) {
         final msg = e.response?.data is Map
             ? e.response?.data['message']
             : null;
         throw Exception(msg ?? 'Failed to fetch all sports');
       }
-      throw Exception('Network error: ${e.message}');
+
+      throw Exception(serviceUnavailableMessage);
     }
   }
 }

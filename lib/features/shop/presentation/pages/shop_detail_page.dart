@@ -553,7 +553,7 @@ class _ShopDetailPageState extends ConsumerState<ShopDetailPage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: reviews.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final review = reviews[index];
                 final isMine =

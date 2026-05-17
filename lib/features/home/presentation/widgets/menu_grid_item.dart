@@ -43,7 +43,7 @@ class MenuGridItem extends StatelessWidget {
                         child: Image.asset(
                           imagePath!,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => Icon(
+                          errorBuilder: (context, error, stackTrace) => Icon(
                             Icons.image_not_supported,
                             color: iconColor ?? const Color(0xFFFA6978),
                             size: 26,
