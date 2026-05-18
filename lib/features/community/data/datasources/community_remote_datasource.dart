@@ -224,7 +224,7 @@ class CommunityRemoteDatasource {
   Future<void> deleteComment(int commentId) async {
     try {
       // Assumes backend endpoint: DELETE /api/komunitas/komen/{commentId}
-      final response = await _dio.delete('/komunitas/komen/$commentId');
+      final response = await _dio.delete('/komunitas/komen/delete/$commentId');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
         throw Exception('Gagal menghapus komentar');

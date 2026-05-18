@@ -1,6 +1,9 @@
 class SportRecommendation {
-  final String activity;
-  final double score;
+  final String code;
+  final String name;
+  final String category;
+  final String recommendationLevel;
+
   final String? videoLink;
   final String? longText;
   final String? picture1;
@@ -8,8 +11,10 @@ class SportRecommendation {
   final String? picture3;
 
   const SportRecommendation({
-    required this.activity,
-    required this.score,
+    required this.code,
+    required this.name,
+    required this.category,
+    required this.recommendationLevel,
     this.videoLink,
     this.longText,
     this.picture1,
@@ -22,13 +27,23 @@ class SportRecommendationResponse {
   final String status;
   final String message;
   final bool? needUpdateData;
+
   final List<SportRecommendation> recommendations;
+
+  final List<SportRecommendation> highlyRecommended;
+  final List<SportRecommendation> allowedWithCaution;
+  final List<SportRecommendation> avoid;
+  final List<SportRecommendation> all;
 
   const SportRecommendationResponse({
     required this.status,
     required this.message,
     this.needUpdateData,
     required this.recommendations,
+    required this.highlyRecommended,
+    required this.allowedWithCaution,
+    required this.avoid,
+    required this.all,
   });
 }
 

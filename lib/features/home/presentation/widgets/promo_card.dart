@@ -31,7 +31,7 @@ class PromoCard extends StatelessWidget {
                 child: Image.network(
                   imageUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => _placeholderContent(),
+                  errorBuilder: (context, error, stackTrace) => _placeholderContent(),
                 ),
               )
             : _placeholderContent(),

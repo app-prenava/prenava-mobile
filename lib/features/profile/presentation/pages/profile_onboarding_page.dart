@@ -265,7 +265,7 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: options.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 12),
+        separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final option = options[index];
           return _buildOptionTile(option, _statusKandungan == option, () => setState(() => _statusKandungan = option));

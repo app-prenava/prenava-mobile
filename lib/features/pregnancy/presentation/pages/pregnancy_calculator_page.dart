@@ -169,7 +169,7 @@ class _PregnancyCalculatorPageState
             'assets/images/kalkulator hpl.png',
             width: 40,
             height: 40,
-            errorBuilder: (_, _, _) => const Icon(
+            errorBuilder: (context, error, stackTrace) => const Icon(
               Icons.calendar_month,
               color: Colors.white,
               size: 32,
@@ -463,7 +463,7 @@ class _PregnancyCalculatorPageState
                           width: 140,
                           height: 140,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => const Icon(
+                          errorBuilder: (context, error, stackTrace) => const Icon(
                             Icons.child_care,
                             size: 80,
                             color: Color(0xFFFA6978),

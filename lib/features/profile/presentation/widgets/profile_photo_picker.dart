@@ -91,7 +91,7 @@ class ProfilePhotoPicker extends StatelessWidget {
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        errorBuilder: (_, _, _) => _placeholder(),
+        errorBuilder: (context, error, stackTrace) => _placeholder(),
       );
     } else {
       return _placeholder();

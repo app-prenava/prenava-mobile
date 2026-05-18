@@ -4,7 +4,8 @@ import 'package:intl/intl.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 
 class LmpBottomSheet extends ConsumerStatefulWidget {
-  final Future<void> Function(String hpht, int gestationalAge, bool isMultiple) onSuccess;
+  final Future<void> Function(String hpht, int gestationalAge, bool isMultiple)
+  onSuccess;
 
   const LmpBottomSheet({super.key, required this.onSuccess});
 
@@ -13,32 +14,60 @@ class LmpBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _LmpBottomSheetState extends ConsumerState<LmpBottomSheet> {
+  static const _pink = Color(0xFFFA6978);
+
   DateTime? _selectedDate;
   int _gestationalAge = 0;
   String _multipleGestation = 'Tidak';
   int? _autoFilledAge;
+
+  final TextEditingController _gestationalAgeController =
+      TextEditingController();
+
+  @override
+  void dispose() {
+    _gestationalAgeController.dispose();
+    super.dispose();
+  }
+
+  // ✅ Hitung usia kehamilan dari HPHT
+  int _calculateGestationalAge(DateTime hpht) {
+    final today = DateTime.now();
+    final diff = today.difference(hpht).inDays;
+    return (diff / 7).floor();
+  }
 
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileNotifierProvider);
     final profile = profileState.profile;
 
-    // Auto-fill age from profile
     if (_autoFilledAge == null && profile?.usia != null) {
       _autoFilledAge = profile!.usia;
     }
 
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Sedikit lagi ya ❤️', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            'Sedikit lagi ya ❤️',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           const Text(
             'Sebelum melanjutkan ke Prenava, silakan isi terlebih dahulu profil kehamilanmu agar kami bisa mendampingimu dengan lebih baik.',
@@ -53,34 +82,77 @@ class _LmpBottomSheetState extends ConsumerState<LmpBottomSheet> {
           const SizedBox(height: 16),
           _buildDropdownField(),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey[300]),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Nanti', style: TextStyle(color: Colors.black)),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                flex: 2,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFC75166)),
-                  onPressed: _selectedDate == null ? null : () async {
-                    final hpht = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-                    final isMultiple = _multipleGestation == 'Ya';
-                    await widget.onSuccess(hpht, _gestationalAge, isMultiple);
-                    // Parent is responsible for closing the sheet
-                  },
-                  child: const Text('Lanjutkan', style: TextStyle(color: Colors.white)),
-                ),
-              ),
-            ],
-          )
+          _buildBottomButtons(),
         ],
       ),
+    );
+  }
+
+  Widget _buildBottomButtons() {
+    return Row(
+      children: [
+        SizedBox(
+          height: 48,
+          child: ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD9D9D9),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+            ),
+            child: const Text(
+              'Nanti',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _selectedDate == null
+                  ? null
+                  : () async {
+                      final hpht = DateFormat(
+                        'yyyy-MM-dd',
+                      ).format(_selectedDate!);
+                      final isMultiple = _multipleGestation == 'Ya';
+
+                      await widget.onSuccess(
+                        hpht,
+                        _gestationalAge,
+                        isMultiple,
+                      );
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _pink,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.grey[300],
+                disabledForegroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Lanjutkan',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -98,16 +170,34 @@ class _LmpBottomSheetState extends ConsumerState<LmpBottomSheet> {
               firstDate: DateTime(2020),
               lastDate: DateTime.now(),
             );
-            if (date != null) setState(() => _selectedDate = date);
+
+            if (date != null) {
+              final calculated = _calculateGestationalAge(date);
+              setState(() {
+                _selectedDate = date;
+                _gestationalAge = calculated;
+                _gestationalAgeController.text = calculated.toString();
+              });
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-            decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Row(
               children: [
                 const Icon(Icons.calendar_today, color: Colors.grey),
                 const SizedBox(width: 8),
-                Text(_selectedDate == null ? 'Pilih tanggal' : DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate!)),
+                Text(
+                  _selectedDate == null
+                      ? 'Pilih tanggal'
+                      : DateFormat(
+                          'dd MMMM yyyy',
+                          'id_ID',
+                        ).format(_selectedDate!),
+                ),
               ],
             ),
           ),
@@ -124,11 +214,21 @@ class _LmpBottomSheetState extends ConsumerState<LmpBottomSheet> {
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: TextField(
+            controller: _gestationalAgeController,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(border: InputBorder.none, hintText: '0'),
-            onChanged: (val) => _gestationalAge = int.tryParse(val) ?? 0,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
+              hintText: '0',
+            ),
+            onChanged: (val) {
+              // ✅ Tetap bisa diedit manual
+              _gestationalAge = int.tryParse(val) ?? 0;
+            },
           ),
         ),
       ],
@@ -143,13 +243,19 @@ class _LmpBottomSheetState extends ConsumerState<LmpBottomSheet> {
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8)),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey),
+            borderRadius: BorderRadius.circular(8),
+          ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
               value: _multipleGestation,
               items: <String>['Tidak', 'Ya'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
               }).toList(),
               onChanged: (val) => setState(() => _multipleGestation = val!),
             ),

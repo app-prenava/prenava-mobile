@@ -201,7 +201,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                               : const SizedBox(),
                                                           loading: () =>
                                                               const SizedBox(),
-                                                          error: (_, _) =>
+                                                          error: (context, index) =>
                                                               const SizedBox(),
                                                         ),
                                                   ],
@@ -595,7 +595,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           label: 'Rekomendasi Olahraga',
           onTap: () => _handleMenuTap(
             '/rekomendasi-olahraga',
-            requiresPregnancy: true,
+            requiresPregnancy: false,
             feature: AppFeature.olahraga,
           ),
         ),
@@ -743,7 +743,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.only(
+              top: 20,
+              left: 16,
+              right: 16,
+            ),
             child: Text(
               'Postingan Populer',
               style: TextStyle(
@@ -761,7 +765,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: CircularProgressIndicator(color: Color(0xFFFA6978)),
               ),
             ),
-            error: (_, _) => const SizedBox(
+            error: (context, index) => const SizedBox(
               height: 130,
               child: Center(
                 child: Text(

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../data/datasources/sport_recommendation_remote_datasource.dart';
@@ -26,6 +27,8 @@ class SportRecommendationState {
   final String? successMessage;
   final bool needsLmp;
   final bool needsProfile;
+  final bool needsAssessment; 
+  final bool tokenExpired;
   final Map<String, dynamic>? existingAssessment;
 
   const SportRecommendationState({
@@ -37,19 +40,10 @@ class SportRecommendationState {
     this.successMessage,
     this.needsLmp = false,
     this.needsProfile = false,
+    this.needsAssessment = false,
+    this.tokenExpired = false,
     this.existingAssessment,
   });
-
-  const SportRecommendationState.initial()
-    : isLoading = false,
-      isSubmitting = false,
-      needUpdateData = false,
-      recommendations = const [],
-      error = null,
-      successMessage = null,
-      needsLmp = false,
-      needsProfile = false,
-      existingAssessment = null;
 
   SportRecommendationState copyWith({
     bool? isLoading,
@@ -62,6 +56,8 @@ class SportRecommendationState {
     bool clearSuccess = false,
     bool? needsLmp,
     bool? needsProfile,
+    bool? needsAssessment,
+    bool? tokenExpired,
     Map<String, dynamic>? existingAssessment,
     bool clearAssessment = false,
   }) {
@@ -71,11 +67,12 @@ class SportRecommendationState {
       needUpdateData: needUpdateData ?? this.needUpdateData,
       recommendations: recommendations ?? this.recommendations,
       error: clearError ? null : (error ?? this.error),
-      successMessage: clearSuccess
-          ? null
-          : (successMessage ?? this.successMessage),
+      successMessage:
+          clearSuccess ? null : (successMessage ?? this.successMessage),
       needsLmp: needsLmp ?? this.needsLmp,
       needsProfile: needsProfile ?? this.needsProfile,
+      needsAssessment: needsAssessment ?? this.needsAssessment,
+      tokenExpired: tokenExpired ?? this.tokenExpired,
       existingAssessment: clearAssessment
           ? null
           : (existingAssessment ?? this.existingAssessment),
@@ -83,10 +80,31 @@ class SportRecommendationState {
   }
 }
 
-class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
+class SportRecommendationNotifier
+    extends AutoDisposeNotifier<SportRecommendationState> {
   @override
   SportRecommendationState build() {
-    return const SportRecommendationState.initial();
+    Future.microtask(() async {
+      await fetchRecommendations();
+      await fetchExistingAssessment();
+    });
+    return const SportRecommendationState(isLoading: true);
+  }
+
+  void clearLmpFlag() {
+    state = state.copyWith(needsLmp: false);
+  }
+
+  void clearProfileFlag() {
+    state = state.copyWith(needsProfile: false);
+  }
+
+  void clearAssessmentFlag() {
+    state = state.copyWith(needsAssessment: false);
+  }
+
+  void clearTokenExpiredFlag() {
+    state = state.copyWith(tokenExpired: false);
   }
 
   Future<void> fetchRecommendations() async {
@@ -95,6 +113,8 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
       clearError: true,
       needsLmp: false,
       needsProfile: false,
+      needsAssessment: false,
+      tokenExpired: false,
     );
 
     try {
@@ -109,15 +129,20 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
     } catch (e) {
       final errorStr = e.toString().replaceAll('Exception: ', '');
       final errorMsg = errorStr.toLowerCase();
-      final needsLmp =
-          errorMsg.contains('lmp') || errorMsg.contains('pregnancy');
+
+      final needsLmp = errorMsg.contains('lmp tidak ditemukan');
       final needsProfile = errorMsg.contains('tanggal lahir tidak ditemukan');
+      final needsAssessment = errorMsg.contains('assessment belum tersedia');
+      final tokenExpired = errorMsg.contains('unauthenticated') ||
+          errorMsg.contains('401');
 
       state = state.copyWith(
         isLoading: false,
         error: errorStr,
         needsLmp: needsLmp,
         needsProfile: needsProfile,
+        needsAssessment: needsAssessment,
+        tokenExpired: tokenExpired,
       );
     }
   }
@@ -138,7 +163,6 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
     } catch (e) {
       final errorStr = e.toString().replaceAll('Exception: ', '');
 
-      // If ML service fails, fall back to all sports from admin
       if (errorStr.contains('predict') ||
           errorStr.contains('ML') ||
           errorStr.contains('cURL')) {
@@ -185,6 +209,5 @@ class SportRecommendationNotifier extends Notifier<SportRecommendationState> {
 }
 
 final sportRecommendationNotifierProvider =
-    NotifierProvider<SportRecommendationNotifier, SportRecommendationState>(
-      SportRecommendationNotifier.new,
-    );
+    AutoDisposeNotifierProvider<SportRecommendationNotifier,
+        SportRecommendationState>(SportRecommendationNotifier.new);

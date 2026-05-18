@@ -61,7 +61,7 @@ class FeatureGuidePage extends StatelessWidget {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) => const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final item = items[index];
                   return _buildGuideCard(item, index + 1);

@@ -200,7 +200,7 @@ class _ShopPageState extends ConsumerState<ShopPage> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: _categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 10),
+                      separatorBuilder: (context, index) => const SizedBox(width: 10),
                       itemBuilder: (context, index) {
                         final bool active = _selectedCategory == index;
                         return GestureDetector(

@@ -101,7 +101,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                       waterIntakeAsync.when(
                         data: (data) => _buildHeader(data.today),
                         loading: () => _buildHeader(null),
-                        error: (_, _) => _buildHeader(null),
+                        error: (context, index) => _buildHeader(null),
                       ),
                       // Card: Pantau Konsumsi Air
                       waterIntakeAsync.when(
@@ -111,7 +111,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                           addWaterIntakeState,
                         ),
                         loading: () => const SizedBox.shrink(),
-                        error: (_, _) => const SizedBox.shrink(),
+                        error: (context, index) => const SizedBox.shrink(),
                       ),
                     ],
                   ),
@@ -124,7 +124,7 @@ class _HydrationPageState extends ConsumerState<HydrationPage> {
                   data.statistik,
                 ),
                 loading: () => const SizedBox.shrink(),
-                error: (_, _) => const SizedBox.shrink(),
+                error: (context, index) => const SizedBox.shrink(),
               ),
               const SizedBox(height: 20),
             ],
