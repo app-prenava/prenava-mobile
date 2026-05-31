@@ -17,6 +17,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  String? _emailVerificationError;
 
   @override
   void dispose() {
@@ -41,22 +42,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (success) {
       await ref.read(profileNotifierProvider.notifier).loadProfile();
       final profileState = ref.read(profileNotifierProvider);
-      
+
       if (!mounted) return;
-      
+
       if (profileState.hasProfile) {
         context.go('/home');
       } else {
         context.go('/profile-onboarding');
       }
     } else {
-      final error = ref.read(authNotifierProvider).error;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error ?? 'Login gagal'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      final error = ref.read(authNotifierProvider).error ?? 'Login gagal';
+
+      // Jika error mengandung pesan verifikasi email (dari response 403),
+      // tampilkan sebagai inline error di bawah field email.
+      if (error.contains('belum diverifikasi')) {
+        setState(() {
+          _emailVerificationError = error;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -69,7 +79,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       if (googleUser == null) return;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
       if (idToken == null) {
@@ -78,16 +89,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       if (!mounted) return;
 
-      final success = await ref.read(authNotifierProvider.notifier).loginWithGoogle(idToken);
+      final success = await ref
+          .read(authNotifierProvider.notifier)
+          .loginWithGoogle(idToken);
 
       if (!mounted) return;
 
       if (success) {
         await ref.read(profileNotifierProvider.notifier).loadProfile();
         final profileState = ref.read(profileNotifierProvider);
-        
+
         if (!mounted) return;
-        
+
         if (profileState.hasProfile) {
           context.go('/home');
         } else {
@@ -210,29 +223,55 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         TextFormField(
           controller: _emailController,
           keyboardType: TextInputType.emailAddress,
+          // Clear inline error setiap kali user mengubah teks di field email
+          onChanged: (_) {
+            if (_emailVerificationError != null) {
+              setState(() => _emailVerificationError = null);
+            }
+          },
           decoration: InputDecoration(
             hintText: 'contoh@gmail.com',
             hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(Icons.email_outlined, color: Colors.grey[400], size: 20),
+            prefixIcon:
+                Icon(Icons.email_outlined, color: Colors.grey[400], size: 20),
             filled: true,
             fillColor: Colors.grey[50],
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+              borderSide: BorderSide(
+                // Border merah jika ada verification error
+                color: _emailVerificationError != null
+                    ? Colors.red
+                    : Colors.grey[300]!,
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
+              borderSide: BorderSide(
+                color: _emailVerificationError != null
+                    ? Colors.red
+                    : const Color(0xFFFA6978),
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Colors.red),
             ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Colors.red, width: 1.5),
+            ),
+            // Pesan inline merah di bawah field; null = tidak tampil
+            errorText: _emailVerificationError,
+            errorStyle: const TextStyle(color: Colors.red, fontSize: 13),
+            errorMaxLines: 3,
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -267,10 +306,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           decoration: InputDecoration(
             hintText: 'Masukkan sandi Anda',
             hintStyle: TextStyle(color: Colors.grey[400]),
-            prefixIcon: Icon(Icons.lock_outline, color: Colors.grey[400], size: 20),
+            prefixIcon:
+                Icon(Icons.lock_outline, color: Colors.grey[400], size: 20),
             suffixIcon: IconButton(
               icon: Icon(
-                _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                _obscurePassword
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
                 color: Colors.grey[400],
                 size: 20,
               ),
@@ -282,7 +324,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
             filled: true,
             fillColor: Colors.grey[50],
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -346,7 +389,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         onPressed: authState.isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFA6978),
-          disabledBackgroundColor: const Color(0xFFFA6978).withValues(alpha: 0.6),
+          disabledBackgroundColor:
+              const Color(0xFFFA6978).withValues(alpha: 0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -377,7 +421,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget _buildCustomDivider() {
     return Row(
       children: [
-        const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+        const Expanded(
+            child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
@@ -389,7 +434,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ),
           ),
         ),
-        const Expanded(child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+        const Expanded(
+            child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
       ],
     );
   }
@@ -464,4 +510,3 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 }
-

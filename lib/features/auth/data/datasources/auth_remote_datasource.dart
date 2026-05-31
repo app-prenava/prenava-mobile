@@ -36,10 +36,22 @@ class AuthRemoteDatasource {
 
       throw Exception('Login failed');
     } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
+      final statusCode = e.response?.statusCode;
+      final data = e.response?.data;
+
+      if (statusCode == 401) {
         throw Exception('Email atau password salah');
       }
-      throw Exception('Network error: ${e.message}');
+
+      // 403 = email belum diverifikasi
+      if (statusCode == 403) {
+        final message = data is Map ? data['message'] as String? : null;
+        throw Exception(
+          message ?? 'Email belum diverifikasi. Silakan cek email untuk kode OTP.',
+        );
+      }
+
+      throw Exception('Terjadi kesalahan. Silakan coba lagi.');
     }
   }
 
@@ -112,7 +124,7 @@ class AuthRemoteDatasource {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return; // Success, user needs to login after registration
+        return;
       }
 
       throw Exception('Registrasi gagal');
@@ -120,14 +132,12 @@ class AuthRemoteDatasource {
       final statusCode = e.response?.statusCode;
       final data = e.response?.data;
 
-      // Handle validation errors (422)
       if (statusCode == 422) {
         String? message;
         if (data is Map) {
           if (data['message'] is String) {
             message = data['message'] as String;
           } else if (data['errors'] is Map) {
-            // Laravel validation errors format
             final errors = data['errors'] as Map<String, dynamic>;
             final firstError = errors.values.first;
             if (firstError is List && firstError.isNotEmpty) {
@@ -138,7 +148,6 @@ class AuthRemoteDatasource {
         throw Exception(message ?? 'Data tidak valid. Mohon periksa kembali.');
       }
 
-      // Handle other errors
       String? message;
       if (data is Map && data['message'] is String) {
         message = data['message'] as String;
@@ -217,4 +226,3 @@ class AuthRemoteDatasource {
     }
   }
 }
-
