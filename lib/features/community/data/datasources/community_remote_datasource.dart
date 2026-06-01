@@ -19,15 +19,16 @@ class CommunityRemoteDatasource {
 
       if (response.statusCode == 200 && response.data != null) {
         final List<dynamic> items = response.data['Komunitas'] ?? [];
+        final pagination = response.data['pagination'] as Map<String, dynamic>? ?? {};
         final posts = items
             .map((item) => PostModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
 
         return {
           'posts': posts,
-          'current_page': response.data['current_page'] ?? page,
-          'last_page': response.data['last_page'] ?? 1,
-          'total': response.data['total'] ?? posts.length,
+          'current_page': pagination['current_page'] ?? page,
+          'last_page': pagination['last_page'] ?? 1,
+          'total': pagination['total'] ?? posts.length,
         };
       }
 
@@ -130,7 +131,9 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.post('/komunitas/like/add/$postId');
 
-      if (response.statusCode == 200 && response.data != null) {
+      // 200 = unlike, 201 = like baru
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
         return {
           'is_liked': response.data['is_liked'] as bool? ?? false,
           'apresiasi': response.data['apresiasi'] as int? ?? 0,
@@ -205,7 +208,6 @@ class CommunityRemoteDatasource {
           }
         }
         
-        // Fallback: create comment model from response
         return CommentModel(
           id: 0,
           postId: postId,
@@ -220,10 +222,8 @@ class CommunityRemoteDatasource {
     }
   }
 
-  /// Delete a single comment (reply) by id
   Future<void> deleteComment(int commentId) async {
     try {
-      // Assumes backend endpoint: DELETE /api/komunitas/komen/{commentId}
       final response = await _dio.delete('/komunitas/komen/delete/$commentId');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -236,7 +236,6 @@ class CommunityRemoteDatasource {
 
   Future<void> deletePost(int postId) async {
     try {
-      // Backend route: DELETE /api/komunitas/history/{id}
       final response = await _dio.delete('/komunitas/history/$postId');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -249,7 +248,6 @@ class CommunityRemoteDatasource {
 
   Future<void> deleteAllPosts() async {
     try {
-      // Backend route: DELETE /api/komunitas/history/deleteAll
       final response = await _dio.delete('/komunitas/history/deleteAll');
 
       if (response.statusCode != 200 && response.statusCode != 204) {
@@ -259,5 +257,4 @@ class CommunityRemoteDatasource {
       throw Exception(e.response?.data['message'] ?? 'Gagal menghapus semua postingan');
     }
   }
-
 }

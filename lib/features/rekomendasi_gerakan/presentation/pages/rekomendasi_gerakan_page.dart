@@ -224,10 +224,7 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
   void _redirectToProfile() {
     if (_redirectedToProfile) return;
     _redirectedToProfile = true;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const EditProfilePage()),
-    );
+    context.go('/profile-onboarding');
   }
 
   void _redirectToLogin() {

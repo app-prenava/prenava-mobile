@@ -11,6 +11,18 @@ class PostUser {
     required this.name,
     this.profileImage,
   });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PostUser &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          profileImage == other.profileImage;
+
+  @override
+  int get hashCode => Object.hash(id, name, profileImage);
 }
 
 @immutable
@@ -60,15 +72,32 @@ class Post {
       isLiked: isLiked ?? this.isLiked,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Post &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          apresiasi == other.apresiasi &&
+          komentar == other.komentar &&
+          isLiked == other.isLiked &&
+          judul == other.judul &&
+          deskripsi == other.deskripsi &&
+          gambar == other.gambar &&
+          user == other.user &&
+          createdAt == other.createdAt;
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        apresiasi,
+        komentar,
+        isLiked,
+        judul,
+        deskripsi,
+        gambar,
+        user,
+        createdAt,
+      );
 }
-
-
-
-
-
-
-
-
-
-
-
