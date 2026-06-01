@@ -278,11 +278,15 @@ class _RekomendasiGerakanPageState extends ConsumerState<RekomendasiGerakanPage>
 
     fixedUrl = fixedUrl.replaceFirst(
       'http://localhost:8000',
-      'http://10.0.2.2:8000',
+      'https://prenavabe.cloud',
     );
     fixedUrl = fixedUrl.replaceFirst(
       'https://localhost:8000',
+      'https://prenavabe.cloud',
+    );
+    fixedUrl = fixedUrl.replaceFirst(
       'http://10.0.2.2:8000',
+      'https://prenavabe.cloud',
     );
 
     return fixedUrl;
