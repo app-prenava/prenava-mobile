@@ -354,7 +354,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Belum ada postingan',
+            'Kami sedang menyiapkan ini untuk kamu',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -363,7 +363,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Jadilah yang pertama berbagi cerita!',
+            'nantikan ya Bunda! 💕',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[500],
