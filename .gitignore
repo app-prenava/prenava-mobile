@@ -58,3 +58,4 @@ keystore.properties
 
 /.agent
 /.claudekit
+.kiro/
