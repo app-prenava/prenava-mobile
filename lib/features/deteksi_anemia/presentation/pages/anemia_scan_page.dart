@@ -4,7 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/anemia_scan_providers.dart';
+import '../providers/anemia_tutorial_providers.dart';
+import '../widgets/tutorial_dialog.dart';
+import '../widgets/quality_check_dialog.dart';
 
 class AnemiaScanPage extends ConsumerStatefulWidget {
   const AnemiaScanPage({super.key});
@@ -19,8 +23,26 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       ref.read(anemiaScanNotifierProvider.notifier).reset();
+      
+      // Tutorial flow - show on first launch
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final hasSeenTutorial = 
+            prefs.getBool(AnemiaPrefsKeys.hasSeenAnemiaTutorial) ?? false;
+        
+        if (!hasSeenTutorial && mounted) {
+          _showTutorialDialog();
+          await prefs.setBool(AnemiaPrefsKeys.hasSeenAnemiaTutorial, true);
+        }
+      } catch (e) {
+        // Log error but don't crash - show tutorial anyway (safe default)
+        debugPrint('Error reading SharedPreferences: $e');
+        if (mounted) {
+          _showTutorialDialog();
+        }
+      }
     });
   }
 
@@ -34,6 +56,36 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
     if (picked != null) {
       ref.read(anemiaScanNotifierProvider.notifier).setImagePath(picked.path);
     }
+  }
+
+  /// Show tutorial dialog (first time or manual via info button)
+  void _showTutorialDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => TutorialDialog(
+        onDismiss: () {
+          // Dialog already dismissed by button tap
+        },
+      ),
+    );
+  }
+
+  /// Show quality check dialog before image picker
+  void _showQualityCheckDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => QualityCheckDialog(
+        onCancel: () {
+          // Dialog already dismissed
+        },
+        onContinue: () {
+          // Dialog already dismissed, now show image picker
+          _showImageSourcePicker();
+        },
+      ),
+    );
   }
 
   Future<void> _startScan() async {
@@ -143,6 +195,10 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
             icon: const Icon(Icons.history_rounded, color: Color(0xFFFA6978)),
             onPressed: () => context.push('/health/history'),
           ),
+          IconButton(
+            icon: const Icon(Icons.info_outline, color: Color(0xFFFA6978)),
+            onPressed: _showTutorialDialog,
+          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -183,7 +239,7 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
 
               // Image preview area
               GestureDetector(
-                onTap: _showImageSourcePicker,
+                onTap: _showQualityCheckDialog,
                 child: DottedBorder(
                   options: RoundedRectDottedBorderOptions(
                     radius: const Radius.circular(24),
