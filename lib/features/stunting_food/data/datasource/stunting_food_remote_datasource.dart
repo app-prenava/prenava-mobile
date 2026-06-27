@@ -4,7 +4,6 @@ import '../models/food_dto.dart';
 import '../models/meal_plan_dto.dart';
 import '../models/preference_dto.dart';
 import '../models/progress_dto.dart';
-import '../models/prompt_foods_dto.dart';
 import '../models/recommendation_dto.dart';
 
 class StuntingFoodRemoteDatasource {

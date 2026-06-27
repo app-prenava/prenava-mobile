@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:prenava_mobile/core/utils/image_url_helper.dart';
 
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
-import '../../../profile/presentation/pages/edit_profile_page.dart';
 import '../providers/sport_recommendation_providers.dart';
 import '../widgets/assessment_form_view.dart';
 import '../widgets/lmp_bottom_sheet.dart';

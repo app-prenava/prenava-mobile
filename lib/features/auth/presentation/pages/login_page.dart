@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,7 +52,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         context.go('/profile-onboarding');
       }
     } else {
-      final error = ref.read(authNotifierProvider).error ?? 'Login gagal';
+      final authState = ref.read(authNotifierProvider);
+
+      // Backend returned requires_verification: true
+      if (authState.pendingVerificationEmail != null) {
+        context.go('/email-verification',
+            extra: authState.pendingVerificationEmail);
+        return;
+      }
+
+      final error = authState.error ?? 'Login gagal';
 
       // Jika error mengandung pesan verifikasi email (dari response 403),
       // tampilkan sebagai inline error di bawah field email.
@@ -72,19 +82,34 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _handleGoogleLogin() async {
     try {
+      // serverClientId is only needed on Android to get idToken.
+      // On iOS, the iOS Client ID from Info.plist is used automatically.
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
+        serverClientId: Platform.isAndroid
+            ? '95108221109-l3as4ndop5krbdenm7oka1lavk4hg9gk.apps.googleusercontent.com'
+            : null,
       );
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return;
+      if (googleUser == null) return; // User cancelled
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
 
+      debugPrint('[GOOGLE] accessToken: ${googleAuth.accessToken != null}');
+      debugPrint('[GOOGLE] idToken: ${idToken != null}');
+
       if (idToken == null) {
-        throw Exception('Gagal mendapatkan ID Token dari Google');
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gagal mendapatkan token dari Google. Coba lagi.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
       }
 
       if (!mounted) return;
@@ -116,10 +141,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
       }
     } catch (e) {
+      debugPrint('[GOOGLE] Error: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
+          content: Text('Google Sign-In error: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );

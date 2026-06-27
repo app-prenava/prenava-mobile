@@ -13,9 +13,16 @@ abstract class AuthRepository {
     required String password,
     required String passwordConfirmation,
   });
+
+  // Email verification (registration flow)
+  Future<User> verifyEmail(String email, String otp);
+  Future<String> resendVerification(String email);
+
+  // Forgot password flow
   Future<String> sendOtp(String email);
   Future<String> verifyOtp(String email, String otp);
   Future<void> resetPassword(String email, String resetToken, String password);
+
+  // Google OAuth
   Future<User> loginWithGoogle(String idToken);
 }
-

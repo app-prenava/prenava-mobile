@@ -15,13 +15,11 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login(String email, String password) async {
-    try {
-      final loginResponse = await _remoteDatasource.login(email, password);
-      await _secureStore.write('jwt_token', loginResponse.token);
-      return loginResponse.user;
-    } catch (e) {
-      rethrow;
-    }
+    // RequiresVerificationException is intentionally NOT caught here
+    // so the provider layer can handle navigation to OTP screen.
+    final loginResponse = await _remoteDatasource.login(email, password);
+    await _secureStore.write('jwt_token', loginResponse.token);
+    return loginResponse.user;
   }
 
   @override
@@ -96,6 +94,18 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<User> verifyEmail(String email, String otp) async {
+    final loginResponse = await _remoteDatasource.verifyEmail(email, otp);
+    await _secureStore.write('jwt_token', loginResponse.token);
+    return loginResponse.user;
+  }
+
+  @override
+  Future<String> resendVerification(String email) async {
+    return await _remoteDatasource.resendVerification(email);
   }
 
   @override

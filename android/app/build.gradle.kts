@@ -1,8 +1,17 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -24,41 +33,29 @@ android {
     }
 
     defaultConfig {
-        // Play Store Application ID - must be unique
         applicationId = "com.prenava.app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {
-        // Release signing configuration for Play Store
-        // Create keystore using: keytool -genkey -v -keystore prenava-release.jks -keyalg RSA -keysize 2048 -validity 10000 -alias release
-        // Store keystore in: android/keystore/prenava-release.jks
-        // Set environment variables: KEYSTORE_PASSWORD and KEY_PASSWORD
         create("release") {
-            // Uncomment and configure when keystore is ready
-            // storeFile = file("../../keystore/prenava-release.jks")
-            // storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
-            // keyAlias = "release"
-            // keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
         }
     }
 
     buildTypes {
         release {
-            // Use release signing config when keystore is configured
-            // For now, using debug keys for testing
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
 
-            // Enable code shrinking and obfuscation
             isMinifyEnabled = true
             isShrinkResources = true
 
-            // ProGuard rules file
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

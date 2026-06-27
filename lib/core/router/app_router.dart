@@ -6,6 +6,7 @@ import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/register_page.dart';
 import '../../features/auth/presentation/pages/forgot_password_page.dart';
 import '../../features/auth/presentation/pages/verify_otp_page.dart';
+import '../../features/auth/presentation/pages/email_verification_page.dart';
 import '../../features/auth/presentation/pages/reset_password_page.dart';
 import '../../features/auth/presentation/pages/change_password_page.dart';
 import '../../features/main/presentation/pages/main_scaffold.dart';
@@ -49,6 +50,7 @@ import '../../features/stunting_food/presentation/pages/recipe_detail_page.dart'
 import '../../features/stunting_food/presentation/pages/meal_plan_progress_page.dart';
 import '../../features/stunting_food/presentation/pages/preferences_page.dart';
 import '../../features/stunting_food/recipes/presentation/pages/recipe_home_page.dart';
+import '../../features/wallet/presentation/pages/wallet_page.dart';
 
 import 'package:prenava_mobile/core/network/dio_client.dart';
 
@@ -82,6 +84,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final email = state.extra as String? ?? '';
           return VerifyOtpPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/email-verification',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return EmailVerificationPage(email: email);
         },
       ),
       GoRoute(
@@ -130,6 +139,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final productId = state.pathParameters['id']!;
           return ShopDetailPage(productId: productId);
         },
+      ),
+      GoRoute(
+        path: '/wallet',
+        builder: (context, state) => const WalletPage(),
       ),
       // Community routes
       GoRoute(
@@ -207,7 +220,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/appointments/create/form',
         builder: (context, state) {
           final sharedFields = state.extra as Map<String, bool>?;
-          return AppointmentFormPage(sharedFields: sharedFields!);
+          return AppointmentFormPage(sharedFields: sharedFields ?? const {});
         },
       ),
       GoRoute(

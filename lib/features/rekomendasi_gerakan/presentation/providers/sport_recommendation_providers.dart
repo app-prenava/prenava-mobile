@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../data/datasources/sport_recommendation_remote_datasource.dart';

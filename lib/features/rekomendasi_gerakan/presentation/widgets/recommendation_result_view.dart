@@ -122,25 +122,7 @@ class RecommendationResultView extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // Score indicator
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.star_rounded,
-                      color: Color(0xFFFFB74D),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Skor: ${(rec.score * 100).toStringAsFixed(0)}%',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFFFB74D),
-                      ),
-                    ),
-                  ],
-                ),
+
                 if (rec.longText != null && rec.longText!.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(

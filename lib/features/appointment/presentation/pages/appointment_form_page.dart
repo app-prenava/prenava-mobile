@@ -28,6 +28,9 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
   void initState() {
     super.initState();
     _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appointmentNotifierProvider.notifier).loadConsentInfo();
+    });
   }
 
   void _loadData() {
@@ -85,8 +88,9 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFFFF1F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFA6978).withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,11 +151,13 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
         const SizedBox(height: 12),
         InkWell(
           onTap: _pickDate,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFFAFAFA),
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
@@ -192,11 +198,13 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
         const SizedBox(height: 12),
         InkWell(
           onTap: _pickTime,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(8),
+              color: const Color(0xFFFAFAFA),
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
@@ -251,15 +259,15 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFFFA6978).withValues(alpha: 0.1)
+                    ? const Color(0xFFFA6978).withValues(alpha: 0.08)
                     : Colors.white,
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFFFA6978)
-                      : Colors.grey[300]!,
-                  width: isSelected ? 2 : 1,
+                      : Colors.grey[200]!,
+                  width: isSelected ? 1.5 : 1,
                 ),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
@@ -331,12 +339,16 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
           maxLines: 3,
           decoration: InputDecoration(
             hintText: 'Contoh: Periksa kandungan trimester kedua',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.grey[300]!),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[200]!),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFFA6978), width: 1.5),
             ),
             filled: true,
-            fillColor: const Color(0xFFF5F5F5),
+            fillColor: const Color(0xFFFAFAFA),
           ),
         ),
       ],
@@ -353,11 +365,12 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFA6978),
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               disabledBackgroundColor: Colors.grey[300],
+              elevation: 0,
             ),
             child: state.isCreating
                 ? const SizedBox(
@@ -368,7 +381,10 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : const Text('Buat Janji Temu', style: TextStyle(fontSize: 16)),
+                : const Text(
+                    'Buat Janji Temu',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
           ),
         ),
         const SizedBox(height: 12),
@@ -378,13 +394,13 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.grey[700],
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
-              side: BorderSide(color: Colors.grey[300]!),
+              side: BorderSide(color: Colors.grey[200]!),
             ),
-            child: const Text('Kembali'),
+            child: const Text('Kembali', style: TextStyle(fontSize: 16)),
           ),
         ),
       ],
@@ -424,7 +440,225 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
     }
   }
 
-  Future<void> _submitAppointment() async {
+  void _showConsentBottomSheet() {
+    final state = ref.read(appointmentNotifierProvider);
+    final consentInfo = state.consentInfo;
+
+    if (consentInfo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal memuat informasi izin data. Silakan coba lagi.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final Map<String, bool> localSharedFields =
+        Map<String, bool>.from(_sharedFields ?? {});
+    for (var field in consentInfo.availableFields) {
+      localSharedFields.putIfAbsent(field, () => true);
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            final fieldLabels = {
+              'name': 'Nama Lengkap',
+              'email': 'Email',
+              'phone': 'Nomor Telepon',
+              'address': 'Alamat',
+              'age': 'Usia',
+              'pregnancy_week': 'Usia Kehamilan (Minggu)',
+            };
+
+            bool allChecked = consentInfo.availableFields.every(
+              (field) => localSharedFields[field] == true,
+            );
+
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              padding: EdgeInsets.only(
+                left: 24,
+                right: 24,
+                top: 16,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      const Icon(Icons.security, color: Color(0xFFFA6978)),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Persetujuan Berbagi Data',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF212121),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      consentInfo.consentText,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF424242),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Pilih data kehamilan yang ingin dibagikan:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF212121),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...consentInfo.availableFields.map((field) {
+                    final isChecked = localSharedFields[field] ?? false;
+                    return CheckboxListTile(
+                      value: isChecked,
+                      onChanged: (val) {
+                        setModalState(() {
+                          localSharedFields[field] = val ?? false;
+                        });
+                      },
+                      activeColor: const Color(0xFFFA6978),
+                      title: Text(
+                        fieldLabels[field] ?? field,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF424242),
+                        ),
+                      ),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                    );
+                  }),
+                  const Divider(height: 24),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: allChecked,
+                          onChanged: (val) {
+                            setModalState(() {
+                              for (var field in consentInfo.availableFields) {
+                                localSharedFields[field] = val ?? false;
+                              }
+                            });
+                          },
+                          activeColor: const Color(0xFFFA6978),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'Saya mengizinkan data yang dipilih untuk dibagikan kepada bidan demi kelancaran pemeriksaan kehamilan.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF616161),
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            side: BorderSide(color: Colors.grey[300]!),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Batal',
+                            style: TextStyle(color: Color(0xFF616161)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            setState(() {
+                              _sharedFields = localSharedFields;
+                            });
+                            _executeSubmit();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFA6978),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'Setuju & Kirim',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _submitAppointment() {
     if (_bidan == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Silakan pilih bidan terlebih dahulu')),
@@ -439,7 +673,12 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
       return;
     }
 
-    final consentVersion = ref.read(appointmentNotifierProvider).consentInfo?.version ?? '1.0';
+    _showConsentBottomSheet();
+  }
+
+  Future<void> _executeSubmit() async {
+    final consentVersion =
+        ref.read(appointmentNotifierProvider).consentInfo?.version ?? '1.0';
     final success = await ref
         .read(appointmentNotifierProvider.notifier)
         .createAppointment(
@@ -461,7 +700,9 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
       if (success) {
         _showSuccessDialog();
       } else {
-        final errorMsg = ref.read(appointmentNotifierProvider).error ?? 'Gagal membuat janji temu';
+        final errorMsg =
+            ref.read(appointmentNotifierProvider).error ??
+            'Gagal membuat janji temu';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMsg), backgroundColor: Colors.red),
         );

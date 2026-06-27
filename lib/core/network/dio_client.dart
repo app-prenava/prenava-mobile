@@ -23,7 +23,10 @@ final appDioProvider = Provider<Dio>((ref) {
         final isAuthEndpoint =
             path.contains('/auth/login') ||
             path.contains('/auth/register') ||
-            path.contains('/auth/forgot-password');
+            path.contains('/auth/forgot-password') ||
+            path.contains('/auth/verify-email') ||
+            path.contains('/auth/resend-verification') ||
+            path.contains('/auth/google');
 
         if (!isAuthEndpoint) {
           final token = await SecureStore().read('jwt_token');
@@ -58,7 +61,10 @@ final appDioProvider = Provider<Dio>((ref) {
           );
           final isAuthEndpoint = path.contains('/auth/login') ||
               path.contains('/auth/register') ||
-              path.contains('/auth/forgot-password');
+              path.contains('/auth/forgot-password') ||
+              path.contains('/auth/verify-email') ||
+              path.contains('/auth/resend-verification') ||
+              path.contains('/auth/google');
               
           if (!isAuthEndpoint) {
             Future.microtask(() {

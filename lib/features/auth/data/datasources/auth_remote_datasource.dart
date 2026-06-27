@@ -15,6 +15,17 @@ class LoginResponse {
   }
 }
 
+/// Thrown when login is blocked because the user's email is not yet verified.
+class RequiresVerificationException implements Exception {
+  final String email;
+  final String message;
+
+  RequiresVerificationException({required this.email, required this.message});
+
+  @override
+  String toString() => message;
+}
+
 class AuthRemoteDatasource {
   final Dio _dio;
 
@@ -39,16 +50,27 @@ class AuthRemoteDatasource {
       final statusCode = e.response?.statusCode;
       final data = e.response?.data;
 
-      if (statusCode == 401) {
-        throw Exception('Email atau password salah');
-      }
-
-      // 403 = email belum diverifikasi
       if (statusCode == 403) {
+        if (data is Map && data['requires_verification'] == true) {
+          throw RequiresVerificationException(
+            email: email,
+            message: data['message'] as String? ?? 'Email belum diverifikasi.',
+          );
+        }
         final message = data is Map ? data['message'] as String? : null;
         throw Exception(
           message ?? 'Email belum diverifikasi. Silakan cek email untuk kode OTP.',
         );
+      }
+
+      if (statusCode == 400) {
+        throw Exception(
+          data is Map ? data['message'] ?? 'Login gagal' : 'Login gagal',
+        );
+      }
+
+      if (statusCode == 401) {
+        throw Exception('Email atau password salah');
       }
 
       throw Exception('Terjadi kesalahan. Silakan coba lagi.');
@@ -124,7 +146,7 @@ class AuthRemoteDatasource {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return;
+        return; // Success — user must verify email
       }
 
       throw Exception('Registrasi gagal');
@@ -148,11 +170,63 @@ class AuthRemoteDatasource {
         throw Exception(message ?? 'Data tidak valid. Mohon periksa kembali.');
       }
 
+      // Handle 409 (email already exists)
+      if (statusCode == 409) {
+        String? message;
+        if (data is Map && data['message'] is String) {
+          message = data['message'] as String;
+        }
+        throw Exception(message ?? 'Email sudah terdaftar.');
+      }
+
+      // Handle other errors
       String? message;
       if (data is Map && data['message'] is String) {
         message = data['message'] as String;
       }
       throw Exception(message ?? 'Gagal mendaftar. Silakan coba lagi.');
+    }
+  }
+
+  /// Verify email OTP after registration. Returns JWT token on success.
+  Future<LoginResponse> verifyEmail(String email, String otp) async {
+    try {
+      final response = await _dio.post(
+        '/auth/verify-email',
+        data: {'email': email, 'otp': otp},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return LoginResponse.fromJson(response.data as Map<String, dynamic>);
+      }
+
+      throw Exception(
+        response.data?['message'] ?? 'Gagal memverifikasi email',
+      );
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(message ?? 'OTP tidak valid atau sudah kedaluwarsa.');
+    }
+  }
+
+  /// Resend email verification OTP.
+  Future<String> resendVerification(String email) async {
+    try {
+      final response = await _dio.post(
+        '/auth/resend-verification',
+        data: {'email': email},
+      );
+      if (response.statusCode != 200) {
+        throw Exception(
+          response.data?['message'] ?? 'Gagal mengirim ulang OTP',
+        );
+      }
+      return response.data?['message'] ?? 'OTP verifikasi telah dikirim ulang.';
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'];
+      throw Exception(
+        message ?? 'Gagal mengirim ulang OTP. Silakan coba lagi.',
+      );
     }
   }
 

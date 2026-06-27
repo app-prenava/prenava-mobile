@@ -29,6 +29,8 @@ class AuthState {
   final User? user;
   final bool isLoading;
   final String? error;
+  /// Email that requires OTP verification (set on login 403 or register success)
+  final String? pendingVerificationEmail;
 
   const AuthState({
     required this.isInitialized,
@@ -36,6 +38,7 @@ class AuthState {
     this.user,
     this.isLoading = false,
     this.error,
+    this.pendingVerificationEmail,
   });
 
   const AuthState.initial()
@@ -43,7 +46,8 @@ class AuthState {
         isAuthenticated = false,
         user = null,
         isLoading = false,
-        error = null;
+        error = null,
+        pendingVerificationEmail = null;
 
   AuthState copyWith({
     bool? isInitialized,
@@ -52,6 +56,8 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool clearError = false,
+    String? pendingVerificationEmail,
+    bool clearPendingEmail = false,
   }) {
     return AuthState(
       isInitialized: isInitialized ?? this.isInitialized,
@@ -59,6 +65,9 @@ class AuthState {
       user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
       error: clearError ? null : (error ?? this.error),
+      pendingVerificationEmail: clearPendingEmail
+          ? null
+          : (pendingVerificationEmail ?? this.pendingVerificationEmail),
     );
   }
 }
@@ -109,8 +118,14 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Returns true on successful login.
+  /// If email is unverified, sets pendingVerificationEmail and returns false.
   Future<bool> login(String email, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearPendingEmail: true,
+    );
 
     try {
       final repository = ref.read(authRepositoryProvider);
@@ -124,6 +139,14 @@ class AuthNotifier extends Notifier<AuthState> {
       );
       
       return true;
+    } on RequiresVerificationException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.message,
+        pendingVerificationEmail: e.email,
+      );
+      return false;
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -197,7 +220,10 @@ class AuthNotifier extends Notifier<AuthState> {
         passwordConfirmation: passwordConfirmation,
       );
       
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(
+        isLoading: false,
+        clearPendingEmail: true,
+      );
       return true;
     } catch (e) {
       state = state.copyWith(
@@ -205,6 +231,45 @@ class AuthNotifier extends Notifier<AuthState> {
         error: e.toString().replaceAll('Exception: ', ''),
       );
       return false;
+    }
+  }
+
+  /// Verify email OTP. On success, auto-logs in the user.
+  Future<bool> verifyEmail(String email, String otp) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.verifyEmail(email, otp);
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  /// Resend email verification OTP.
+  Future<String?> resendVerification(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final message = await repository.resendVerification(email);
+      state = state.copyWith(isLoading: false);
+      return message;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return null;
     }
   }
 
@@ -260,4 +325,3 @@ class AuthNotifier extends Notifier<AuthState> {
 final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
 });
-

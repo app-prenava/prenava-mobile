@@ -51,7 +51,10 @@ class AppointmentModel extends Appointment {
 
     return AppointmentModel(
       id: json['appointment_id'] as int? ?? json['id'] as int? ?? 0,
-      bidanId: json['bidan_id'] as int,
+      bidanId: json['bidan_id'] as int? ??
+          json['bidan']?['id'] as int? ??
+          json['bidan']?['bidan_id'] as int? ??
+          0,
       locationId: json['bidan_location_id'] as int? ?? json['location_id'] as int?,
       preferredDate: DateTime.parse(json['preferred_date'] as String),
       preferredTime: json['preferred_time'] as String,

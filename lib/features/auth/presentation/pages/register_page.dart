@@ -48,7 +48,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Registrasi berhasil! Silakan login.'),
+          content: Text('Registrasi berhasil! Silakan masuk dengan akun Anda.'),
           backgroundColor: Color(0xFFFA6978),
           duration: Duration(seconds: 3),
         ),

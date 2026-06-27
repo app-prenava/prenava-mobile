@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../widgets/stunting_food_ui.dart';
 import '../../recipes/presentation/riverpod/recipes_providers.dart';
@@ -374,54 +373,4 @@ class _RecipeDetailPageState extends ConsumerState<RecipeDetailPage> {
 }
 
 
-// --- Nutrient Badge with icon ---
 
-class _NutrientBadge extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String subtitle;
-
-  const _NutrientBadge({
-    required this.icon,
-    required this.label,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: StuntingFoodColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: StuntingFoodColors.primaryPink),
-          const SizedBox(width: 6),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: StuntingFoodTypo.caption12(
-                  color: StuntingFoodColors.primaryDarkPink,
-                  weight: FontWeight.w700,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 10,
-                  color: StuntingFoodColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}

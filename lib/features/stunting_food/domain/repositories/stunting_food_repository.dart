@@ -2,7 +2,6 @@ import '../entities/food.dart';
 import '../entities/meal_plan.dart';
 import '../entities/meal_plan_progress.dart';
 import '../entities/preference.dart';
-import '../entities/prompt_foods.dart';
 import '../entities/recommendation.dart';
 
 abstract class StuntingFoodRepository {

@@ -147,7 +147,7 @@ class _BidanSelectionPageState extends ConsumerState<BidanSelectionPage> {
                   ref
                       .read(appointmentNotifierProvider.notifier)
                       .selectBidan(bidan);
-                  context.push('/appointments/create/consent');
+                  context.push('/appointments/create/form');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFA6978),

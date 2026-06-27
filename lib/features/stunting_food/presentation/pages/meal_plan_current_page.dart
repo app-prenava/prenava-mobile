@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../riverpod/stunting_food_providers.dart';
-import '../widgets/meal_widgets.dart';
 import '../widgets/meal_plan_preferences.dart';
 import '../widgets/stunting_food_ui.dart';
 
@@ -544,49 +543,7 @@ class _MealPlanCurrentPageState extends ConsumerState<MealPlanCurrentPage> {
     return labels[index % labels.length];
   }
 
-  Future<void> _confirmRefreshDay(
-    BuildContext context,
-    MealPlanCurrentNotifier notifier,
-  ) async {
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text('Refresh Hari Ini?', style: StuntingFoodTypo.heading18()),
-        content: Text(
-          'Menu hari terpilih akan diganti otomatis.',
-          style: StuntingFoodTypo.body14(color: StuntingFoodColors.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              'Batal',
-              style: StuntingFoodTypo.body14(
-                color: StuntingFoodColors.textSecondary,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: StuntingFoodColors.primaryPink,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: Text('Refresh', style: StuntingFoodTypo.button()),
-          ),
-        ],
-      ),
-    );
-    if (yes == true) {
-      await notifier.refreshDay();
-    }
-  }
+
 
   void _showAvailableMenusBottomSheet(BuildContext context, int? targetItemId) {
     showModalBottomSheet(
@@ -987,7 +944,7 @@ class _PreferencesSheetState extends State<_PreferencesSheet> {
     return SwitchListTile(
       contentPadding: EdgeInsets.zero,
       value: value,
-      activeColor: Colors.white,
+      activeThumbColor: Colors.white,
       activeTrackColor: Colors.green,
       inactiveThumbColor: Colors.white,
       inactiveTrackColor: Colors.grey[100],
