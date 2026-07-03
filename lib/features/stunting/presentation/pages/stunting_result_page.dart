@@ -50,10 +50,7 @@ class StuntingResultPage extends StatelessWidget {
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
-                context.push(
-                  '/stunting-food/recommendations',
-                  extra: result.id,
-                );
+                context.push('/stunting/foods');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFF5A7A),
@@ -95,7 +92,7 @@ class StuntingResultPage extends StatelessWidget {
 
   Widget _buildRiskCard(bool isHighRisk) {
     final Color statusColor =
-        isHighRisk ? const Color(0xFFFF375F) : const Color(0xFF34C759);
+        isHighRisk ? const Color(0xFFFF375F) : (result.riskLabel == 'Sedang' ? const Color(0xFFFF9500) : const Color(0xFF34C759));
     final Color softStatusColor = statusColor.withValues(alpha: 0.1);
 
     return Container(
@@ -127,7 +124,7 @@ class StuntingResultPage extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            isHighRisk ? 'Risiko Tinggi' : 'Risiko Rendah',
+            'Risiko ${result.riskLabel}',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -150,7 +147,7 @@ class StuntingResultPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${(result.probability * 100).toStringAsFixed(1)}%',
+                    '${(result.score * 100).toStringAsFixed(1)}%',
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w800,
@@ -170,9 +167,7 @@ class StuntingResultPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              isHighRisk
-                  ? 'Berdasarkan data Anda, terdapat indikasi risiko stunting pada janin. Jangan khawatir, ikuti rekomendasi gizi kami untuk meminimalisir risiko.'
-                  : 'Berdasarkan data Anda, risiko stunting pada janin tergolong rendah. Pertahankan pola hidup sehat dan pemeriksaan rutin.',
+              result.recommendation,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 14,

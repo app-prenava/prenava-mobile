@@ -59,13 +59,12 @@ abstract class ShapExplanation with _$ShapExplanation {
 @freezed
 abstract class PredictionResult with _$PredictionResult {
   const factory PredictionResult({
-    required int id,
-    @JsonKey(name: 'risk_label') required String riskLabel,
-    required double probability,
-    @JsonKey(name: 'prediction') required int predictionValue,
+    @JsonKey(name: 'predictionId') required int predictionId,
+    @JsonKey(name: 'riskLabel') required String riskLabel,
+    required double score,
+    required int riskLevel,
+    required String recommendation,
     ShapExplanation? explanation,
-    @JsonKey(name: 'model_version') String? modelVersion,
-    @JsonKey(name: 'created_at') String? createdAt,
   }) = _PredictionResult;
 
   factory PredictionResult.fromJson(Map<String, dynamic> json) =>
@@ -75,9 +74,9 @@ abstract class PredictionResult with _$PredictionResult {
 @freezed
 abstract class FoodModel with _$FoodModel {
   const factory FoodModel({
-    required int id,
+    required String id,
     required String name,
-    @JsonKey(name: 'image_url') String? imageUrl,
+    @JsonKey(name: 'imageUrl') String? imageUrl,
     required double protein,
     required double calories,
     double? fat,
@@ -140,9 +139,10 @@ abstract class PredictionSummary with _$PredictionSummary {
 abstract class StuntingHistoryItem with _$StuntingHistoryItem {
   const factory StuntingHistoryItem({
     required int id,
-    @JsonKey(name: 'risk_label') required String riskLabel,
-    required double probability,
-    @JsonKey(name: 'created_at') required String createdAt,
+    @JsonKey(name: 'date') required String date,
+    required String status,
+    required int riskLevel,
+    required double score,
   }) = _StuntingHistoryItem;
 
   factory StuntingHistoryItem.fromJson(Map<String, dynamic> json) =>

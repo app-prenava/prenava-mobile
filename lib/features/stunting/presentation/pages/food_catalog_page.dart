@@ -131,22 +131,6 @@ class _FoodCatalogPageState extends ConsumerState<FoodCatalogPage> {
                     _buildNutrientTag('Protein: ${food.protein}g'),
                   ],
                 ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => _handleCookingGuide(food),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.primaryPink,
-                      elevation: 0,
-                      side: const BorderSide(color: AppColors.primaryPink, width: 1),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    child: const Text('Cara Masak', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  ),
-                ),
               ],
             ),
           ),
@@ -178,82 +162,6 @@ class _FoodCatalogPageState extends ConsumerState<FoodCatalogPage> {
         label,
         style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primaryPink),
       ),
-    );
-  }
-
-  Future<void> _handleCookingGuide(FoodModel food) async {
-    setState(() => _isGeminiLoading = true);
-    try {
-      final repository = ref.read(stuntingRepositoryProvider);
-      final guide = await repository.getCookingGuide([food.name]);
-      if (mounted) {
-        setState(() => _isGeminiLoading = false);
-        _showGuideDialog(context, food.name, guide.cookingGuide ?? 'Tidak ada instruksi tersedia.');
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isGeminiLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal meminta instruksi memasak: $e')),
-        );
-      }
-    }
-  }
-
-  void _showGuideDialog(BuildContext context, String foodName, String content) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.8,
-          minChildSize: 0.5,
-          maxChildSize: 0.95,
-          expand: false,
-          builder: (context, scrollController) {
-            return Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.auto_awesome, color: AppColors.primaryPink),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Cara Memasak $foodName',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Markdown(
-                    controller: scrollController,
-                    data: content,
-                    padding: const EdgeInsets.all(24),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }

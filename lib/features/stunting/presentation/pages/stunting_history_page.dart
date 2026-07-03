@@ -58,7 +58,7 @@ class _StuntingHistoryPageState extends ConsumerState<StuntingHistoryPage> {
               }
               
               final total = history.length;
-              final highRiskCount = history.where((item) => item.riskLabel == 'high_risk').length;
+              final highRiskCount = history.where((item) => item.riskLevel == 1).length;
               final lowRiskCount = total - highRiskCount;
 
               return CustomScrollView(
@@ -355,14 +355,14 @@ class _StuntingHistoryPageState extends ConsumerState<StuntingHistoryPage> {
   }
 
   Widget _buildHistoryCard(BuildContext context, StuntingHistoryItem item) {
-    final isHighRisk = item.riskLabel == 'high_risk';
-    final date = (DateTime.tryParse(item.createdAt) ?? DateTime.now()).toLocal();
+    final isHighRisk = item.riskLevel == 1;
+    final date = (DateTime.tryParse(item.date) ?? DateTime.now()).toLocal();
     final formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(date);
     
-    final Color statusColor = isHighRisk ? const Color(0xFFFF375F) : const Color(0xFF34C759);
+    final Color statusColor = isHighRisk ? const Color(0xFFFF375F) : (item.riskLevel == 2 ? const Color(0xFFFF9500) : const Color(0xFF34C759));
 
     final IconData statusIcon = isHighRisk ? Icons.warning_rounded : Icons.check_circle_rounded;
-    final String statusText = isHighRisk ? 'Risiko Tinggi' : 'Risiko Rendah';
+    final String statusText = isHighRisk ? 'Risiko Tinggi' : (item.riskLevel == 2 ? 'Risiko Sedang' : 'Risiko Rendah');
 
     return GestureDetector(
       onTap: () => _handleCardTap(item.id),
@@ -414,7 +414,7 @@ class _StuntingHistoryPageState extends ConsumerState<StuntingHistoryPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  '${(item.probability * 100).toStringAsFixed(1)}%',
+                  '${(item.score * 100).toStringAsFixed(1)}%',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
