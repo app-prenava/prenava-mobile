@@ -1,264 +1,204 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:prenava_mobile/features/stunting/data/models/stunting_models.dart';
-import 'package:prenava_mobile/features/stunting/presentation/utils/humanized_mapper.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:prenava_mobile/features/stunting/data/repositories/stunting_repository_impl.dart';
 
-class StuntingResultPage extends StatelessWidget {
+class StuntingResultPage extends ConsumerStatefulWidget {
   final PredictionResult result;
-
-  const StuntingResultPage({super.key, required this.result});
+  final Map<String, dynamic>? answers;
+  
+  const StuntingResultPage({super.key, required this.result, this.answers});
 
   @override
-  Widget build(BuildContext context) {
-    final isHighRisk = result.riskLabel == 'high_risk';
+  ConsumerState<StuntingResultPage> createState() => _StuntingResultPageState();
+}
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Hasil Analisis',
-          style: TextStyle(
-            color: Color(0xFF1C1C1E),
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1C1C1E), size: 20),
-          onPressed: () => context.pop(),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history_rounded, color: Color(0xFF1C1C1E)),
-            onPressed: () => context.push('/stunting/history'),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildRiskCard(isHighRisk),
-            const SizedBox(height: 24),
-            _buildExplanationSection(context, result.explanation),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                context.push('/stunting/foods');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF5A7A),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.restaurant_rounded, size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Lihat Rekomendasi Makanan',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: () => context.go('/home'),
-              child: const Text(
-                'Kembali ke Beranda',
-                style: TextStyle(
-                  color: Color(0xFF6E6E73),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
+  String _durasi = 'sehari';
+  final _pantanganController = TextEditingController();
 
-  Widget _buildRiskCard(bool isHighRisk) {
-    final Color statusColor =
-        isHighRisk ? const Color(0xFFFF375F) : (result.riskLabel == 'Sedang' ? const Color(0xFFFF9500) : const Color(0xFF34C759));
-    final Color softStatusColor = statusColor.withValues(alpha: 0.1);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: softStatusColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              isHighRisk ? Icons.warning_rounded : Icons.check_circle_rounded,
-              size: 40,
-              color: statusColor,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Risiko ${result.riskLabel}',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: statusColor,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Column(
+  void _showMealPlanDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Probabilitas',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF6E6E73),
+                    'Personalisasi Menu Makanan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _durasi,
+                    decoration: const InputDecoration(
+                      labelText: 'Durasi Menu',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'sehari', child: Text('1 Hari')),
+                      DropdownMenuItem(value: 'seminggu', child: Text('1 Minggu')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setModalState(() => _durasi = val);
+                        setState(() => _durasi = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _pantanganController,
+                    decoration: const InputDecoration(
+                      labelText: 'Pantangan / Alergi (Opsional)',
+                      hintText: 'Contoh: Alergi udang, tidak suka pedas',
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${(result.score * 100).toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      color: statusColor,
-                      letterSpacing: -1,
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _generateMealPlan();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.pinkAccent,
+                      foregroundColor: Colors.white,
                     ),
+                    child: const Text('Buat Menu Makanan'),
                   ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F8FA),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              result.recommendation,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF1C1C1E),
-                height: 1.5,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 500.ms).moveY(begin: 20, end: 0);
-  }
-
-  Widget _buildExplanationSection(BuildContext context, ShapExplanation? explanation) {
-    if (explanation == null || explanation.topFactors.isEmpty) {
-      return const SizedBox();
-    }
-
-    return Card(
-      elevation: 0,
-      color: const Color(0xFFF8F8FA),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          title: const Text(
-            'Faktor Kontribusi Utama',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1C1C1E),
-            ),
-          ),
-          // leading icon removed as requested
-          childrenPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          children: explanation.topFactors.map((factor) {
-            final label = HumanizedMapper.getLabel(factor.feature);
-            final isIncreasing = factor.impact == 'increase_risk';
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE5E5EA)),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    isIncreasing
-                        ? Icons.trending_up_rounded
-                        : Icons.trending_down_rounded,
-                    size: 20,
-                    color: isIncreasing
-                        ? const Color(0xFFFF375F)
-                        : const Color(0xFF34C759),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          label,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: Color(0xFF1C1C1E),
-                          ),
-                        ),
-                        Text(
-                          HumanizedMapper.getRiskDescription(
-                            label,
-                            factor.value,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Color(0xFF6E6E73),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             );
-          }).toList(),
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _generateMealPlan() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final repository = ref.read(stuntingRepositoryProvider);
+      
+      final height = widget.answers?['mother_height'] ?? 160.0;
+      final weight = widget.answers?['mother_weight'] ?? 60.0;
+      final heightM = height / 100.0;
+      final bmi = weight / (heightM * heightM);
+
+      final payload = {
+        'risiko_stunting': widget.result.riskLabel,
+        'bmi_ibu': bmi,
+        'berat_badan': weight,
+        'tinggi_badan': height,
+        'hb': widget.answers?['maternal_hemoglobin'],
+        'durasi': _durasi,
+        'pantangan': _pantanganController.text,
+        'prediction_id': widget.result.predictionId,
+      };
+
+      final response = await repository.generateMealPlan(payload);
+      
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        context.push('/stunting/meal-plan', extra: response);
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // close loading
+        String errorMsg = e.toString();
+        if (e is DioException && e.response?.data != null) {
+          final data = e.response!.data;
+          if (data is Map && data['message'] != null) {
+            errorMsg = data['message'];
+          }
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal membuat menu: $errorMsg')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isTinggi = widget.result.riskLevel == 1; 
+    
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        context.go('/stunting/history');
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Hasil Analisis'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              context.go('/stunting/history');
+            },
+          ),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Spacer(),
+              Text(
+                'Skor Risiko: ${(widget.result.score * 100).toStringAsFixed(1)}%',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                widget.result.riskLabel,
+                style: TextStyle(
+                  color: isTinggi ? Colors.red : Colors.green,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                widget.result.recommendation,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const Spacer(),
+              ElevatedButton(
+                onPressed: _showMealPlanDialog,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.pinkAccent,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Lihat Rekomendasi Makanan'),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
-    ).animate().fadeIn(delay: 400.ms, duration: 500.ms);
+    );
   }
 }

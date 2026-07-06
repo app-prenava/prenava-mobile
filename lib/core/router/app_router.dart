@@ -41,7 +41,8 @@ import '../../features/health_history/presentation/pages/health_history_page.dar
 import '../../features/stunting/presentation/pages/stunting_screening_page.dart';
 import '../../features/stunting/presentation/pages/stunting_result_page.dart';
 import '../../features/stunting/presentation/pages/stunting_history_page.dart';
-import '../../features/stunting/presentation/pages/food_catalog_page.dart';
+import '../../features/stunting/presentation/pages/stunting_meal_plan_page.dart';
+import '../../features/stunting/presentation/pages/stunting_history_detail_page.dart';
 import '../../features/stunting/data/models/stunting_models.dart';
 import '../../features/stunting_food/presentation/pages/food_recommendation_page.dart';
 import '../../features/stunting_food/presentation/pages/meal_plan_current_page.dart';
@@ -270,8 +271,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stunting/result',
         builder: (context, state) {
-          final result = state.extra as PredictionResult;
-          return StuntingResultPage(result: result);
+          final extra = state.extra as Map<String, dynamic>;
+          final result = extra['result'] as PredictionResult;
+          final answers = extra['answers'] as Map<String, dynamic>?;
+          return StuntingResultPage(result: result, answers: answers);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/meal-plan',
+        builder: (context, state) {
+          final response = state.extra as AiMealPlanResponse;
+          return StuntingMealPlanPage(response: response);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/history/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return StuntingHistoryDetailPage(historyId: id);
         },
       ),
       GoRoute(
@@ -284,10 +301,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/stunting/history',
         builder: (context, state) => const StuntingHistoryPage(),
-      ),
-      GoRoute(
-        path: '/stunting/foods',
-        builder: (context, state) => const FoodCatalogPage(),
       ),
       GoRoute(
         path: '/stunting-food/recommendations',

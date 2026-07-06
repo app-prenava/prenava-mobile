@@ -10,7 +10,7 @@ abstract class StuntingQuestion with _$StuntingQuestion {
     required String key,
     required String label,
     required String type,
-    required bool required,
+    @JsonKey(name: 'required') @Default(false) bool isRequired,
     List<StuntingOption>? options,
     double? min,
     double? max,
@@ -65,6 +65,8 @@ abstract class PredictionResult with _$PredictionResult {
     required int riskLevel,
     required String recommendation,
     ShapExplanation? explanation,
+    @JsonKey(name: 'inputData') Map<String, dynamic>? inputData,
+    @JsonKey(name: 'aiMealPlan') AiMealPlanResponse? aiMealPlan,
   }) = _PredictionResult;
 
   factory PredictionResult.fromJson(Map<String, dynamic> json) =>
@@ -147,4 +149,54 @@ abstract class StuntingHistoryItem with _$StuntingHistoryItem {
 
   factory StuntingHistoryItem.fromJson(Map<String, dynamic> json) =>
       _$StuntingHistoryItemFromJson(json);
+}
+
+@freezed
+abstract class AiMealPlanResponse with _$AiMealPlanResponse {
+  const factory AiMealPlanResponse({
+    @JsonKey(name: 'analisis_gizi') required List<AiNutritionAnalysis> analisisGizi,
+    @JsonKey(name: 'rekomendasi_menu') required Map<String, dynamic> rekomendasiMenu,
+    @JsonKey(name: 'saran_ai') required List<String> saranAi,
+    required String catatan,
+  }) = _AiMealPlanResponse;
+
+  factory AiMealPlanResponse.fromJson(Map<String, dynamic> json) =>
+      _$AiMealPlanResponseFromJson(json);
+}
+
+@freezed
+abstract class AiNutritionAnalysis with _$AiNutritionAnalysis {
+  const factory AiNutritionAnalysis({
+    required String nutrisi,
+    required String status,
+    required String kebutuhan,
+    required String asupan,
+    required String catatan,
+  }) = _AiNutritionAnalysis;
+
+  factory AiNutritionAnalysis.fromJson(Map<String, dynamic> json) =>
+      _$AiNutritionAnalysisFromJson(json);
+}
+
+@freezed
+abstract class AiMenuRecommendation with _$AiMenuRecommendation {
+  const factory AiMenuRecommendation({
+    required AiMeal sarapan,
+    @JsonKey(name: 'makan_siang') required AiMeal makanSiang,
+    @JsonKey(name: 'makan_malam') required AiMeal makanMalam,
+  }) = _AiMenuRecommendation;
+
+  factory AiMenuRecommendation.fromJson(Map<String, dynamic> json) =>
+      _$AiMenuRecommendationFromJson(json);
+}
+
+@freezed
+abstract class AiMeal with _$AiMeal {
+  const factory AiMeal({
+    required List<String> menu,
+    required String alasan,
+  }) = _AiMeal;
+
+  factory AiMeal.fromJson(Map<String, dynamic> json) =>
+      _$AiMealFromJson(json);
 }

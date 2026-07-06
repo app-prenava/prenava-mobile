@@ -23,7 +23,8 @@ mixin _$StuntingQuestion {
   String get key => throw _privateConstructorUsedError;
   String get label => throw _privateConstructorUsedError;
   String get type => throw _privateConstructorUsedError;
-  bool get required => throw _privateConstructorUsedError;
+  @JsonKey(name: 'required')
+  bool get isRequired => throw _privateConstructorUsedError;
   List<StuntingOption>? get options => throw _privateConstructorUsedError;
   double? get min => throw _privateConstructorUsedError;
   double? get max => throw _privateConstructorUsedError;
@@ -49,7 +50,7 @@ abstract class $StuntingQuestionCopyWith<$Res> {
       {String key,
       String label,
       String type,
-      bool required,
+      @JsonKey(name: 'required') bool isRequired,
       List<StuntingOption>? options,
       double? min,
       double? max,
@@ -74,7 +75,7 @@ class _$StuntingQuestionCopyWithImpl<$Res, $Val extends StuntingQuestion>
     Object? key = null,
     Object? label = null,
     Object? type = null,
-    Object? required = null,
+    Object? isRequired = null,
     Object? options = freezed,
     Object? min = freezed,
     Object? max = freezed,
@@ -93,9 +94,9 @@ class _$StuntingQuestionCopyWithImpl<$Res, $Val extends StuntingQuestion>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as String,
-      required: null == required
-          ? _value.required
-          : required // ignore: cast_nullable_to_non_nullable
+      isRequired: null == isRequired
+          ? _value.isRequired
+          : isRequired // ignore: cast_nullable_to_non_nullable
               as bool,
       options: freezed == options
           ? _value.options
@@ -129,7 +130,7 @@ abstract class _$$StuntingQuestionImplCopyWith<$Res>
       {String key,
       String label,
       String type,
-      bool required,
+      @JsonKey(name: 'required') bool isRequired,
       List<StuntingOption>? options,
       double? min,
       double? max,
@@ -152,7 +153,7 @@ class __$$StuntingQuestionImplCopyWithImpl<$Res>
     Object? key = null,
     Object? label = null,
     Object? type = null,
-    Object? required = null,
+    Object? isRequired = null,
     Object? options = freezed,
     Object? min = freezed,
     Object? max = freezed,
@@ -171,9 +172,9 @@ class __$$StuntingQuestionImplCopyWithImpl<$Res>
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as String,
-      required: null == required
-          ? _value.required
-          : required // ignore: cast_nullable_to_non_nullable
+      isRequired: null == isRequired
+          ? _value.isRequired
+          : isRequired // ignore: cast_nullable_to_non_nullable
               as bool,
       options: freezed == options
           ? _value._options
@@ -202,7 +203,7 @@ class _$StuntingQuestionImpl implements _StuntingQuestion {
       {required this.key,
       required this.label,
       required this.type,
-      required this.required,
+      @JsonKey(name: 'required') this.isRequired = false,
       final List<StuntingOption>? options,
       this.min,
       this.max,
@@ -219,7 +220,8 @@ class _$StuntingQuestionImpl implements _StuntingQuestion {
   @override
   final String type;
   @override
-  final bool required;
+  @JsonKey(name: 'required')
+  final bool isRequired;
   final List<StuntingOption>? _options;
   @override
   List<StuntingOption>? get options {
@@ -239,7 +241,7 @@ class _$StuntingQuestionImpl implements _StuntingQuestion {
 
   @override
   String toString() {
-    return 'StuntingQuestion(key: $key, label: $label, type: $type, required: $required, options: $options, min: $min, max: $max, unit: $unit)';
+    return 'StuntingQuestion(key: $key, label: $label, type: $type, isRequired: $isRequired, options: $options, min: $min, max: $max, unit: $unit)';
   }
 
   @override
@@ -250,8 +252,8 @@ class _$StuntingQuestionImpl implements _StuntingQuestion {
             (identical(other.key, key) || other.key == key) &&
             (identical(other.label, label) || other.label == label) &&
             (identical(other.type, type) || other.type == type) &&
-            (identical(other.required, required) ||
-                other.required == required) &&
+            (identical(other.isRequired, isRequired) ||
+                other.isRequired == isRequired) &&
             const DeepCollectionEquality().equals(other._options, _options) &&
             (identical(other.min, min) || other.min == min) &&
             (identical(other.max, max) || other.max == max) &&
@@ -260,7 +262,7 @@ class _$StuntingQuestionImpl implements _StuntingQuestion {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, key, label, type, required,
+  int get hashCode => Object.hash(runtimeType, key, label, type, isRequired,
       const DeepCollectionEquality().hash(_options), min, max, unit);
 
   /// Create a copy of StuntingQuestion
@@ -285,7 +287,7 @@ abstract class _StuntingQuestion implements StuntingQuestion {
       {required final String key,
       required final String label,
       required final String type,
-      required final bool required,
+      @JsonKey(name: 'required') final bool isRequired,
       final List<StuntingOption>? options,
       final double? min,
       final double? max,
@@ -301,7 +303,8 @@ abstract class _StuntingQuestion implements StuntingQuestion {
   @override
   String get type;
   @override
-  bool get required;
+  @JsonKey(name: 'required')
+  bool get isRequired;
   @override
   List<StuntingOption>? get options;
   @override
@@ -893,6 +896,10 @@ mixin _$PredictionResult {
   int get riskLevel => throw _privateConstructorUsedError;
   String get recommendation => throw _privateConstructorUsedError;
   ShapExplanation? get explanation => throw _privateConstructorUsedError;
+  @JsonKey(name: 'inputData')
+  Map<String, dynamic>? get inputData => throw _privateConstructorUsedError;
+  @JsonKey(name: 'aiMealPlan')
+  AiMealPlanResponse? get aiMealPlan => throw _privateConstructorUsedError;
 
   /// Serializes this PredictionResult to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -916,9 +923,12 @@ abstract class $PredictionResultCopyWith<$Res> {
       double score,
       int riskLevel,
       String recommendation,
-      ShapExplanation? explanation});
+      ShapExplanation? explanation,
+      @JsonKey(name: 'inputData') Map<String, dynamic>? inputData,
+      @JsonKey(name: 'aiMealPlan') AiMealPlanResponse? aiMealPlan});
 
   $ShapExplanationCopyWith<$Res>? get explanation;
+  $AiMealPlanResponseCopyWith<$Res>? get aiMealPlan;
 }
 
 /// @nodoc
@@ -942,6 +952,8 @@ class _$PredictionResultCopyWithImpl<$Res, $Val extends PredictionResult>
     Object? riskLevel = null,
     Object? recommendation = null,
     Object? explanation = freezed,
+    Object? inputData = freezed,
+    Object? aiMealPlan = freezed,
   }) {
     return _then(_value.copyWith(
       predictionId: null == predictionId
@@ -968,6 +980,14 @@ class _$PredictionResultCopyWithImpl<$Res, $Val extends PredictionResult>
           ? _value.explanation
           : explanation // ignore: cast_nullable_to_non_nullable
               as ShapExplanation?,
+      inputData: freezed == inputData
+          ? _value.inputData
+          : inputData // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      aiMealPlan: freezed == aiMealPlan
+          ? _value.aiMealPlan
+          : aiMealPlan // ignore: cast_nullable_to_non_nullable
+              as AiMealPlanResponse?,
     ) as $Val);
   }
 
@@ -982,6 +1002,20 @@ class _$PredictionResultCopyWithImpl<$Res, $Val extends PredictionResult>
 
     return $ShapExplanationCopyWith<$Res>(_value.explanation!, (value) {
       return _then(_value.copyWith(explanation: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PredictionResult
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiMealPlanResponseCopyWith<$Res>? get aiMealPlan {
+    if (_value.aiMealPlan == null) {
+      return null;
+    }
+
+    return $AiMealPlanResponseCopyWith<$Res>(_value.aiMealPlan!, (value) {
+      return _then(_value.copyWith(aiMealPlan: value) as $Val);
     });
   }
 }
@@ -1000,10 +1034,14 @@ abstract class _$$PredictionResultImplCopyWith<$Res>
       double score,
       int riskLevel,
       String recommendation,
-      ShapExplanation? explanation});
+      ShapExplanation? explanation,
+      @JsonKey(name: 'inputData') Map<String, dynamic>? inputData,
+      @JsonKey(name: 'aiMealPlan') AiMealPlanResponse? aiMealPlan});
 
   @override
   $ShapExplanationCopyWith<$Res>? get explanation;
+  @override
+  $AiMealPlanResponseCopyWith<$Res>? get aiMealPlan;
 }
 
 /// @nodoc
@@ -1025,6 +1063,8 @@ class __$$PredictionResultImplCopyWithImpl<$Res>
     Object? riskLevel = null,
     Object? recommendation = null,
     Object? explanation = freezed,
+    Object? inputData = freezed,
+    Object? aiMealPlan = freezed,
   }) {
     return _then(_$PredictionResultImpl(
       predictionId: null == predictionId
@@ -1051,6 +1091,14 @@ class __$$PredictionResultImplCopyWithImpl<$Res>
           ? _value.explanation
           : explanation // ignore: cast_nullable_to_non_nullable
               as ShapExplanation?,
+      inputData: freezed == inputData
+          ? _value._inputData
+          : inputData // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+      aiMealPlan: freezed == aiMealPlan
+          ? _value.aiMealPlan
+          : aiMealPlan // ignore: cast_nullable_to_non_nullable
+              as AiMealPlanResponse?,
     ));
   }
 }
@@ -1064,7 +1112,10 @@ class _$PredictionResultImpl implements _PredictionResult {
       required this.score,
       required this.riskLevel,
       required this.recommendation,
-      this.explanation});
+      this.explanation,
+      @JsonKey(name: 'inputData') final Map<String, dynamic>? inputData,
+      @JsonKey(name: 'aiMealPlan') this.aiMealPlan})
+      : _inputData = inputData;
 
   factory _$PredictionResultImpl.fromJson(Map<String, dynamic> json) =>
       _$$PredictionResultImplFromJson(json);
@@ -1083,10 +1134,24 @@ class _$PredictionResultImpl implements _PredictionResult {
   final String recommendation;
   @override
   final ShapExplanation? explanation;
+  final Map<String, dynamic>? _inputData;
+  @override
+  @JsonKey(name: 'inputData')
+  Map<String, dynamic>? get inputData {
+    final value = _inputData;
+    if (value == null) return null;
+    if (_inputData is EqualUnmodifiableMapView) return _inputData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  @override
+  @JsonKey(name: 'aiMealPlan')
+  final AiMealPlanResponse? aiMealPlan;
 
   @override
   String toString() {
-    return 'PredictionResult(predictionId: $predictionId, riskLabel: $riskLabel, score: $score, riskLevel: $riskLevel, recommendation: $recommendation, explanation: $explanation)';
+    return 'PredictionResult(predictionId: $predictionId, riskLabel: $riskLabel, score: $score, riskLevel: $riskLevel, recommendation: $recommendation, explanation: $explanation, inputData: $inputData, aiMealPlan: $aiMealPlan)';
   }
 
   @override
@@ -1104,13 +1169,25 @@ class _$PredictionResultImpl implements _PredictionResult {
             (identical(other.recommendation, recommendation) ||
                 other.recommendation == recommendation) &&
             (identical(other.explanation, explanation) ||
-                other.explanation == explanation));
+                other.explanation == explanation) &&
+            const DeepCollectionEquality()
+                .equals(other._inputData, _inputData) &&
+            (identical(other.aiMealPlan, aiMealPlan) ||
+                other.aiMealPlan == aiMealPlan));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, predictionId, riskLabel, score,
-      riskLevel, recommendation, explanation);
+  int get hashCode => Object.hash(
+      runtimeType,
+      predictionId,
+      riskLabel,
+      score,
+      riskLevel,
+      recommendation,
+      explanation,
+      const DeepCollectionEquality().hash(_inputData),
+      aiMealPlan);
 
   /// Create a copy of PredictionResult
   /// with the given fields replaced by the non-null parameter values.
@@ -1131,12 +1208,15 @@ class _$PredictionResultImpl implements _PredictionResult {
 
 abstract class _PredictionResult implements PredictionResult {
   const factory _PredictionResult(
-      {@JsonKey(name: 'predictionId') required final int predictionId,
-      @JsonKey(name: 'riskLabel') required final String riskLabel,
-      required final double score,
-      required final int riskLevel,
-      required final String recommendation,
-      final ShapExplanation? explanation}) = _$PredictionResultImpl;
+          {@JsonKey(name: 'predictionId') required final int predictionId,
+          @JsonKey(name: 'riskLabel') required final String riskLabel,
+          required final double score,
+          required final int riskLevel,
+          required final String recommendation,
+          final ShapExplanation? explanation,
+          @JsonKey(name: 'inputData') final Map<String, dynamic>? inputData,
+          @JsonKey(name: 'aiMealPlan') final AiMealPlanResponse? aiMealPlan}) =
+      _$PredictionResultImpl;
 
   factory _PredictionResult.fromJson(Map<String, dynamic> json) =
       _$PredictionResultImpl.fromJson;
@@ -1155,6 +1235,12 @@ abstract class _PredictionResult implements PredictionResult {
   String get recommendation;
   @override
   ShapExplanation? get explanation;
+  @override
+  @JsonKey(name: 'inputData')
+  Map<String, dynamic>? get inputData;
+  @override
+  @JsonKey(name: 'aiMealPlan')
+  AiMealPlanResponse? get aiMealPlan;
 
   /// Create a copy of PredictionResult
   /// with the given fields replaced by the non-null parameter values.
@@ -2541,5 +2627,915 @@ abstract class _StuntingHistoryItem implements StuntingHistoryItem {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$StuntingHistoryItemImplCopyWith<_$StuntingHistoryItemImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AiMealPlanResponse _$AiMealPlanResponseFromJson(Map<String, dynamic> json) {
+  return _AiMealPlanResponse.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AiMealPlanResponse {
+  @JsonKey(name: 'analisis_gizi')
+  List<AiNutritionAnalysis> get analisisGizi =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: 'rekomendasi_menu')
+  Map<String, dynamic> get rekomendasiMenu =>
+      throw _privateConstructorUsedError;
+  @JsonKey(name: 'saran_ai')
+  List<String> get saranAi => throw _privateConstructorUsedError;
+  String get catatan => throw _privateConstructorUsedError;
+
+  /// Serializes this AiMealPlanResponse to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AiMealPlanResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AiMealPlanResponseCopyWith<AiMealPlanResponse> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AiMealPlanResponseCopyWith<$Res> {
+  factory $AiMealPlanResponseCopyWith(
+          AiMealPlanResponse value, $Res Function(AiMealPlanResponse) then) =
+      _$AiMealPlanResponseCopyWithImpl<$Res, AiMealPlanResponse>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'analisis_gizi') List<AiNutritionAnalysis> analisisGizi,
+      @JsonKey(name: 'rekomendasi_menu') Map<String, dynamic> rekomendasiMenu,
+      @JsonKey(name: 'saran_ai') List<String> saranAi,
+      String catatan});
+}
+
+/// @nodoc
+class _$AiMealPlanResponseCopyWithImpl<$Res, $Val extends AiMealPlanResponse>
+    implements $AiMealPlanResponseCopyWith<$Res> {
+  _$AiMealPlanResponseCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AiMealPlanResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? analisisGizi = null,
+    Object? rekomendasiMenu = null,
+    Object? saranAi = null,
+    Object? catatan = null,
+  }) {
+    return _then(_value.copyWith(
+      analisisGizi: null == analisisGizi
+          ? _value.analisisGizi
+          : analisisGizi // ignore: cast_nullable_to_non_nullable
+              as List<AiNutritionAnalysis>,
+      rekomendasiMenu: null == rekomendasiMenu
+          ? _value.rekomendasiMenu
+          : rekomendasiMenu // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>,
+      saranAi: null == saranAi
+          ? _value.saranAi
+          : saranAi // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      catatan: null == catatan
+          ? _value.catatan
+          : catatan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AiMealPlanResponseImplCopyWith<$Res>
+    implements $AiMealPlanResponseCopyWith<$Res> {
+  factory _$$AiMealPlanResponseImplCopyWith(_$AiMealPlanResponseImpl value,
+          $Res Function(_$AiMealPlanResponseImpl) then) =
+      __$$AiMealPlanResponseImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: 'analisis_gizi') List<AiNutritionAnalysis> analisisGizi,
+      @JsonKey(name: 'rekomendasi_menu') Map<String, dynamic> rekomendasiMenu,
+      @JsonKey(name: 'saran_ai') List<String> saranAi,
+      String catatan});
+}
+
+/// @nodoc
+class __$$AiMealPlanResponseImplCopyWithImpl<$Res>
+    extends _$AiMealPlanResponseCopyWithImpl<$Res, _$AiMealPlanResponseImpl>
+    implements _$$AiMealPlanResponseImplCopyWith<$Res> {
+  __$$AiMealPlanResponseImplCopyWithImpl(_$AiMealPlanResponseImpl _value,
+      $Res Function(_$AiMealPlanResponseImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AiMealPlanResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? analisisGizi = null,
+    Object? rekomendasiMenu = null,
+    Object? saranAi = null,
+    Object? catatan = null,
+  }) {
+    return _then(_$AiMealPlanResponseImpl(
+      analisisGizi: null == analisisGizi
+          ? _value._analisisGizi
+          : analisisGizi // ignore: cast_nullable_to_non_nullable
+              as List<AiNutritionAnalysis>,
+      rekomendasiMenu: null == rekomendasiMenu
+          ? _value._rekomendasiMenu
+          : rekomendasiMenu // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>,
+      saranAi: null == saranAi
+          ? _value._saranAi
+          : saranAi // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      catatan: null == catatan
+          ? _value.catatan
+          : catatan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AiMealPlanResponseImpl implements _AiMealPlanResponse {
+  const _$AiMealPlanResponseImpl(
+      {@JsonKey(name: 'analisis_gizi')
+      required final List<AiNutritionAnalysis> analisisGizi,
+      @JsonKey(name: 'rekomendasi_menu')
+      required final Map<String, dynamic> rekomendasiMenu,
+      @JsonKey(name: 'saran_ai') required final List<String> saranAi,
+      required this.catatan})
+      : _analisisGizi = analisisGizi,
+        _rekomendasiMenu = rekomendasiMenu,
+        _saranAi = saranAi;
+
+  factory _$AiMealPlanResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AiMealPlanResponseImplFromJson(json);
+
+  final List<AiNutritionAnalysis> _analisisGizi;
+  @override
+  @JsonKey(name: 'analisis_gizi')
+  List<AiNutritionAnalysis> get analisisGizi {
+    if (_analisisGizi is EqualUnmodifiableListView) return _analisisGizi;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_analisisGizi);
+  }
+
+  final Map<String, dynamic> _rekomendasiMenu;
+  @override
+  @JsonKey(name: 'rekomendasi_menu')
+  Map<String, dynamic> get rekomendasiMenu {
+    if (_rekomendasiMenu is EqualUnmodifiableMapView) return _rekomendasiMenu;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_rekomendasiMenu);
+  }
+
+  final List<String> _saranAi;
+  @override
+  @JsonKey(name: 'saran_ai')
+  List<String> get saranAi {
+    if (_saranAi is EqualUnmodifiableListView) return _saranAi;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_saranAi);
+  }
+
+  @override
+  final String catatan;
+
+  @override
+  String toString() {
+    return 'AiMealPlanResponse(analisisGizi: $analisisGizi, rekomendasiMenu: $rekomendasiMenu, saranAi: $saranAi, catatan: $catatan)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AiMealPlanResponseImpl &&
+            const DeepCollectionEquality()
+                .equals(other._analisisGizi, _analisisGizi) &&
+            const DeepCollectionEquality()
+                .equals(other._rekomendasiMenu, _rekomendasiMenu) &&
+            const DeepCollectionEquality().equals(other._saranAi, _saranAi) &&
+            (identical(other.catatan, catatan) || other.catatan == catatan));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_analisisGizi),
+      const DeepCollectionEquality().hash(_rekomendasiMenu),
+      const DeepCollectionEquality().hash(_saranAi),
+      catatan);
+
+  /// Create a copy of AiMealPlanResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AiMealPlanResponseImplCopyWith<_$AiMealPlanResponseImpl> get copyWith =>
+      __$$AiMealPlanResponseImplCopyWithImpl<_$AiMealPlanResponseImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AiMealPlanResponseImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AiMealPlanResponse implements AiMealPlanResponse {
+  const factory _AiMealPlanResponse(
+      {@JsonKey(name: 'analisis_gizi')
+      required final List<AiNutritionAnalysis> analisisGizi,
+      @JsonKey(name: 'rekomendasi_menu')
+      required final Map<String, dynamic> rekomendasiMenu,
+      @JsonKey(name: 'saran_ai') required final List<String> saranAi,
+      required final String catatan}) = _$AiMealPlanResponseImpl;
+
+  factory _AiMealPlanResponse.fromJson(Map<String, dynamic> json) =
+      _$AiMealPlanResponseImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'analisis_gizi')
+  List<AiNutritionAnalysis> get analisisGizi;
+  @override
+  @JsonKey(name: 'rekomendasi_menu')
+  Map<String, dynamic> get rekomendasiMenu;
+  @override
+  @JsonKey(name: 'saran_ai')
+  List<String> get saranAi;
+  @override
+  String get catatan;
+
+  /// Create a copy of AiMealPlanResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AiMealPlanResponseImplCopyWith<_$AiMealPlanResponseImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AiNutritionAnalysis _$AiNutritionAnalysisFromJson(Map<String, dynamic> json) {
+  return _AiNutritionAnalysis.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AiNutritionAnalysis {
+  String get nutrisi => throw _privateConstructorUsedError;
+  String get status => throw _privateConstructorUsedError;
+  String get kebutuhan => throw _privateConstructorUsedError;
+  String get asupan => throw _privateConstructorUsedError;
+  String get catatan => throw _privateConstructorUsedError;
+
+  /// Serializes this AiNutritionAnalysis to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AiNutritionAnalysis
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AiNutritionAnalysisCopyWith<AiNutritionAnalysis> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AiNutritionAnalysisCopyWith<$Res> {
+  factory $AiNutritionAnalysisCopyWith(
+          AiNutritionAnalysis value, $Res Function(AiNutritionAnalysis) then) =
+      _$AiNutritionAnalysisCopyWithImpl<$Res, AiNutritionAnalysis>;
+  @useResult
+  $Res call(
+      {String nutrisi,
+      String status,
+      String kebutuhan,
+      String asupan,
+      String catatan});
+}
+
+/// @nodoc
+class _$AiNutritionAnalysisCopyWithImpl<$Res, $Val extends AiNutritionAnalysis>
+    implements $AiNutritionAnalysisCopyWith<$Res> {
+  _$AiNutritionAnalysisCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AiNutritionAnalysis
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? nutrisi = null,
+    Object? status = null,
+    Object? kebutuhan = null,
+    Object? asupan = null,
+    Object? catatan = null,
+  }) {
+    return _then(_value.copyWith(
+      nutrisi: null == nutrisi
+          ? _value.nutrisi
+          : nutrisi // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
+      kebutuhan: null == kebutuhan
+          ? _value.kebutuhan
+          : kebutuhan // ignore: cast_nullable_to_non_nullable
+              as String,
+      asupan: null == asupan
+          ? _value.asupan
+          : asupan // ignore: cast_nullable_to_non_nullable
+              as String,
+      catatan: null == catatan
+          ? _value.catatan
+          : catatan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AiNutritionAnalysisImplCopyWith<$Res>
+    implements $AiNutritionAnalysisCopyWith<$Res> {
+  factory _$$AiNutritionAnalysisImplCopyWith(_$AiNutritionAnalysisImpl value,
+          $Res Function(_$AiNutritionAnalysisImpl) then) =
+      __$$AiNutritionAnalysisImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String nutrisi,
+      String status,
+      String kebutuhan,
+      String asupan,
+      String catatan});
+}
+
+/// @nodoc
+class __$$AiNutritionAnalysisImplCopyWithImpl<$Res>
+    extends _$AiNutritionAnalysisCopyWithImpl<$Res, _$AiNutritionAnalysisImpl>
+    implements _$$AiNutritionAnalysisImplCopyWith<$Res> {
+  __$$AiNutritionAnalysisImplCopyWithImpl(_$AiNutritionAnalysisImpl _value,
+      $Res Function(_$AiNutritionAnalysisImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AiNutritionAnalysis
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? nutrisi = null,
+    Object? status = null,
+    Object? kebutuhan = null,
+    Object? asupan = null,
+    Object? catatan = null,
+  }) {
+    return _then(_$AiNutritionAnalysisImpl(
+      nutrisi: null == nutrisi
+          ? _value.nutrisi
+          : nutrisi // ignore: cast_nullable_to_non_nullable
+              as String,
+      status: null == status
+          ? _value.status
+          : status // ignore: cast_nullable_to_non_nullable
+              as String,
+      kebutuhan: null == kebutuhan
+          ? _value.kebutuhan
+          : kebutuhan // ignore: cast_nullable_to_non_nullable
+              as String,
+      asupan: null == asupan
+          ? _value.asupan
+          : asupan // ignore: cast_nullable_to_non_nullable
+              as String,
+      catatan: null == catatan
+          ? _value.catatan
+          : catatan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AiNutritionAnalysisImpl implements _AiNutritionAnalysis {
+  const _$AiNutritionAnalysisImpl(
+      {required this.nutrisi,
+      required this.status,
+      required this.kebutuhan,
+      required this.asupan,
+      required this.catatan});
+
+  factory _$AiNutritionAnalysisImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AiNutritionAnalysisImplFromJson(json);
+
+  @override
+  final String nutrisi;
+  @override
+  final String status;
+  @override
+  final String kebutuhan;
+  @override
+  final String asupan;
+  @override
+  final String catatan;
+
+  @override
+  String toString() {
+    return 'AiNutritionAnalysis(nutrisi: $nutrisi, status: $status, kebutuhan: $kebutuhan, asupan: $asupan, catatan: $catatan)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AiNutritionAnalysisImpl &&
+            (identical(other.nutrisi, nutrisi) || other.nutrisi == nutrisi) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.kebutuhan, kebutuhan) ||
+                other.kebutuhan == kebutuhan) &&
+            (identical(other.asupan, asupan) || other.asupan == asupan) &&
+            (identical(other.catatan, catatan) || other.catatan == catatan));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, nutrisi, status, kebutuhan, asupan, catatan);
+
+  /// Create a copy of AiNutritionAnalysis
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AiNutritionAnalysisImplCopyWith<_$AiNutritionAnalysisImpl> get copyWith =>
+      __$$AiNutritionAnalysisImplCopyWithImpl<_$AiNutritionAnalysisImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AiNutritionAnalysisImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AiNutritionAnalysis implements AiNutritionAnalysis {
+  const factory _AiNutritionAnalysis(
+      {required final String nutrisi,
+      required final String status,
+      required final String kebutuhan,
+      required final String asupan,
+      required final String catatan}) = _$AiNutritionAnalysisImpl;
+
+  factory _AiNutritionAnalysis.fromJson(Map<String, dynamic> json) =
+      _$AiNutritionAnalysisImpl.fromJson;
+
+  @override
+  String get nutrisi;
+  @override
+  String get status;
+  @override
+  String get kebutuhan;
+  @override
+  String get asupan;
+  @override
+  String get catatan;
+
+  /// Create a copy of AiNutritionAnalysis
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AiNutritionAnalysisImplCopyWith<_$AiNutritionAnalysisImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+AiMenuRecommendation _$AiMenuRecommendationFromJson(Map<String, dynamic> json) {
+  return _AiMenuRecommendation.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AiMenuRecommendation {
+  AiMeal get sarapan => throw _privateConstructorUsedError;
+  @JsonKey(name: 'makan_siang')
+  AiMeal get makanSiang => throw _privateConstructorUsedError;
+  @JsonKey(name: 'makan_malam')
+  AiMeal get makanMalam => throw _privateConstructorUsedError;
+
+  /// Serializes this AiMenuRecommendation to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AiMenuRecommendationCopyWith<AiMenuRecommendation> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AiMenuRecommendationCopyWith<$Res> {
+  factory $AiMenuRecommendationCopyWith(AiMenuRecommendation value,
+          $Res Function(AiMenuRecommendation) then) =
+      _$AiMenuRecommendationCopyWithImpl<$Res, AiMenuRecommendation>;
+  @useResult
+  $Res call(
+      {AiMeal sarapan,
+      @JsonKey(name: 'makan_siang') AiMeal makanSiang,
+      @JsonKey(name: 'makan_malam') AiMeal makanMalam});
+
+  $AiMealCopyWith<$Res> get sarapan;
+  $AiMealCopyWith<$Res> get makanSiang;
+  $AiMealCopyWith<$Res> get makanMalam;
+}
+
+/// @nodoc
+class _$AiMenuRecommendationCopyWithImpl<$Res,
+        $Val extends AiMenuRecommendation>
+    implements $AiMenuRecommendationCopyWith<$Res> {
+  _$AiMenuRecommendationCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sarapan = null,
+    Object? makanSiang = null,
+    Object? makanMalam = null,
+  }) {
+    return _then(_value.copyWith(
+      sarapan: null == sarapan
+          ? _value.sarapan
+          : sarapan // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+      makanSiang: null == makanSiang
+          ? _value.makanSiang
+          : makanSiang // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+      makanMalam: null == makanMalam
+          ? _value.makanMalam
+          : makanMalam // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+    ) as $Val);
+  }
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiMealCopyWith<$Res> get sarapan {
+    return $AiMealCopyWith<$Res>(_value.sarapan, (value) {
+      return _then(_value.copyWith(sarapan: value) as $Val);
+    });
+  }
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiMealCopyWith<$Res> get makanSiang {
+    return $AiMealCopyWith<$Res>(_value.makanSiang, (value) {
+      return _then(_value.copyWith(makanSiang: value) as $Val);
+    });
+  }
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AiMealCopyWith<$Res> get makanMalam {
+    return $AiMealCopyWith<$Res>(_value.makanMalam, (value) {
+      return _then(_value.copyWith(makanMalam: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$AiMenuRecommendationImplCopyWith<$Res>
+    implements $AiMenuRecommendationCopyWith<$Res> {
+  factory _$$AiMenuRecommendationImplCopyWith(_$AiMenuRecommendationImpl value,
+          $Res Function(_$AiMenuRecommendationImpl) then) =
+      __$$AiMenuRecommendationImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {AiMeal sarapan,
+      @JsonKey(name: 'makan_siang') AiMeal makanSiang,
+      @JsonKey(name: 'makan_malam') AiMeal makanMalam});
+
+  @override
+  $AiMealCopyWith<$Res> get sarapan;
+  @override
+  $AiMealCopyWith<$Res> get makanSiang;
+  @override
+  $AiMealCopyWith<$Res> get makanMalam;
+}
+
+/// @nodoc
+class __$$AiMenuRecommendationImplCopyWithImpl<$Res>
+    extends _$AiMenuRecommendationCopyWithImpl<$Res, _$AiMenuRecommendationImpl>
+    implements _$$AiMenuRecommendationImplCopyWith<$Res> {
+  __$$AiMenuRecommendationImplCopyWithImpl(_$AiMenuRecommendationImpl _value,
+      $Res Function(_$AiMenuRecommendationImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sarapan = null,
+    Object? makanSiang = null,
+    Object? makanMalam = null,
+  }) {
+    return _then(_$AiMenuRecommendationImpl(
+      sarapan: null == sarapan
+          ? _value.sarapan
+          : sarapan // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+      makanSiang: null == makanSiang
+          ? _value.makanSiang
+          : makanSiang // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+      makanMalam: null == makanMalam
+          ? _value.makanMalam
+          : makanMalam // ignore: cast_nullable_to_non_nullable
+              as AiMeal,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AiMenuRecommendationImpl implements _AiMenuRecommendation {
+  const _$AiMenuRecommendationImpl(
+      {required this.sarapan,
+      @JsonKey(name: 'makan_siang') required this.makanSiang,
+      @JsonKey(name: 'makan_malam') required this.makanMalam});
+
+  factory _$AiMenuRecommendationImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AiMenuRecommendationImplFromJson(json);
+
+  @override
+  final AiMeal sarapan;
+  @override
+  @JsonKey(name: 'makan_siang')
+  final AiMeal makanSiang;
+  @override
+  @JsonKey(name: 'makan_malam')
+  final AiMeal makanMalam;
+
+  @override
+  String toString() {
+    return 'AiMenuRecommendation(sarapan: $sarapan, makanSiang: $makanSiang, makanMalam: $makanMalam)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AiMenuRecommendationImpl &&
+            (identical(other.sarapan, sarapan) || other.sarapan == sarapan) &&
+            (identical(other.makanSiang, makanSiang) ||
+                other.makanSiang == makanSiang) &&
+            (identical(other.makanMalam, makanMalam) ||
+                other.makanMalam == makanMalam));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sarapan, makanSiang, makanMalam);
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AiMenuRecommendationImplCopyWith<_$AiMenuRecommendationImpl>
+      get copyWith =>
+          __$$AiMenuRecommendationImplCopyWithImpl<_$AiMenuRecommendationImpl>(
+              this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AiMenuRecommendationImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AiMenuRecommendation implements AiMenuRecommendation {
+  const factory _AiMenuRecommendation(
+          {required final AiMeal sarapan,
+          @JsonKey(name: 'makan_siang') required final AiMeal makanSiang,
+          @JsonKey(name: 'makan_malam') required final AiMeal makanMalam}) =
+      _$AiMenuRecommendationImpl;
+
+  factory _AiMenuRecommendation.fromJson(Map<String, dynamic> json) =
+      _$AiMenuRecommendationImpl.fromJson;
+
+  @override
+  AiMeal get sarapan;
+  @override
+  @JsonKey(name: 'makan_siang')
+  AiMeal get makanSiang;
+  @override
+  @JsonKey(name: 'makan_malam')
+  AiMeal get makanMalam;
+
+  /// Create a copy of AiMenuRecommendation
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AiMenuRecommendationImplCopyWith<_$AiMenuRecommendationImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+AiMeal _$AiMealFromJson(Map<String, dynamic> json) {
+  return _AiMeal.fromJson(json);
+}
+
+/// @nodoc
+mixin _$AiMeal {
+  List<String> get menu => throw _privateConstructorUsedError;
+  String get alasan => throw _privateConstructorUsedError;
+
+  /// Serializes this AiMeal to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of AiMeal
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AiMealCopyWith<AiMeal> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AiMealCopyWith<$Res> {
+  factory $AiMealCopyWith(AiMeal value, $Res Function(AiMeal) then) =
+      _$AiMealCopyWithImpl<$Res, AiMeal>;
+  @useResult
+  $Res call({List<String> menu, String alasan});
+}
+
+/// @nodoc
+class _$AiMealCopyWithImpl<$Res, $Val extends AiMeal>
+    implements $AiMealCopyWith<$Res> {
+  _$AiMealCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of AiMeal
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? menu = null,
+    Object? alasan = null,
+  }) {
+    return _then(_value.copyWith(
+      menu: null == menu
+          ? _value.menu
+          : menu // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      alasan: null == alasan
+          ? _value.alasan
+          : alasan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$AiMealImplCopyWith<$Res> implements $AiMealCopyWith<$Res> {
+  factory _$$AiMealImplCopyWith(
+          _$AiMealImpl value, $Res Function(_$AiMealImpl) then) =
+      __$$AiMealImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({List<String> menu, String alasan});
+}
+
+/// @nodoc
+class __$$AiMealImplCopyWithImpl<$Res>
+    extends _$AiMealCopyWithImpl<$Res, _$AiMealImpl>
+    implements _$$AiMealImplCopyWith<$Res> {
+  __$$AiMealImplCopyWithImpl(
+      _$AiMealImpl _value, $Res Function(_$AiMealImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of AiMeal
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? menu = null,
+    Object? alasan = null,
+  }) {
+    return _then(_$AiMealImpl(
+      menu: null == menu
+          ? _value._menu
+          : menu // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+      alasan: null == alasan
+          ? _value.alasan
+          : alasan // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AiMealImpl implements _AiMeal {
+  const _$AiMealImpl({required final List<String> menu, required this.alasan})
+      : _menu = menu;
+
+  factory _$AiMealImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AiMealImplFromJson(json);
+
+  final List<String> _menu;
+  @override
+  List<String> get menu {
+    if (_menu is EqualUnmodifiableListView) return _menu;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_menu);
+  }
+
+  @override
+  final String alasan;
+
+  @override
+  String toString() {
+    return 'AiMeal(menu: $menu, alasan: $alasan)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AiMealImpl &&
+            const DeepCollectionEquality().equals(other._menu, _menu) &&
+            (identical(other.alasan, alasan) || other.alasan == alasan));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, const DeepCollectionEquality().hash(_menu), alasan);
+
+  /// Create a copy of AiMeal
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AiMealImplCopyWith<_$AiMealImpl> get copyWith =>
+      __$$AiMealImplCopyWithImpl<_$AiMealImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AiMealImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _AiMeal implements AiMeal {
+  const factory _AiMeal(
+      {required final List<String> menu,
+      required final String alasan}) = _$AiMealImpl;
+
+  factory _AiMeal.fromJson(Map<String, dynamic> json) = _$AiMealImpl.fromJson;
+
+  @override
+  List<String> get menu;
+  @override
+  String get alasan;
+
+  /// Create a copy of AiMeal
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AiMealImplCopyWith<_$AiMealImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

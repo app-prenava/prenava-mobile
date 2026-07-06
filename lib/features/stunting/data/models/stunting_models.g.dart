@@ -12,7 +12,7 @@ _$StuntingQuestionImpl _$$StuntingQuestionImplFromJson(
       key: json['key'] as String,
       label: json['label'] as String,
       type: json['type'] as String,
-      required: json['required'] as bool,
+      isRequired: json['required'] as bool? ?? false,
       options: (json['options'] as List<dynamic>?)
           ?.map((e) => StuntingOption.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -27,7 +27,7 @@ Map<String, dynamic> _$$StuntingQuestionImplToJson(
       'key': instance.key,
       'label': instance.label,
       'type': instance.type,
-      'required': instance.required,
+      'required': instance.isRequired,
       'options': instance.options,
       'min': instance.min,
       'max': instance.max,
@@ -91,6 +91,11 @@ _$PredictionResultImpl _$$PredictionResultImplFromJson(
           ? null
           : ShapExplanation.fromJson(
               json['explanation'] as Map<String, dynamic>),
+      inputData: json['inputData'] as Map<String, dynamic>?,
+      aiMealPlan: json['aiMealPlan'] == null
+          ? null
+          : AiMealPlanResponse.fromJson(
+              json['aiMealPlan'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PredictionResultImplToJson(
@@ -102,6 +107,8 @@ Map<String, dynamic> _$$PredictionResultImplToJson(
       'riskLevel': instance.riskLevel,
       'recommendation': instance.recommendation,
       'explanation': instance.explanation,
+      'inputData': instance.inputData,
+      'aiMealPlan': instance.aiMealPlan,
     };
 
 _$FoodModelImpl _$$FoodModelImplFromJson(Map<String, dynamic> json) =>
@@ -212,4 +219,72 @@ Map<String, dynamic> _$$StuntingHistoryItemImplToJson(
       'status': instance.status,
       'riskLevel': instance.riskLevel,
       'score': instance.score,
+    };
+
+_$AiMealPlanResponseImpl _$$AiMealPlanResponseImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AiMealPlanResponseImpl(
+      analisisGizi: (json['analisis_gizi'] as List<dynamic>)
+          .map((e) => AiNutritionAnalysis.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      rekomendasiMenu: json['rekomendasi_menu'] as Map<String, dynamic>,
+      saranAi:
+          (json['saran_ai'] as List<dynamic>).map((e) => e as String).toList(),
+      catatan: json['catatan'] as String,
+    );
+
+Map<String, dynamic> _$$AiMealPlanResponseImplToJson(
+        _$AiMealPlanResponseImpl instance) =>
+    <String, dynamic>{
+      'analisis_gizi': instance.analisisGizi,
+      'rekomendasi_menu': instance.rekomendasiMenu,
+      'saran_ai': instance.saranAi,
+      'catatan': instance.catatan,
+    };
+
+_$AiNutritionAnalysisImpl _$$AiNutritionAnalysisImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AiNutritionAnalysisImpl(
+      nutrisi: json['nutrisi'] as String,
+      status: json['status'] as String,
+      kebutuhan: json['kebutuhan'] as String,
+      asupan: json['asupan'] as String,
+      catatan: json['catatan'] as String,
+    );
+
+Map<String, dynamic> _$$AiNutritionAnalysisImplToJson(
+        _$AiNutritionAnalysisImpl instance) =>
+    <String, dynamic>{
+      'nutrisi': instance.nutrisi,
+      'status': instance.status,
+      'kebutuhan': instance.kebutuhan,
+      'asupan': instance.asupan,
+      'catatan': instance.catatan,
+    };
+
+_$AiMenuRecommendationImpl _$$AiMenuRecommendationImplFromJson(
+        Map<String, dynamic> json) =>
+    _$AiMenuRecommendationImpl(
+      sarapan: AiMeal.fromJson(json['sarapan'] as Map<String, dynamic>),
+      makanSiang: AiMeal.fromJson(json['makan_siang'] as Map<String, dynamic>),
+      makanMalam: AiMeal.fromJson(json['makan_malam'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$AiMenuRecommendationImplToJson(
+        _$AiMenuRecommendationImpl instance) =>
+    <String, dynamic>{
+      'sarapan': instance.sarapan,
+      'makan_siang': instance.makanSiang,
+      'makan_malam': instance.makanMalam,
+    };
+
+_$AiMealImpl _$$AiMealImplFromJson(Map<String, dynamic> json) => _$AiMealImpl(
+      menu: (json['menu'] as List<dynamic>).map((e) => e as String).toList(),
+      alasan: json['alasan'] as String,
+    );
+
+Map<String, dynamic> _$$AiMealImplToJson(_$AiMealImpl instance) =>
+    <String, dynamic>{
+      'menu': instance.menu,
+      'alasan': instance.alasan,
     };

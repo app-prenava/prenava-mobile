@@ -19,13 +19,13 @@ class StuntingRepositoryImpl implements StuntingRepository {
   }
 
   @override
-  Future<PredictionResult> predict(Map<String, dynamic> inputData) {
-    return _remoteDataSource.predict(inputData);
+  Future<PredictionResult> submitPrediction(Map<String, dynamic> inputData) {
+    return _remoteDataSource.submitPrediction(inputData);
   }
 
   @override
-  Future<RecommendationResponse> getRecommendations(int predictionId) {
-    return _remoteDataSource.getRecommendations(predictionId);
+  Future<AiMealPlanResponse> generateMealPlan(Map<String, dynamic> data) {
+    return _remoteDataSource.generateMealPlan(data);
   }
 
   @override
@@ -36,20 +36,5 @@ class StuntingRepositoryImpl implements StuntingRepository {
   @override
   Future<PredictionResult> getHistoryDetail(int id) {
     return _remoteDataSource.getHistoryDetail(id);
-  }
-
-  @override
-  Future<List<FoodModel>> getFoods() {
-    return _remoteDataSource.getFoods();
-  }
-
-  @override
-  Future<AiSupportModel> getCookingGuide(List<String> foodNames) {
-    return _remoteDataSource.getCookingGuide(foodNames);
-  }
-
-  @override
-  Future<AiSupportModel> getMealPlan(int predictionId) {
-    return _remoteDataSource.getMealPlan(predictionId);
   }
 }
