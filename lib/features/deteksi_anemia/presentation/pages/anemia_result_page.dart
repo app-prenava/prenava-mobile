@@ -307,18 +307,15 @@ class AnemiaResultPage extends ConsumerWidget {
                           result.probabilityNonAnemia != null
                               ? '${(result.probabilityNonAnemia! * 100).toStringAsFixed(1)}%'
                               : 'N/A'),
-                      const SizedBox(height: 8),
-                      _buildMetricRow(
-                          'Threshold Output',
-                          result.thresholdUsed != null
-                              ? result.thresholdUsed!.toStringAsFixed(4)
-                              : '0.4968'),
 
                     ],
                   ),
                 ),
               ),
             ),
+
+            // Show anemia causes and risks for all results
+            ..._buildAnemiaCausesAndRisks(),
 
             const SizedBox(height: 16),
 
@@ -411,4 +408,251 @@ class AnemiaResultPage extends ConsumerWidget {
       ],
     );
   }
+
+  List<Widget> _buildAnemiaCausesAndRisks() {
+    return [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with icon
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF0F5),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFF06292),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline,
+                        color: Color(0xFFF06292),
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Apa yang Menyebabkan Ibu\nTerdeteksi Anemia?',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A202C),
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Causes list
+                _buildCauseItem(
+                  'Kekurangan Zat Besi & Vitamin',
+                  'Tubuh kekurangan asupan zat besi, vitamin B12, atau asam folat yang sangat dibutuhkan untuk memproduksi sel darah merah selama kehamilan.',
+                ),
+                const SizedBox(height: 12),
+                _buildCauseItem(
+                  'Riwayat Penyakit',
+                  'Adanya penyakit jangka panjang (kronis) atau gangguan genetik seperti Thalasemia (kondisi di mana sel darah merah lebih cepat hancur sebelum waktunya).',
+                ),
+                const SizedBox(height: 12),
+                _buildCauseItem(
+                  'Perdarahan',
+                  'Terjadinya perdarahan secara tiba-tiba atau akut yang mengurangi volume darah ibu secara drastis.',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+
+      // Risks section
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF0F5),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: const Color(0xFFE53E3E),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with warning icon
+                Row(
+                  children: [
+                    Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE53E3E),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.warning_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Risiko yang Perlu Diwaspadai',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A202C),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Risks list
+                _buildRiskItem(
+                  'Risiko Keguguran',
+                  'Meningkatkan risiko keguguran atau persalinan prematur (melahirkan sebelum waktunya).',
+                ),
+                const SizedBox(height: 12),
+                _buildRiskItem(
+                  'Gangguan Pertumbuhan Janin',
+                  'Mengganggu pertumbuhan dan perkembangan janin di dalam rahim.',
+                ),
+                const SizedBox(height: 12),
+                _buildRiskItem(
+                  'Kondisi Kritis',
+                  'Jika kadar Hb sampai turun drastis di bawah 6 g/dL, dapat mengancam fungsi kerja jantung Ibu.',
+                  isHighRisk: true,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+    ];
+  }
+
+  Widget _buildCauseItem(String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.only(top: 6),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE53E3E),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A202C),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRiskItem(String title, String description, {bool isHighRisk = false}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          margin: const EdgeInsets.only(top: 6),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE53E3E),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isHighRisk ? const Color(0xFFE53E3E) : const Color(0xFF1A202C),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isHighRisk ? const Color(0xFFE53E3E) : Colors.grey[600],
+                  height: 1.4,
+                  fontWeight: isHighRisk ? FontWeight.w500 : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
 }
