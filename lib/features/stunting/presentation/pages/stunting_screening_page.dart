@@ -96,6 +96,69 @@ class _StuntingScreeningPageState extends ConsumerState<StuntingScreeningPage> {
     }
   }
 
+  String? _getHelperText(String key, String? unit) {
+    switch (key) {
+      case 'mother_height':
+        return 'Contoh: 160 (dalam cm)';
+      case 'mother_weight':
+        return 'Contoh: 65 (dalam kg)';
+      case 'maternal_hemoglobin':
+        return 'Kadar Hb, contoh: 12.5 (g/dL)';
+      case 'mother_age':
+        return 'Usia saat ini, contoh: 25 (tahun)';
+      case 'mother_education':
+        return 'Lama pendidikan, misal: 12 (SMA)';
+      case 'anc_visits_total':
+        return 'Total pemeriksaan kehamilan (ANC)';
+      case 'iron_pills':
+        return 'Rutin mengonsumsi Tablet Tambah Darah (TTD)?';
+      case 'pregnancy_sickness':
+        return 'Apakah mengalami infeksi/sakit berat saat hamil?';
+      default:
+        return unit != null ? 'Dalam $unit' : null;
+    }
+  }
+
+  void _showTutorialDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Row(
+            children: [
+              Icon(Icons.lightbulb_outline, color: Colors.orange),
+              SizedBox(width: 8),
+              Expanded(child: Text('Panduan Pengisian')),
+            ],
+          ),
+          content: const SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Isilah data sesuai dengan buku KIA atau hasil pemeriksaan terakhir Anda.', style: TextStyle(fontWeight: FontWeight.bold)),
+                SizedBox(height: 12),
+                Text('• Tinggi Ibu: Tinggi badan ibu (contoh: 160 cm).'),
+                Text('• Berat Badan Ibu: Berat badan saat ini (contoh: 65 kg).'),
+                Text('• Hemoglobin Ibu: Kadar Hb dari tes darah (normal > 11 g/dL).'),
+                Text('• Usia Ibu: Usia saat ini.'),
+                Text('• Pendidikan Ibu: Lama sekolah (SD=6, SMP=9, SMA=12, S1=16 tahun).'),
+                Text('• Total Kunjungan ANC: Jumlah periksa ke bidan/dokter selama hamil.'),
+                Text('• Konsumsi Pil Besi: Apakah rutin minum pil penambah darah.'),
+                Text('• Sakit Selama Kehamilan: Apakah mengalami penyakit seperti infeksi atau hipertensi saat hamil.'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Mengerti'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -110,7 +173,16 @@ class _StuntingScreeningPageState extends ConsumerState<StuntingScreeningPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Skrining Stunting')),
+      appBar: AppBar(
+        title: const Text('Skrining Stunting'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: 'Panduan Pengisian',
+            onPressed: () => _showTutorialDialog(context),
+          ),
+        ],
+      ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _questions.length,
@@ -123,6 +195,7 @@ class _StuntingScreeningPageState extends ConsumerState<StuntingScreeningPage> {
               child: TextField(
                 decoration: InputDecoration(
                   labelText: q.label,
+                  helperText: _getHelperText(q.key, q.unit),
                   border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.number,
@@ -137,6 +210,7 @@ class _StuntingScreeningPageState extends ConsumerState<StuntingScreeningPage> {
               child: DropdownButtonFormField<dynamic>(
                 decoration: InputDecoration(
                   labelText: q.label,
+                  helperText: _getHelperText(q.key, q.unit),
                   border: const OutlineInputBorder(),
                 ),
                 items: q.options?.map((opt) {
