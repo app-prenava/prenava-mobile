@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:prenava_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:prenava_mobile/features/auth/data/models/user_model.dart';
 import 'package:prenava_mobile/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:prenava_mobile/features/auth/domain/entities/user.dart';
 import 'package:prenava_mobile/shared/services/secure_store.dart';
 
 class FakeSecureStore implements SecureStore {

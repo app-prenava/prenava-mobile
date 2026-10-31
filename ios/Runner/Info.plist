@@ -71,7 +71,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>GIDClientID</key>
-	<string>95108221109-REPLACE_WITH_IOS_CLIENT_ID.apps.googleusercontent.com</string>
+	<string>25931493669-879hmlbggmtiojjavpnvi840bd10601e.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -79,7 +79,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.95108221109-REPLACE_WITH_IOS_CLIENT_ID</string>
+				<string>com.googleusercontent.apps.25931493669-879hmlbggmtiojjavpnvi840bd10601e</string>
 			</array>
 		</dict>
 	</array>

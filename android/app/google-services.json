@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "354690719207",
+    "project_id": "prenava-maternal-health-17e03",
+    "storage_bucket": "prenava-maternal-health-17e03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:354690719207:android:2b8fd04ad167dfa2327142",
+        "android_client_info": {
+          "package_name": "com.prenava.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAneGo2rfc6AIUFbpASUC7-T2oOo6DA52o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,3 +1,4 @@
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:convert';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -35,6 +36,11 @@ class AuthRepositoryImpl implements AuthRepository {
     } finally {
       await _secureStore.delete('jwt_token');
       await _secureStore.delete('cached_user');
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {
+        // Ignore Google signOut errors if no active Google session
+      }
     }
   }
 
@@ -118,6 +124,11 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> clearToken() async {
     await _secureStore.delete('jwt_token');
     await _secureStore.delete('cached_user');
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {
+        // Ignore Google signOut errors if no active Google session
+      }
   }
 
   @override

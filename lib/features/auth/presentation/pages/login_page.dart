@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/config/env.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/widgets/ios_pwa_guide_banner.dart';
 import '../providers/auth_providers.dart';
@@ -20,6 +21,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   String? _emailVerificationError;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -82,19 +84,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handleGoogleLogin() async {
+    setState(() => _isGoogleLoading = true);
     try {
-      // serverClientId is only needed on Android to get idToken.
-      // On iOS, the iOS Client ID from Info.plist is used automatically.
-      final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      final isAndroid =
+          !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: isAndroid
-            ? '95108221109-l3as4ndop5krbdenm7oka1lavk4hg9gk.apps.googleusercontent.com'
-            : null,
+        serverClientId: isAndroid ? Env.googleWebClientId : null,
+        clientId: kIsWeb ? Env.googleWebClientId : null,
       );
 
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return; // User cancelled
+      if (googleUser == null) {
+        // User cancelled account picker
+        return;
+      }
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -107,7 +111,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Gagal mendapatkan token dari Google. Coba lagi.'),
+            content: Text(
+                'Gagal mendapatkan token autentikasi Google. Silakan coba lagi.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -137,7 +142,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         final error = ref.read(authNotifierProvider).error;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error ?? 'Login Google gagal'),
+            content:
+                Text(error ?? 'Login dengan Google gagal. Silakan coba lagi.'),
             backgroundColor: Colors.red,
           ),
         );
@@ -145,12 +151,38 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } catch (e) {
       debugPrint('[GOOGLE] Error: $e');
       if (!mounted) return;
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('sign_in_canceled') ||
+          errorStr.contains('canceled') ||
+          errorStr.contains('popup_closed_by_user')) {
+        return;
+      }
+
+      String friendlyMessage;
+      if (errorStr.contains('network_error') ||
+          errorStr.contains('socketexception') ||
+          errorStr.contains('connection')) {
+        friendlyMessage =
+            'Koneksi internet bermasalah. Periksa jaringan Anda dan coba lagi.';
+      } else if (errorStr.contains('apiexception: 10') ||
+          errorStr.contains('developer_error')) {
+        friendlyMessage =
+            'Konfigurasi autentikasi Google belum sesuai dengan tanda tangan aplikasi.';
+      } else {
+        friendlyMessage =
+            'Terjadi kendala saat login dengan Google. Silakan coba lagi.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Google Sign-In error: ${e.toString()}'),
+          content: Text(friendlyMessage),
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
     }
   }
 
@@ -470,11 +502,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Widget _buildGoogleLoginButton(AuthState authState) {
+    final isDisabled = authState.isLoading || _isGoogleLoading;
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: OutlinedButton(
-        onPressed: authState.isLoading ? null : _handleGoogleLogin,
+        onPressed: isDisabled ? null : _handleGoogleLogin,
         style: OutlinedButton.styleFrom(
           backgroundColor: Colors.white,
           side: const BorderSide(color: Color(0xFFE0E0E0), width: 1.5),
@@ -483,25 +516,49 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/images/google_logo.png',
-              height: 24,
-            ),
-            const SizedBox(width: 12),
-            const Text(
-              'Lanjutkan dengan Google',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF424242),
-                letterSpacing: 0.5,
+        child: _isGoogleLoading
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFFA6978)),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Menghubungkan Akun Google...',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF424242),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/google_logo.png',
+                    height: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Lanjutkan dengan Google',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF424242),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
