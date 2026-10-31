@@ -1,11 +1,11 @@
 {
-    "name": "prenava_mobile",
-    "short_name": "prenava_mobile",
+    "name": "Prenava - Pregnancy Health & Wellness",
+    "short_name": "Prenava",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FFFFFF",
+    "theme_color": "#FA6978",
+    "description": "Aplikasi Pemantauan dan Layanan Kesehatan Ibu Hamil & Janin",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

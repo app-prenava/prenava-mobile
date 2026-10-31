@@ -22,6 +22,7 @@ import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 import '../widgets/meal_plan_home_widget.dart';
+import '../../../../core/widgets/ios_pwa_guide_banner.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -281,6 +282,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
                                 ],
                               ),
                             ),
+                            const IosPwaGuideBanner(),
                             _buildPromoSection(),
                             _buildPopularPostsSection(),
                           ],
