@@ -65,6 +65,14 @@ class LainnyaModal extends StatelessWidget {
                       context.push('/appointments');
                     },
                   ),
+                  MenuGridItem(
+                    imagePath: 'assets/images/tips.png',
+                    label: 'Tanya Bidan AI',
+                    onTap: () {
+                      context.pop(); // Close modal first
+                      context.push('/maternal-rag');
+                    },
+                  ),
                 ],
               ),
             ),

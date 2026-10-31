@@ -8,7 +8,7 @@ import 'package:prenava_mobile/features/stunting/data/repositories/stunting_repo
 class StuntingResultPage extends ConsumerStatefulWidget {
   final PredictionResult result;
   final Map<String, dynamic>? answers;
-  
+
   const StuntingResultPage({super.key, required this.result, this.answers});
 
   @override
@@ -43,14 +43,15 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _durasi,
+                    initialValue: _durasi,
                     decoration: const InputDecoration(
                       labelText: 'Durasi Menu',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
                       DropdownMenuItem(value: 'sehari', child: Text('1 Hari')),
-                      DropdownMenuItem(value: 'seminggu', child: Text('1 Minggu')),
+                      DropdownMenuItem(
+                          value: 'seminggu', child: Text('1 Minggu')),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -100,7 +101,7 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
 
     try {
       final repository = ref.read(stuntingRepositoryProvider);
-      
+
       final height = widget.answers?['mother_height'] ?? 160.0;
       final weight = widget.answers?['mother_weight'] ?? 60.0;
       final heightM = height / 100.0;
@@ -118,7 +119,7 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
       };
 
       final response = await repository.generateMealPlan(payload);
-      
+
       if (mounted) {
         Navigator.pop(context); // close loading
         context.push('/stunting/meal-plan', extra: response);
@@ -142,11 +143,11 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isTinggi = widget.result.riskLevel == 1; 
-    
+    final isTinggi = widget.result.riskLevel == 1;
+
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         context.go('/stunting/history');
       },
@@ -167,7 +168,8 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
               const Spacer(),
               Text(
                 'Skor Risiko: ${(widget.result.score * 100).toStringAsFixed(1)}%',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               Text(
@@ -184,15 +186,51 @@ class _StuntingResultPageState extends ConsumerState<StuntingResultPage> {
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 16),
               ),
+              if (widget.result.localOnly) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    border: Border.all(color: Colors.orange.shade300),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Mode Pengujian Lokal',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Status model: ${widget.result.modelStatus ?? 'belum tervalidasi'}. '
+                        'Hasil tidak disimpan ke riwayat dan tidak boleh digunakan sebagai diagnosis.',
+                      ),
+                      if (widget.result.ageBand != null &&
+                          widget.result.threshold != null)
+                        Text(
+                          'Kelompok usia ${widget.result.ageBand} bulan · '
+                          'threshold ${widget.result.threshold!.toStringAsFixed(3)}',
+                        ),
+                    ],
+                  ),
+                ),
+              ],
               const Spacer(),
               ElevatedButton(
-                onPressed: _showMealPlanDialog,
+                onPressed: widget.result.localOnly ? null : _showMealPlanDialog,
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                   backgroundColor: Colors.pinkAccent,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Lihat Rekomendasi Makanan'),
+                child: Text(
+                  widget.result.localOnly
+                      ? 'Meal Plan Nonaktif pada Mode Lokal'
+                      : 'Lihat Rekomendasi Makanan',
+                ),
               ),
               const SizedBox(height: 16),
             ],

@@ -1,8 +1,9 @@
-import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/widgets/ios_pwa_guide_banner.dart';
 import '../providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 
@@ -84,9 +85,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       // serverClientId is only needed on Android to get idToken.
       // On iOS, the iOS Client ID from Info.plist is used automatically.
+      final isAndroid = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: Platform.isAndroid
+        serverClientId: isAndroid
             ? '95108221109-l3as4ndop5krbdenm7oka1lavk4hg9gk.apps.googleusercontent.com'
             : null,
       );
@@ -162,7 +164,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 24),
+              const IosPwaGuideBanner(),
+              const SizedBox(height: 16),
               _buildIllustration(),
               const SizedBox(height: 32),
               Padding(

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/utils/cross_platform_upload.dart';
 import '../models/profile_model.dart';
 
 class ProfileRemoteDatasource {
@@ -42,10 +43,7 @@ class ProfileRemoteDatasource {
         
         requestData = FormData.fromMap({
           ...formFields,
-          'photo': await MultipartFile.fromFile(
-            photoPath,
-            filename: photoPath.split('/').last,
-          ),
+          'photo': await createMultipartFileFromPath(photoPath),
         });
       } else {
         // JSON only - keep original types
@@ -96,10 +94,7 @@ class ProfileRemoteDatasource {
         
         requestData = FormData.fromMap({
           ...formFields,
-          'photo': await MultipartFile.fromFile(
-            photoPath,
-            filename: photoPath.split('/').last,
-          ),
+          'photo': await createMultipartFileFromPath(photoPath),
         });
       } else {
         // JSON only - keep original types

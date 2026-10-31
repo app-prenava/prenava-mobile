@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/utils/cross_platform_upload.dart';
 import '../models/anemia_scan_result_model.dart';
 
 class AnemiaScanRemoteDatasource {
@@ -9,11 +10,9 @@ class AnemiaScanRemoteDatasource {
   /// POST /api/anemia-scan with image file
   Future<AnemiaScanResultModel> scanEye(String imagePath) async {
     try {
+      final multipartImage = await createMultipartFileFromPath(imagePath);
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(
-          imagePath,
-          filename: imagePath.split('/').last,
-        ),
+        'image': multipartImage,
       });
 
       final response = await _dio.post(

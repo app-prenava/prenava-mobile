@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -7,6 +8,10 @@ class HealthHistoryImageStore {
   static const _keyPrefix = 'health_history_img_';
 
   Future<String> saveImageToAppDir(String sourcePath) async {
+    if (kIsWeb) {
+      return sourcePath;
+    }
+
     final sourceFile = File(sourcePath);
     if (!await sourceFile.exists()) {
       throw Exception('Image source not found');
@@ -43,7 +48,7 @@ class HealthHistoryImageStore {
     final key = '$_keyPrefix$historyId';
     final existingPath = prefs.getString(key);
 
-    if (existingPath != null && existingPath.isNotEmpty) {
+    if (!kIsWeb && existingPath != null && existingPath.isNotEmpty) {
       final imageFile = File(existingPath);
       if (await imageFile.exists()) {
         await imageFile.delete();

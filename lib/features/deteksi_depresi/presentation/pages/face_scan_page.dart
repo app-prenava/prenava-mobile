@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -362,10 +363,15 @@ class _FaceScanPageState extends ConsumerState<FaceScanPage> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(22),
                       child: state.selectedImagePath != null
-                          ? Image.file(
-                              File(state.selectedImagePath!),
-                              fit: BoxFit.cover,
-                            )
+                          ? (kIsWeb
+                              ? Image.network(
+                                  state.selectedImagePath!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.file(
+                                  File(state.selectedImagePath!),
+                                  fit: BoxFit.cover,
+                                ))
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [

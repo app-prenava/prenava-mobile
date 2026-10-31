@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -102,10 +103,15 @@ class ScanResultPage extends ConsumerWidget {
                           child: SizedBox(
                             height: 240,
                             width: double.infinity,
-                            child: Image.file(
-                              File(state.selectedImagePath!),
-                              fit: BoxFit.cover,
-                            ),
+                            child: kIsWeb
+                                ? Image.network(
+                                    state.selectedImagePath!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : Image.file(
+                                    File(state.selectedImagePath!),
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
                         ),
                       ),

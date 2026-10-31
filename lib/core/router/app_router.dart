@@ -1,358 +1,381 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../features/splash/presentation/pages/splash_screen.dart';
-import '../../features/splash/presentation/pages/onboarding_screen.dart';
-import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/auth/presentation/pages/forgot_password_page.dart';
-import '../../features/auth/presentation/pages/verify_otp_page.dart';
-import '../../features/auth/presentation/pages/email_verification_page.dart';
-import '../../features/auth/presentation/pages/reset_password_page.dart';
-import '../../features/auth/presentation/pages/change_password_page.dart';
-import '../../features/main/presentation/pages/main_scaffold.dart';
-import '../../features/profile/presentation/pages/edit_profile_page.dart';
-import '../../features/profile/presentation/pages/profile_page.dart';
-import '../../features/profile/presentation/pages/profile_onboarding_page.dart';
-import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
-import '../../features/shop/presentation/pages/shop_detail_page.dart';
-import '../../features/shop/presentation/providers/shop_providers.dart';
-import '../../features/community/presentation/pages/community_detail_page.dart';
-import '../../features/community/presentation/pages/create_post_page.dart';
-import '../../features/hydration/presentation/pages/hydration_page.dart';
-import '../../features/tips/presentation/pages/tips_list_page.dart';
-import '../../features/tips/presentation/pages/tips_detail_page.dart';
-import '../../features/home/presentation/pages/notifications_page.dart';
-import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.dart';
-import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
-import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
-import '../../features/kunjungan/presentation/pages/visit_detail_page.dart';
-import '../../features/bidan/presentation/pages/bidan_map_page.dart';
-import '../../features/appointment/presentation/pages/appointment_dashboard_page.dart';
-import '../../features/appointment/presentation/pages/bidan_selection_page.dart';
-import '../../features/appointment/presentation/pages/consent_page.dart';
-import '../../features/appointment/presentation/pages/appointment_form_page.dart';
-import '../../features/appointment/presentation/pages/appointment_detail_page.dart';
-import '../../features/rekomendasi_gerakan/presentation/pages/rekomendasi_gerakan_page.dart';
-import '../../features/deteksi_depresi/presentation/pages/face_scan_page.dart';
-import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart';
-import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
-import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
-import '../../features/health_history/presentation/pages/health_history_page.dart';
-import '../../features/stunting/presentation/pages/stunting_screening_page.dart';
-import '../../features/stunting/presentation/pages/stunting_result_page.dart';
-import '../../features/stunting/presentation/pages/stunting_history_page.dart';
-import '../../features/stunting/presentation/pages/stunting_meal_plan_page.dart';
-import '../../features/stunting/presentation/pages/stunting_history_detail_page.dart';
-import '../../features/stunting/data/models/stunting_models.dart';
-import '../../features/stunting_food/presentation/pages/food_recommendation_page.dart';
-import '../../features/stunting_food/presentation/pages/meal_plan_current_page.dart';
-import '../../features/stunting_food/presentation/pages/meal_plan_history_page.dart';
-import '../../features/stunting_food/presentation/pages/recipe_detail_page.dart';
-import '../../features/stunting_food/presentation/pages/meal_plan_progress_page.dart';
-import '../../features/stunting_food/presentation/pages/preferences_page.dart';
-import '../../features/stunting_food/recipes/presentation/pages/recipe_home_page.dart';
-import '../../features/wallet/presentation/pages/wallet_page.dart';
-
-import 'package:prenava_mobile/core/network/dio_client.dart';
-
-// Removed old bloc imports
-
-final routerProvider = Provider<GoRouter>((ref) {
-  return GoRouter(
-    navigatorKey: navigatorKey,
-    initialLocation: '/',
-    routes: [
-      GoRoute(
-        path: '/notifications',
-        builder: (context, state) => const NotificationsPage(),
-      ),
-      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-      GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
-      ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => const RegisterPage(),
-      ),
-      GoRoute(
-        path: '/forgot-password',
-        builder: (context, state) => const ForgotPasswordPage(),
-      ),
-      GoRoute(
-        path: '/verify-otp',
-        builder: (context, state) {
-          final email = state.extra as String? ?? '';
-          return VerifyOtpPage(email: email);
-        },
-      ),
-      GoRoute(
-        path: '/email-verification',
-        builder: (context, state) {
-          final email = state.extra as String? ?? '';
-          return EmailVerificationPage(email: email);
-        },
-      ),
-      GoRoute(
-        path: '/reset-password',
-        builder: (context, state) {
-          final data = state.extra as Map<String, dynamic>? ?? {};
-          return ResetPasswordPage(data: data);
-        },
-      ),
-      GoRoute(path: '/home', builder: (context, state) => const MainScaffold()),
-      GoRoute(
-        path: '/edit-profile',
-        builder: (context, state) => const EditProfilePage(),
-      ),
-      GoRoute(
-        path: '/profile',
-        builder: (context, state) => const ProfilePage(),
-      ),
-      GoRoute(
-        path: '/profile-onboarding',
-        builder: (context, state) => const ProfileOnboardingPage(),
-      ),
-      GoRoute(
-        path: '/change-password',
-        builder: (context, state) => const ChangePasswordPage(),
-      ),
-      GoRoute(
-        path: '/shop/add',
-        builder: (context, state) => const AddEditShopPage(),
-      ),
-      GoRoute(
-        path: '/shop/edit/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id'];
-          final shopState = ProviderScope.containerOf(context).read(shopNotifierProvider);
-          final product = shopState.products.firstWhere(
-            (p) => p.productId.toString() == id,
-            orElse: () => throw Exception('Product not found'),
-          );
-          return AddEditShopPage(product: product);
-        },
-      ),
-      GoRoute(
-        path: '/shop/detail/:id',
-        builder: (context, state) {
-          final productId = state.pathParameters['id']!;
-          return ShopDetailPage(productId: productId);
-        },
-      ),
-      GoRoute(
-        path: '/wallet',
-        builder: (context, state) => const WalletPage(),
-      ),
-      // Community routes
-      GoRoute(
-        path: '/community/create',
-        builder: (context, state) => const CreatePostPage(),
-      ),
-      GoRoute(
-        path: '/community/detail/:id',
-        builder: (context, state) {
-          final postId = int.parse(state.pathParameters['id']!);
-          return CommunityDetailPage(postId: postId);
-        },
-      ),
-      // Hydration route
-      GoRoute(
-        path: '/hydration',
-        builder: (context, state) => const HydrationPage(),
-      ),
-      // Tips routes
-      GoRoute(path: '/tips', builder: (context, state) => const TipsListPage()),
-      GoRoute(
-        path: '/tips/detail/:id',
-        builder: (context, state) {
-          final tipId = int.parse(state.pathParameters['id']!);
-          return TipsDetailPage(tipId: tipId);
-        },
-      ),
-      // Pregnancy Calculator route
-      GoRoute(
-        path: '/pregnancy-calculator',
-        builder: (context, state) => const PregnancyCalculatorPage(),
-      ),
-      // Kunjungan routes
-      GoRoute(
-        path: '/kunjungan',
-        builder: (context, state) => const KunjunganDashboardPage(),
-      ),
-      GoRoute(
-        path: '/kunjungan/create',
-        builder: (context, state) => const VisitFormPage(),
-      ),
-      GoRoute(
-        path: '/kunjungan/edit/:id',
-        builder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
-          return VisitFormPage(visitId: id);
-        },
-      ),
-      GoRoute(
-        path: '/kunjungan/detail/:id',
-        builder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
-          return VisitDetailPage(visitId: id);
-        },
-      ),
-      // Bidan routes
-      GoRoute(
-        path: '/bidan-map',
-        builder: (context, state) => const BidanMapPage(),
-      ),
-      // Appointment routes
-      GoRoute(
-        path: '/appointments',
-        builder: (context, state) => const AppointmentDashboardPage(),
-      ),
-      GoRoute(
-        path: '/appointments/create',
-        builder: (context, state) => const BidanSelectionPage(),
-      ),
-      GoRoute(
-        path: '/appointments/create/consent',
-        builder: (context, state) => const ConsentPage(),
-      ),
-      GoRoute(
-        path: '/appointments/create/form',
-        builder: (context, state) {
-          final sharedFields = state.extra as Map<String, bool>?;
-          return AppointmentFormPage(sharedFields: sharedFields ?? const {});
-        },
-      ),
-      GoRoute(
-        path: '/appointments/detail/:id',
-        builder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
-          return AppointmentDetailPage(appointmentId: id);
-        },
-      ),
-      // Rekomendasi Gerakan route
-      GoRoute(
-        path: '/rekomendasi-gerakan',
-        builder: (context, state) => const RekomendasiGerakanPage(),
-      ),
-      // Deteksi Depresi routes
-      GoRoute(
-        path: '/deteksi-depresi',
-        builder: (context, state) => const FaceScanPage(),
-      ),
-      GoRoute(
-        path: '/deteksi-depresi/result',
-        builder: (context, state) => const ScanResultPage(),
-      ),
-      // Deteksi Anemia routes
-      GoRoute(
-        path: '/deteksi-anemia',
-        builder: (context, state) => const AnemiaScanPage(),
-      ),
-      GoRoute(
-        path: '/deteksi-anemia/result',
-        builder: (context, state) => const AnemiaResultPage(),
-      ),
-      // Health History route
-      GoRoute(
-        path: '/health/history',
-        builder: (context, state) => const HealthHistoryPage(),
-      ),
-      GoRoute(
-        path: '/rekomendasi-olahraga',
-        builder: (context, state) => const RekomendasiGerakanPage(),
-      ),
-      // Stunting routes
-      GoRoute(
-        path: '/stunting/screening',
-        builder: (context, state) => const StuntingScreeningPage(),
-      ),
-      GoRoute(
-        path: '/stunting/result',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          final result = extra['result'] as PredictionResult;
-          final answers = extra['answers'] as Map<String, dynamic>?;
-          return StuntingResultPage(result: result, answers: answers);
-        },
-      ),
-      GoRoute(
-        path: '/stunting/meal-plan',
-        builder: (context, state) {
-          final response = state.extra as AiMealPlanResponse;
-          return StuntingMealPlanPage(response: response);
-        },
-      ),
-      GoRoute(
-        path: '/stunting/history/detail/:id',
-        builder: (context, state) {
-          final id = int.parse(state.pathParameters['id']!);
-          return StuntingHistoryDetailPage(historyId: id);
-        },
-      ),
-      GoRoute(
-        path: '/stunting/recommendations',
-        builder: (context, state) {
-          final predictionId = state.extra as int;
-          return FoodRecommendationPage(predictionId: predictionId);
-        },
-      ),
-      GoRoute(
-        path: '/stunting/history',
-        builder: (context, state) => const StuntingHistoryPage(),
-      ),
-      GoRoute(
-        path: '/stunting-food/recommendations',
-        builder: (context, state) {
-          final predictionId = state.extra as int;
-          return FoodRecommendationPage(predictionId: predictionId);
-        },
-      ),
-      GoRoute(
-        path: '/stunting-food/preferences',
-        builder: (context, state) {
-          final predictionId = state.extra as int?;
-          return PreferencesPage(predictionId: predictionId);
-        },
-      ),
-
-      GoRoute(
-        path: '/stunting-food/meal-plan/current',
-        builder: (context, state) {
-          final predictionId = state.extra as int?;
-          return MealPlanCurrentPage(predictionIdForCreate: predictionId);
-        },
-      ),
-      GoRoute(
-        path: '/stunting-food/meal-plan/history',
-        builder: (context, state) => const MealPlanHistoryPage(),
-      ),
-
-      GoRoute(
-        path: '/stunting-food/meal-plan/progress',
-        builder: (context, state) {
-          final mealPlanId = state.extra as int;
-          return MealPlanProgressPage(mealPlanId: mealPlanId);
-        },
-      ),
-      GoRoute(
-        path: '/stunting-food/recipe',
-        builder: (context, state) {
-          final recipeId = state.extra as int;
-          return RecipeDetailPage(recipeId: recipeId);
-        },
-      ),
-      GoRoute(
-        path: '/stunting-food/recipes',
-        builder: (context, state) {
-          final extra = state.extra;
-          if (extra is Map) {
-            return RecipeHomePage(initialSearch: extra['search']?.toString());
-          }
-          return const RecipeHomePage();
-        },
-      ),
-    ],
-  );
-});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../features/splash/presentation/pages/splash_screen.dart';
+import '../../features/splash/presentation/pages/onboarding_screen.dart';
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/register_page.dart';
+import '../../features/auth/presentation/pages/forgot_password_page.dart';
+import '../../features/auth/presentation/pages/verify_otp_page.dart';
+import '../../features/auth/presentation/pages/email_verification_page.dart';
+import '../../features/auth/presentation/pages/reset_password_page.dart';
+import '../../features/auth/presentation/pages/change_password_page.dart';
+import '../../features/main/presentation/pages/main_scaffold.dart';
+import '../../features/profile/presentation/pages/edit_profile_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_onboarding_page.dart';
+import '../../features/shop/presentation/pages/add_edit_shop_page.dart';
+import '../../features/shop/presentation/pages/shop_detail_page.dart';
+import '../../features/shop/presentation/providers/shop_providers.dart';
+import '../../features/community/presentation/pages/community_detail_page.dart';
+import '../../features/community/presentation/pages/create_post_page.dart';
+import '../../features/hydration/presentation/pages/hydration_page.dart';
+import '../../features/tips/presentation/pages/tips_list_page.dart';
+import '../../features/tips/presentation/pages/tips_detail_page.dart';
+import '../../features/home/presentation/pages/notifications_page.dart';
+import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.dart';
+import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
+import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
+import '../../features/kunjungan/presentation/pages/visit_detail_page.dart';
+import '../../features/bidan/presentation/pages/bidan_map_page.dart';
+import '../../features/appointment/presentation/pages/appointment_dashboard_page.dart';
+import '../../features/appointment/presentation/pages/bidan_selection_page.dart';
+import '../../features/appointment/presentation/pages/consent_page.dart';
+import '../../features/appointment/presentation/pages/appointment_form_page.dart';
+import '../../features/appointment/presentation/pages/appointment_detail_page.dart';
+import '../../features/rekomendasi_gerakan/presentation/pages/rekomendasi_gerakan_page.dart';
+import '../../features/deteksi_depresi/presentation/pages/face_scan_page.dart';
+import '../../features/deteksi_depresi/presentation/pages/scan_result_page.dart';
+import '../../features/deteksi_anemia/presentation/pages/anemia_scan_page.dart';
+import '../../features/deteksi_anemia/presentation/pages/anemia_result_page.dart';
+import '../../features/food_scanner/presentation/pages/food_scanner_page.dart';
+import '../../features/food_scanner/presentation/pages/food_scan_result_page.dart';
+import '../../features/food_scanner/data/models/food_scan_result_model.dart';
+import '../../features/health_history/presentation/pages/health_history_page.dart';
+import '../../features/stunting/presentation/pages/stunting_screening_page.dart';
+import '../../features/stunting/presentation/pages/stunting_result_page.dart';
+import '../../features/stunting/presentation/pages/stunting_history_page.dart';
+import '../../features/stunting/presentation/pages/stunting_meal_plan_page.dart';
+import '../../features/stunting/presentation/pages/stunting_history_detail_page.dart';
+import '../../features/stunting/data/models/stunting_models.dart';
+import '../../features/stunting_food/presentation/pages/food_recommendation_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_current_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_history_page.dart';
+import '../../features/stunting_food/presentation/pages/recipe_detail_page.dart';
+import '../../features/stunting_food/presentation/pages/meal_plan_progress_page.dart';
+import '../../features/stunting_food/presentation/pages/preferences_page.dart';
+import '../../features/stunting_food/recipes/presentation/pages/recipe_home_page.dart';
+import '../../features/wallet/presentation/pages/wallet_page.dart';
+import '../../features/maternal_rag/presentation/pages/maternal_voice_consultation_page.dart';
+
+import 'package:prenava_mobile/core/network/dio_client.dart';
+
+// Removed old bloc imports
+
+final routerProvider = Provider<GoRouter>((ref) {
+  return GoRouter(
+    navigatorKey: navigatorKey,
+    initialLocation: '/',
+    routes: [
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsPage(),
+      ),
+      GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginPage()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterPage(),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/verify-otp',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return VerifyOtpPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/email-verification',
+        builder: (context, state) {
+          final email = state.extra as String? ?? '';
+          return EmailVerificationPage(email: email);
+        },
+      ),
+      GoRoute(
+        path: '/reset-password',
+        builder: (context, state) {
+          final data = state.extra as Map<String, dynamic>? ?? {};
+          return ResetPasswordPage(data: data);
+        },
+      ),
+      GoRoute(path: '/home', builder: (context, state) => const MainScaffold()),
+      GoRoute(
+        path: '/edit-profile',
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/profile-onboarding',
+        builder: (context, state) => const ProfileOnboardingPage(),
+      ),
+      GoRoute(
+        path: '/change-password',
+        builder: (context, state) => const ChangePasswordPage(),
+      ),
+      GoRoute(
+        path: '/shop/add',
+        builder: (context, state) => const AddEditShopPage(),
+      ),
+      GoRoute(
+        path: '/shop/edit/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id'];
+          final shopState = ProviderScope.containerOf(context).read(shopNotifierProvider);
+          final product = shopState.products.firstWhere(
+            (p) => p.productId.toString() == id,
+            orElse: () => throw Exception('Product not found'),
+          );
+          return AddEditShopPage(product: product);
+        },
+      ),
+      GoRoute(
+        path: '/shop/detail/:id',
+        builder: (context, state) {
+          final productId = state.pathParameters['id']!;
+          return ShopDetailPage(productId: productId);
+        },
+      ),
+      GoRoute(
+        path: '/wallet',
+        builder: (context, state) => const WalletPage(),
+      ),
+      // Community routes
+      GoRoute(
+        path: '/community/create',
+        builder: (context, state) => const CreatePostPage(),
+      ),
+      GoRoute(
+        path: '/community/detail/:id',
+        builder: (context, state) {
+          final postId = int.parse(state.pathParameters['id']!);
+          return CommunityDetailPage(postId: postId);
+        },
+      ),
+      // Hydration route
+      GoRoute(
+        path: '/hydration',
+        builder: (context, state) => const HydrationPage(),
+      ),
+      // Tips routes
+      GoRoute(path: '/tips', builder: (context, state) => const TipsListPage()),
+      GoRoute(
+        path: '/tips/detail/:id',
+        builder: (context, state) {
+          final tipId = int.parse(state.pathParameters['id']!);
+          return TipsDetailPage(tipId: tipId);
+        },
+      ),
+      // Pregnancy Calculator route
+      GoRoute(
+        path: '/pregnancy-calculator',
+        builder: (context, state) => const PregnancyCalculatorPage(),
+      ),
+      // Kunjungan routes
+      GoRoute(
+        path: '/kunjungan',
+        builder: (context, state) => const KunjunganDashboardPage(),
+      ),
+      GoRoute(
+        path: '/kunjungan/create',
+        builder: (context, state) => const VisitFormPage(),
+      ),
+      GoRoute(
+        path: '/kunjungan/edit/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return VisitFormPage(visitId: id);
+        },
+      ),
+      GoRoute(
+        path: '/kunjungan/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return VisitDetailPage(visitId: id);
+        },
+      ),
+      // Bidan routes
+      GoRoute(
+        path: '/bidan-map',
+        builder: (context, state) => const BidanMapPage(),
+      ),
+      // Appointment routes
+      GoRoute(
+        path: '/appointments',
+        builder: (context, state) => const AppointmentDashboardPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create',
+        builder: (context, state) => const BidanSelectionPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create/consent',
+        builder: (context, state) => const ConsentPage(),
+      ),
+      GoRoute(
+        path: '/appointments/create/form',
+        builder: (context, state) {
+          final sharedFields = state.extra as Map<String, bool>?;
+          return AppointmentFormPage(sharedFields: sharedFields ?? const {});
+        },
+      ),
+      GoRoute(
+        path: '/appointments/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return AppointmentDetailPage(appointmentId: id);
+        },
+      ),
+      // Rekomendasi Gerakan route
+      GoRoute(
+        path: '/rekomendasi-gerakan',
+        builder: (context, state) => const RekomendasiGerakanPage(),
+      ),
+      GoRoute(
+        path: '/rekomendasi-olahraga',
+        builder: (context, state) => const RekomendasiGerakanPage(),
+      ),
+      // Health History route
+      GoRoute(
+        path: '/health/history',
+        builder: (context, state) => const HealthHistoryPage(),
+      ),
+      GoRoute(
+        path: '/maternal-rag',
+        builder: (context, state) => const MaternalVoiceConsultationPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-anemia',
+        builder: (context, state) => const AnemiaScanPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-anemia/result',
+        builder: (context, state) => const AnemiaResultPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-depresi',
+        builder: (context, state) => const FaceScanPage(),
+      ),
+      GoRoute(
+        path: '/deteksi-depresi/result',
+        builder: (context, state) => const ScanResultPage(),
+      ),
+      GoRoute(
+        path: '/food-scanner',
+        builder: (context, state) => const FoodScannerPage(),
+      ),
+      GoRoute(
+        path: '/food-scanner/result',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final result = extra['result'] as FoodScanApiResponse;
+          final imagePath = extra['imagePath'] as String?;
+          return FoodScanResultPage(result: result, imagePath: imagePath);
+        },
+      ),
+      GoRoute(
+        path: '/tanya-bidan-ai',
+        builder: (context, state) => const MaternalVoiceConsultationPage(),
+      ),
+      // Stunting routes
+      GoRoute(
+        path: '/stunting/screening',
+        builder: (context, state) => const StuntingScreeningPage(),
+      ),
+      GoRoute(
+        path: '/stunting/result',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final result = extra['result'] as PredictionResult;
+          final answers = extra['answers'] as Map<String, dynamic>?;
+          return StuntingResultPage(result: result, answers: answers);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/meal-plan',
+        builder: (context, state) {
+          final response = state.extra as AiMealPlanResponse;
+          return StuntingMealPlanPage(response: response);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/history/detail/:id',
+        builder: (context, state) {
+          final id = int.parse(state.pathParameters['id']!);
+          return StuntingHistoryDetailPage(historyId: id);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/recommendations',
+        builder: (context, state) {
+          final predictionId = state.extra as int;
+          return FoodRecommendationPage(predictionId: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting/history',
+        builder: (context, state) => const StuntingHistoryPage(),
+      ),
+      GoRoute(
+        path: '/stunting-food/recommendations',
+        builder: (context, state) {
+          final predictionId = state.extra as int;
+          return FoodRecommendationPage(predictionId: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/preferences',
+        builder: (context, state) {
+          final predictionId = state.extra as int?;
+          return PreferencesPage(predictionId: predictionId);
+        },
+      ),
+
+      GoRoute(
+        path: '/stunting-food/meal-plan/current',
+        builder: (context, state) {
+          final predictionId = state.extra as int?;
+          return MealPlanCurrentPage(predictionIdForCreate: predictionId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/meal-plan/history',
+        builder: (context, state) => const MealPlanHistoryPage(),
+      ),
+
+      GoRoute(
+        path: '/stunting-food/meal-plan/progress',
+        builder: (context, state) {
+          final mealPlanId = state.extra as int;
+          return MealPlanProgressPage(mealPlanId: mealPlanId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/recipe',
+        builder: (context, state) {
+          final recipeId = state.extra as int;
+          return RecipeDetailPage(recipeId: recipeId);
+        },
+      ),
+      GoRoute(
+        path: '/stunting-food/recipes',
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is Map) {
+            return RecipeHomePage(initialSearch: extra['search']?.toString());
+          }
+          return const RecipeHomePage();
+        },
+      ),
+    ],
+  );
+});

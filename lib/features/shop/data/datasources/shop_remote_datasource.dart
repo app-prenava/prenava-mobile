@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/utils/cross_platform_upload.dart';
 import '../models/product_model.dart';
 import '../models/review_model.dart';
 
@@ -105,10 +106,7 @@ class ShopRemoteDatasource {
           'description': data['description'],
         if ((data['category'] as String?)?.isNotEmpty ?? false)
           'category': data['category'],
-        'photo': await MultipartFile.fromFile(
-          photoPath,
-          filename: photoPath.split('/').last,
-        ),
+        'photo': await createMultipartFileFromPath(photoPath),
       });
 
       final response = await _dio.post(
@@ -150,10 +148,7 @@ class ShopRemoteDatasource {
 
         requestData = FormData.fromMap({
           ...formFields,
-          'photo': await MultipartFile.fromFile(
-            photoPath,
-            filename: photoPath.split('/').last,
-          ),
+          'photo': await createMultipartFileFromPath(photoPath),
         });
       } else {
         // Without photo - use JSON

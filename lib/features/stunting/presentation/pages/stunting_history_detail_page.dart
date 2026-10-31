@@ -11,10 +11,12 @@ class StuntingHistoryDetailPage extends ConsumerStatefulWidget {
   const StuntingHistoryDetailPage({super.key, required this.historyId});
 
   @override
-  ConsumerState<StuntingHistoryDetailPage> createState() => _StuntingHistoryDetailPageState();
+  ConsumerState<StuntingHistoryDetailPage> createState() =>
+      _StuntingHistoryDetailPageState();
 }
 
-class _StuntingHistoryDetailPageState extends ConsumerState<StuntingHistoryDetailPage> {
+class _StuntingHistoryDetailPageState
+    extends ConsumerState<StuntingHistoryDetailPage> {
   PredictionResult? _result;
   bool _isLoading = true;
   String? _error;
@@ -68,14 +70,15 @@ class _StuntingHistoryDetailPageState extends ConsumerState<StuntingHistoryDetai
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<String>(
-                    value: _durasi,
+                    initialValue: _durasi,
                     decoration: const InputDecoration(
                       labelText: 'Durasi Menu',
                       border: OutlineInputBorder(),
                     ),
                     items: const [
                       DropdownMenuItem(value: 'sehari', child: Text('1 Hari')),
-                      DropdownMenuItem(value: 'seminggu', child: Text('1 Minggu')),
+                      DropdownMenuItem(
+                          value: 'seminggu', child: Text('1 Minggu')),
                     ],
                     onChanged: (val) {
                       if (val != null) {
@@ -125,11 +128,11 @@ class _StuntingHistoryDetailPageState extends ConsumerState<StuntingHistoryDetai
 
     try {
       final repository = ref.read(stuntingRepositoryProvider);
-      
+
       final height = _result?.inputData?['mother_height'] ?? 160.0;
       final weight = _result?.inputData?['mother_weight'] ?? 60.0;
       final hb = _result?.inputData?['maternal_hemoglobin'];
-      
+
       final heightM = height / 100.0;
       final bmi = weight / (heightM * heightM);
 
@@ -145,13 +148,13 @@ class _StuntingHistoryDetailPageState extends ConsumerState<StuntingHistoryDetai
       };
 
       final response = await repository.generateMealPlan(payload);
-      
+
       if (mounted) {
         Navigator.pop(context); // close loading
-        
+
         // Refresh detail so we get the saved aiMealPlan
         _fetchDetail();
-        
+
         context.push('/stunting/meal-plan', extra: response);
       }
     } catch (e) {
@@ -222,7 +225,8 @@ class _StuntingHistoryDetailPageState extends ConsumerState<StuntingHistoryDetai
             if (hasAiPlan)
               ElevatedButton.icon(
                 onPressed: () {
-                  context.push('/stunting/meal-plan', extra: _result!.aiMealPlan!);
+                  context.push('/stunting/meal-plan',
+                      extra: _result!.aiMealPlan!);
                 },
                 icon: const Icon(Icons.restaurant_menu),
                 label: const Text('Lihat Menu Tersimpan'),

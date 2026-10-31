@@ -1,327 +1,334 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/dio_client.dart';
-import '../../../../shared/services/secure_store.dart';
-import '../../data/datasources/auth_remote_datasource.dart';
-import '../../data/repositories/auth_repository_impl.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/repositories/auth_repository.dart';
-
-// Datasource provider
-final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
-  final dio = ref.watch(appDioProvider);
-  return AuthRemoteDatasource(dio);
-});
-
-// Repository provider
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final remoteDatasource = ref.watch(authRemoteDatasourceProvider);
-  final secureStore = ref.watch(secureStoreProvider);
-  return AuthRepositoryImpl(
-    remoteDatasource: remoteDatasource,
-    secureStore: secureStore,
-  );
-});
-
-// Auth state
-class AuthState {
-  final bool isInitialized;
-  final bool isAuthenticated;
-  final User? user;
-  final bool isLoading;
-  final String? error;
-  /// Email that requires OTP verification (set on login 403 or register success)
-  final String? pendingVerificationEmail;
-
-  const AuthState({
-    required this.isInitialized,
-    required this.isAuthenticated,
-    this.user,
-    this.isLoading = false,
-    this.error,
-    this.pendingVerificationEmail,
-  });
-
-  const AuthState.initial()
-      : isInitialized = false,
-        isAuthenticated = false,
-        user = null,
-        isLoading = false,
-        error = null,
-        pendingVerificationEmail = null;
-
-  AuthState copyWith({
-    bool? isInitialized,
-    bool? isAuthenticated,
-    User? user,
-    bool? isLoading,
-    String? error,
-    bool clearError = false,
-    String? pendingVerificationEmail,
-    bool clearPendingEmail = false,
-  }) {
-    return AuthState(
-      isInitialized: isInitialized ?? this.isInitialized,
-      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      user: user ?? this.user,
-      isLoading: isLoading ?? this.isLoading,
-      error: clearError ? null : (error ?? this.error),
-      pendingVerificationEmail: clearPendingEmail
-          ? null
-          : (pendingVerificationEmail ?? this.pendingVerificationEmail),
-    );
-  }
-}
-
-// Auth controller
-class AuthNotifier extends Notifier<AuthState> {
-  @override
-  AuthState build() {
-    initialize();
-    return const AuthState.initial();
-  }
-
-  /// Ensure auth state is loaded from secure storage + backend.
-  /// Dipanggil saat startup (SplashScreen) agar user yang sudah
-  /// pernah login tidak perlu login ulang selama token masih valid.
-  Future<void> initialize() async {
-    final repository = ref.read(authRepositoryProvider);
-
-    try {
-      final hasValidToken = await repository.hasValidToken();
-
-      if (hasValidToken) {
-        // Optimistically set authenticated if token exists
-        state = const AuthState(
-          isInitialized: true,
-          isAuthenticated: true,
-        );
-
-        try {
-          final user = await repository.getCurrentUser();
-          if (user != null) {
-            state = state.copyWith(user: user);
-          }
-        } catch (_) {
-          // Ignore fetch error, keep isAuthenticated = true
-        }
-      } else {
-        state = const AuthState(
-          isInitialized: true,
-          isAuthenticated: false,
-        );
-      }
-    } catch (_) {
-      state = const AuthState(
-        isInitialized: true,
-        isAuthenticated: false,
-      );
-    }
-  }
-
-  /// Returns true on successful login.
-  /// If email is unverified, sets pendingVerificationEmail and returns false.
-  Future<bool> login(String email, String password) async {
-    state = state.copyWith(
-      isLoading: true,
-      clearError: true,
-      clearPendingEmail: true,
-    );
-
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final user = await repository.login(email, password);
-      
-      state = AuthState(
-        isInitialized: true,
-        isAuthenticated: true,
-        user: user,
-        isLoading: false,
-      );
-      
-      return true;
-    } on RequiresVerificationException catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        isAuthenticated: false,
-        error: e.message,
-        pendingVerificationEmail: e.email,
-      );
-      return false;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        isAuthenticated: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return false;
-    }
-  }
-
-  Future<bool> loginWithGoogle(String idToken) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final user = await repository.loginWithGoogle(idToken);
-      
-      state = AuthState(
-        isInitialized: true,
-        isAuthenticated: true,
-        user: user,
-        isLoading: false,
-      );
-      
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        isAuthenticated: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return false;
-    }
-  }
-
-  Future<void> logout() async {
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      await repository.logout();
-    } finally {
-      state = const AuthState(
-        isInitialized: true,
-        isAuthenticated: false,
-      );
-    }
-  }
-
-  Future<void> forceLogout() async {
-    final repository = ref.read(authRepositoryProvider);
-    await repository.clearToken();
-    state = const AuthState(
-      isInitialized: true,
-      isAuthenticated: false,
-    );
-  }
-
-  Future<bool> register({
-    required String name,
-    required String email,
-    required String password,
-    required String passwordConfirmation,
-  }) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      await repository.register(
-        name: name,
-        email: email,
-        password: password,
-        passwordConfirmation: passwordConfirmation,
-      );
-      
-      state = state.copyWith(
-        isLoading: false,
-        clearPendingEmail: true,
-      );
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return false;
-    }
-  }
-
-  /// Verify email OTP. On success, auto-logs in the user.
-  Future<bool> verifyEmail(String email, String otp) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final user = await repository.verifyEmail(email, otp);
-      state = AuthState(
-        isInitialized: true,
-        isAuthenticated: true,
-        user: user,
-        isLoading: false,
-      );
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return false;
-    }
-  }
-
-  /// Resend email verification OTP.
-  Future<String?> resendVerification(String email) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final message = await repository.resendVerification(email);
-      state = state.copyWith(isLoading: false);
-      return message;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return null;
-    }
-  }
-
-  Future<String?> sendOtp(String email) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final message = await repository.sendOtp(email);
-      state = state.copyWith(isLoading: false);
-      return message;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return null;
-    }
-  }
-
-  Future<String?> verifyOtp(String email, String otp) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      final resetToken = await repository.verifyOtp(email, otp);
-      state = state.copyWith(isLoading: false);
-      return resetToken;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return null;
-    }
-  }
-
-  Future<bool> resetPassword(String email, String resetToken, String password) async {
-    state = state.copyWith(isLoading: true, clearError: true);
-    try {
-      final repository = ref.read(authRepositoryProvider);
-      await repository.resetPassword(email, resetToken, password);
-      state = state.copyWith(isLoading: false);
-      return true;
-    } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString().replaceAll('Exception: ', ''),
-      );
-      return false;
-    }
-  }
-}
-
-final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {
-  return AuthNotifier();
-});
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../shared/services/secure_store.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/auth_repository.dart';
+
+// Datasource provider
+final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
+  final dio = ref.watch(appDioProvider);
+  return AuthRemoteDatasource(dio);
+});
+
+// Repository provider
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  final remoteDatasource = ref.watch(authRemoteDatasourceProvider);
+  final secureStore = ref.watch(secureStoreProvider);
+  return AuthRepositoryImpl(
+    remoteDatasource: remoteDatasource,
+    secureStore: secureStore,
+  );
+});
+
+// Auth state
+class AuthState {
+  final bool isInitialized;
+  final bool isAuthenticated;
+  final User? user;
+  final bool isLoading;
+  final String? error;
+  /// Email that requires OTP verification (set on login 403 or register success)
+  final String? pendingVerificationEmail;
+
+  const AuthState({
+    required this.isInitialized,
+    required this.isAuthenticated,
+    this.user,
+    this.isLoading = false,
+    this.error,
+    this.pendingVerificationEmail,
+  });
+
+  const AuthState.initial()
+      : isInitialized = false,
+        isAuthenticated = false,
+        user = null,
+        isLoading = false,
+        error = null,
+        pendingVerificationEmail = null;
+
+  AuthState copyWith({
+    bool? isInitialized,
+    bool? isAuthenticated,
+    User? user,
+    bool? isLoading,
+    String? error,
+    bool clearError = false,
+    String? pendingVerificationEmail,
+    bool clearPendingEmail = false,
+  }) {
+    return AuthState(
+      isInitialized: isInitialized ?? this.isInitialized,
+      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
+      user: user ?? this.user,
+      isLoading: isLoading ?? this.isLoading,
+      error: clearError ? null : (error ?? this.error),
+      pendingVerificationEmail: clearPendingEmail
+          ? null
+          : (pendingVerificationEmail ?? this.pendingVerificationEmail),
+    );
+  }
+}
+
+// Auth controller
+class AuthNotifier extends Notifier<AuthState> {
+  @override
+  AuthState build() {
+    initialize();
+    return const AuthState.initial();
+  }
+
+  /// Ensure auth state is loaded from secure storage + backend.
+  /// Dipanggil saat startup (SplashScreen) agar user yang sudah
+  /// pernah login tidak perlu login ulang selama token masih valid.
+  Future<void> initialize() async {
+    final repository = ref.read(authRepositoryProvider);
+
+    try {
+      final hasValidToken = await repository.hasValidToken();
+
+      if (hasValidToken) {
+        try {
+          final user = await repository.getCurrentUser();
+          if (user != null) {
+            state = AuthState(
+              isInitialized: true,
+              isAuthenticated: true,
+              user: user,
+            );
+          } else {
+            state = const AuthState(
+              isInitialized: true,
+              isAuthenticated: false,
+            );
+          }
+        } catch (_) {
+          // Token tidak dapat diverifikasi (misal expired / backend belum siap)
+          state = const AuthState(
+            isInitialized: true,
+            isAuthenticated: false,
+          );
+        }
+      } else {
+        state = const AuthState(
+          isInitialized: true,
+          isAuthenticated: false,
+        );
+      }
+    } catch (_) {
+      state = const AuthState(
+        isInitialized: true,
+        isAuthenticated: false,
+      );
+    }
+  }
+
+  /// Returns true on successful login.
+  /// If email is unverified, sets pendingVerificationEmail and returns false.
+  Future<bool> login(String email, String password) async {
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      clearPendingEmail: true,
+    );
+
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.login(email, password);
+      
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      
+      return true;
+    } on RequiresVerificationException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.message,
+        pendingVerificationEmail: e.email,
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> loginWithGoogle(String idToken) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.loginWithGoogle(idToken);
+      
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        isAuthenticated: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.logout();
+    } finally {
+      state = const AuthState(
+        isInitialized: true,
+        isAuthenticated: false,
+      );
+    }
+  }
+
+  Future<void> forceLogout() async {
+    final repository = ref.read(authRepositoryProvider);
+    await repository.clearToken();
+    state = const AuthState(
+      isInitialized: true,
+      isAuthenticated: false,
+    );
+  }
+
+  Future<bool> register({
+    required String name,
+    required String email,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.register(
+        name: name,
+        email: email,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
+      );
+      
+      state = state.copyWith(
+        isLoading: false,
+        clearPendingEmail: true,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  /// Verify email OTP. On success, auto-logs in the user.
+  Future<bool> verifyEmail(String email, String otp) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final user = await repository.verifyEmail(email, otp);
+      state = AuthState(
+        isInitialized: true,
+        isAuthenticated: true,
+        user: user,
+        isLoading: false,
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+
+  /// Resend email verification OTP.
+  Future<String?> resendVerification(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final message = await repository.resendVerification(email);
+      state = state.copyWith(isLoading: false);
+      return message;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return null;
+    }
+  }
+
+  Future<String?> sendOtp(String email) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final message = await repository.sendOtp(email);
+      state = state.copyWith(isLoading: false);
+      return message;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return null;
+    }
+  }
+
+  Future<String?> verifyOtp(String email, String otp) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      final resetToken = await repository.verifyOtp(email, otp);
+      state = state.copyWith(isLoading: false);
+      return resetToken;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return null;
+    }
+  }
+
+  Future<bool> resetPassword(String email, String resetToken, String password) async {
+    state = state.copyWith(isLoading: true, clearError: true);
+    try {
+      final repository = ref.read(authRepositoryProvider);
+      await repository.resetPassword(email, resetToken, password);
+      state = state.copyWith(isLoading: false);
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
+      return false;
+    }
+  }
+}
+
+final authNotifierProvider = NotifierProvider<AuthNotifier, AuthState>(() {
+  return AuthNotifier();
+});

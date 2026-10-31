@@ -69,6 +69,22 @@ flutter run -d ios --dart-define-from-file=env/dev.json
 flutter test
 ```
 
+## Integrasi Stunting V2 Lokal
+
+Kandidat Stunting V2 hanya dapat diaktifkan secara eksplisit pada build lokal.
+Jalankan API Uvicorn di repository `stunting`, lalu jalankan emulator Android:
+
+```bash
+flutter run -d android --dart-define-from-file=env/stunting_v2_local.json
+```
+
+Konfigurasi tersebut mengarahkan form dan prediksi stunting ke
+`http://10.0.2.2:8001`, sedangkan fitur aplikasi lainnya tetap menggunakan
+backend pada port 8000. Build biasa tidak mengaktifkan jalur V2 lokal.
+
+Kandidat berstatus `FAIL_LOCAL_5B`; integrasi ini hanya untuk pengujian UI dan
+kontrak, bukan diagnosis atau penggunaan production.
+
 ## Build Runner (Code Generation)
 
 Untuk generate code dari Freezed, Riverpod Generator, dan JSON Serializable:

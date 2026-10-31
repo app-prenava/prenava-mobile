@@ -22,6 +22,9 @@ import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 import '../widgets/meal_plan_home_widget.dart';
+import '../../../../core/widgets/ios_pwa_guide_banner.dart';
+import '../widgets/maternal_completeness_card.dart';
+import '../providers/maternal_completeness_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -41,6 +44,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   final GlobalKey _udaraKey = GlobalKey();
   final GlobalKey _hplKey = GlobalKey();
   final GlobalKey _lainnyaKey = GlobalKey();
+  final GlobalKey _foodScannerKey = GlobalKey();
 
   Timer? _autoRefreshTimer;
   static const _refreshInterval = Duration(minutes: 1);
@@ -98,6 +102,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
     ref.read(profileNotifierProvider.notifier).loadProfile();
     // Wallet uses Notifier, rebuild it
     ref.invalidate(walletProvider);
+    ref.invalidate(maternalCompletenessProvider);
   }
 
   @override
@@ -281,6 +286,9 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
                                 ],
                               ),
                             ),
+                                                        const IosPwaGuideBanner(),
+                            const MaternalCompletenessCard(),
+                            _buildBidanAiQuickBanner(),
                             _buildPromoSection(),
                             _buildPopularPostsSection(),
                           ],
@@ -463,7 +471,8 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
     items.add(
       Showcase(
         key: _anemiaKey,
-        description: 'Ketahui risiko Anemia dengan mengisi form observasi.',
+        description:
+            'Deteksi indikator anemia dari foto konjungtiva mata menggunakan AI.',
         child: MenuGridItem(
           imagePath: 'assets/images/anemia.png',
           label: 'Prediksi Anemia',
@@ -533,6 +542,20 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
 
     items.add(
       Showcase(
+        key: _foodScannerKey,
+        description: 'Scan piring makan untuk analisis kepatuhan gizi Isi Piringku & pencegahan anemia.',
+        child: MenuGridItem(
+          imagePath: 'assets/images/stunting icon.png',
+          label: 'Isi Piringku',
+          onTap: () {
+            context.push('/food-scanner');
+          },
+        ),
+      ),
+    );
+
+    items.add(
+      Showcase(
         key: _tipsKey,
         description: 'Tips harian untuk kesehatan ibu dan janin.',
         child: MenuGridItem(
@@ -583,6 +606,108 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
           childAspectRatio: 0.85,
           padding: EdgeInsets.zero,
           children: items,
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildBidanAiQuickBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFA6978), Color(0xFFFF8A97)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFA6978).withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/maternal-rag'),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.support_agent_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Tanya Bidan AI (Buku KIA)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Konsultasi suara & deteksi tanda bahaya resmi Kemenkes RI',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Tanya',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFFA6978),
+                        ),
+                      ),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 16,
+                        color: Color(0xFFFA6978),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

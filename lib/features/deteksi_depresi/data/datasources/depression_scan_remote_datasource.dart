@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../../../core/utils/cross_platform_upload.dart';
 import '../models/depression_scan_result_model.dart';
 
 class DepressionScanRemoteDatasource {
@@ -9,11 +10,9 @@ class DepressionScanRemoteDatasource {
   /// POST /api/depression-scan with image file
   Future<DepressionScanResultModel> scanFace(String imagePath) async {
     try {
+      final multipartImage = await createMultipartFileFromPath(imagePath);
       final formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(
-          imagePath,
-          filename: imagePath.split('/').last,
-        ),
+        'image': multipartImage,
       });
 
       final response = await _dio.post(

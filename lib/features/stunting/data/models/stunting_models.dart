@@ -1,202 +1,557 @@
-// ignore_for_file: invalid_annotation_target
-import 'package:freezed_annotation/freezed_annotation.dart';
+class StuntingQuestion {
+  final String key;
+  final String label;
+  final String type;
+  final bool isRequired;
+  final List<StuntingOption>? options;
+  final double? min;
+  final double? max;
+  final String? unit;
 
-part 'stunting_models.freezed.dart';
-part 'stunting_models.g.dart';
+  const StuntingQuestion({
+    required this.key,
+    required this.label,
+    required this.type,
+    this.isRequired = false,
+    this.options,
+    this.min,
+    this.max,
+    this.unit,
+  });
 
-@freezed
-abstract class StuntingQuestion with _$StuntingQuestion {
-  const factory StuntingQuestion({
-    required String key,
-    required String label,
-    required String type,
-    @JsonKey(name: 'required') @Default(false) bool isRequired,
-    List<StuntingOption>? options,
-    double? min,
-    double? max,
-    String? unit,
-  }) = _StuntingQuestion;
+  factory StuntingQuestion.fromJson(Map<String, dynamic> json) {
+    return StuntingQuestion(
+      key: json['key'] as String? ?? '',
+      label: json['label'] as String? ?? '',
+      type: json['type'] as String? ?? '',
+      isRequired: json['required'] as bool? ?? false,
+      options: (json['options'] as List<dynamic>?)
+          ?.map((e) => StuntingOption.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      min: (json['min'] as num?)?.toDouble(),
+      max: (json['max'] as num?)?.toDouble(),
+      unit: json['unit'] as String?,
+    );
+  }
 
-  factory StuntingQuestion.fromJson(Map<String, dynamic> json) =>
-      _$StuntingQuestionFromJson(json);
+  Map<String, dynamic> toJson() => {
+        'key': key,
+        'label': label,
+        'type': type,
+        'required': isRequired,
+        'options': options?.map((e) => e.toJson()).toList(),
+        'min': min,
+        'max': max,
+        'unit': unit,
+      };
 }
 
-@freezed
-abstract class StuntingOption with _$StuntingOption {
-  const factory StuntingOption({
-    required dynamic value,
-    required String label,
-  }) = _StuntingOption;
+class StuntingOption {
+  final dynamic value;
+  final String label;
 
-  factory StuntingOption.fromJson(Map<String, dynamic> json) =>
-      _$StuntingOptionFromJson(json);
+  const StuntingOption({
+    required this.value,
+    required this.label,
+  });
+
+  factory StuntingOption.fromJson(Map<String, dynamic> json) {
+    return StuntingOption(
+      value: json['value'],
+      label: json['label'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'value': value,
+        'label': label,
+      };
 }
 
-@freezed
-abstract class ShapFactor with _$ShapFactor {
-  const factory ShapFactor({
-    required String feature,
-    required String impact,
-    required double value,
-    String? message,
-  }) = _ShapFactor;
+class ShapFactor {
+  final String feature;
+  final String impact;
+  final double value;
+  final String? message;
 
-  factory ShapFactor.fromJson(Map<String, dynamic> json) =>
-      _$ShapFactorFromJson(json);
+  const ShapFactor({
+    required this.feature,
+    required this.impact,
+    required this.value,
+    this.message,
+  });
+
+  factory ShapFactor.fromJson(Map<String, dynamic> json) {
+    return ShapFactor(
+      feature: json['feature'] as String? ?? '',
+      impact: json['impact'] as String? ?? '',
+      value: (json['value'] as num?)?.toDouble() ?? 0.0,
+      message: json['message'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'feature': feature,
+        'impact': impact,
+        'value': value,
+        'message': message,
+      };
 }
 
-@freezed
-abstract class ShapExplanation with _$ShapExplanation {
-  const factory ShapExplanation({
-    required String method,
-    @JsonKey(name: 'top_factors') required List<ShapFactor> topFactors,
-  }) = _ShapExplanation;
+class ShapExplanation {
+  final String method;
+  final List<ShapFactor> topFactors;
 
-  factory ShapExplanation.fromJson(Map<String, dynamic> json) =>
-      _$ShapExplanationFromJson(json);
+  const ShapExplanation({
+    required this.method,
+    required this.topFactors,
+  });
+
+  factory ShapExplanation.fromJson(Map<String, dynamic> json) {
+    return ShapExplanation(
+      method: json['method'] as String? ?? '',
+      topFactors: (json['top_factors'] as List<dynamic>?)
+              ?.map((e) => ShapFactor.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'method': method,
+        'top_factors': topFactors.map((e) => e.toJson()).toList(),
+      };
 }
 
-@freezed
-abstract class PredictionResult with _$PredictionResult {
-  const factory PredictionResult({
-    @JsonKey(name: 'predictionId') required int predictionId,
-    @JsonKey(name: 'riskLabel') required String riskLabel,
-    required double score,
-    required int riskLevel,
-    required String recommendation,
-    ShapExplanation? explanation,
-    @JsonKey(name: 'inputData') Map<String, dynamic>? inputData,
-    @JsonKey(name: 'aiMealPlan') AiMealPlanResponse? aiMealPlan,
-  }) = _PredictionResult;
+class PredictionResult {
+  final int predictionId;
+  final String riskLabel;
+  final double score;
+  final int riskLevel;
+  final String recommendation;
+  final ShapExplanation? explanation;
+  final Map<String, dynamic>? inputData;
+  final AiMealPlanResponse? aiMealPlan;
+  final bool localOnly;
+  final bool productionReady;
+  final String? modelStatus;
+  final List<String> warnings;
+  final double? threshold;
+  final String? ageBand;
 
-  factory PredictionResult.fromJson(Map<String, dynamic> json) =>
-      _$PredictionResultFromJson(json);
+  const PredictionResult({
+    required this.predictionId,
+    required this.riskLabel,
+    required this.score,
+    required this.riskLevel,
+    required this.recommendation,
+    this.explanation,
+    this.inputData,
+    this.aiMealPlan,
+    this.localOnly = false,
+    this.productionReady = false,
+    this.modelStatus,
+    this.warnings = const [],
+    this.threshold,
+    this.ageBand,
+  });
+
+  factory PredictionResult.fromJson(Map<String, dynamic> json) {
+    return PredictionResult(
+      predictionId:
+          (json['predictionId'] ?? json['prediction_id'] as num?)?.toInt() ?? 0,
+      riskLabel: json['riskLabel'] ?? json['risk_label'] as String? ?? '',
+      score: (json['score'] as num?)?.toDouble() ?? 0.0,
+      riskLevel:
+          (json['riskLevel'] ?? json['risk_level'] as num?)?.toInt() ?? 0,
+      recommendation: json['recommendation'] as String? ?? '',
+      explanation: json['explanation'] != null
+          ? ShapExplanation.fromJson(
+              json['explanation'] as Map<String, dynamic>)
+          : null,
+      inputData:
+          (json['inputData'] ?? json['input_data']) as Map<String, dynamic>?,
+      aiMealPlan: json['aiMealPlan'] != null
+          ? AiMealPlanResponse.fromJson(
+              json['aiMealPlan'] as Map<String, dynamic>)
+          : (json['ai_meal_plan'] != null
+              ? AiMealPlanResponse.fromJson(
+                  json['ai_meal_plan'] as Map<String, dynamic>)
+              : null),
+      localOnly: json['local_only'] as bool? ?? false,
+      productionReady: json['production_ready'] as bool? ?? false,
+      modelStatus: json['model_status'] as String?,
+      warnings: (json['warnings'] as List<dynamic>?)
+              ?.map((item) => item.toString())
+              .toList() ??
+          const [],
+      threshold: (json['threshold'] as num?)?.toDouble(),
+      ageBand: json['age_band'] as String?,
+    );
+  }
+
+  factory PredictionResult.fromLocalV2(
+    Map<String, dynamic> json, {
+    required Map<String, dynamic> inputData,
+  }) {
+    final prediction = (json['prediction'] as num?)?.toInt() ?? 0;
+    final warnings = (json['warnings'] as List<dynamic>?)
+            ?.map((item) => item.toString())
+            .toList() ??
+        const <String>[];
+    return PredictionResult(
+      predictionId: 0,
+      riskLabel: prediction == 1 ? 'Risiko Tinggi' : 'Risiko Rendah',
+      score: (json['probability'] as num?)?.toDouble() ?? 0,
+      riskLevel: prediction,
+      recommendation: prediction == 1
+          ? 'Hasil skrining lokal menunjukkan risiko tinggi. Lakukan penilaian antropometri dan konsultasi dengan tenaga kesehatan.'
+          : 'Hasil skrining lokal menunjukkan risiko lebih rendah. Tetap pantau pertumbuhan anak secara berkala.',
+      inputData: inputData,
+      localOnly: json['local_only'] as bool? ?? true,
+      productionReady: json['production_ready'] as bool? ?? false,
+      modelStatus: json['model_status'] as String?,
+      warnings: warnings,
+      threshold: (json['threshold'] as num?)?.toDouble(),
+      ageBand: json['age_band'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'predictionId': predictionId,
+        'riskLabel': riskLabel,
+        'score': score,
+        'riskLevel': riskLevel,
+        'recommendation': recommendation,
+        'explanation': explanation?.toJson(),
+        'inputData': inputData,
+        'aiMealPlan': aiMealPlan?.toJson(),
+        'local_only': localOnly,
+        'production_ready': productionReady,
+        'model_status': modelStatus,
+        'warnings': warnings,
+        'threshold': threshold,
+        'age_band': ageBand,
+      };
 }
 
-@freezed
-abstract class FoodModel with _$FoodModel {
-  const factory FoodModel({
-    required String id,
-    required String name,
-    @JsonKey(name: 'imageUrl') String? imageUrl,
-    required double protein,
-    required double calories,
-    double? fat,
-    double? carbohydrates,
-    String? reason,
-  }) = _FoodModel;
+class FoodModel {
+  final String id;
+  final String name;
+  final String? imageUrl;
+  final double protein;
+  final double calories;
+  final double? fat;
+  final double? carbohydrates;
+  final String? reason;
 
-  factory FoodModel.fromJson(Map<String, dynamic> json) =>
-      _$FoodModelFromJson(json);
+  const FoodModel({
+    required this.id,
+    required this.name,
+    this.imageUrl,
+    required this.protein,
+    required this.calories,
+    this.fat,
+    this.carbohydrates,
+    this.reason,
+  });
+
+  factory FoodModel.fromJson(Map<String, dynamic> json) {
+    return FoodModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] as String? ?? '',
+      imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
+      protein: (json['protein'] as num?)?.toDouble() ?? 0.0,
+      calories: (json['calories'] as num?)?.toDouble() ?? 0.0,
+      fat: (json['fat'] as num?)?.toDouble(),
+      carbohydrates: (json['carbohydrates'] as num?)?.toDouble(),
+      reason: json['reason'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'imageUrl': imageUrl,
+        'protein': protein,
+        'calories': calories,
+        'fat': fat,
+        'carbohydrates': carbohydrates,
+        'reason': reason,
+      };
 }
 
-@freezed
-abstract class AiSupportModel with _$AiSupportModel {
-  const factory AiSupportModel({
-    @JsonKey(name: 'cooking_guide') String? cookingGuide,
-    @JsonKey(name: 'nutrition_tips') String? nutritionTips,
-    @JsonKey(name: 'meal_plan') String? mealPlan,
-  }) = _AiSupportModel;
+class AiSupportModel {
+  final String? cookingGuide;
+  final String? nutritionTips;
+  final String? mealPlan;
 
-  factory AiSupportModel.fromJson(Map<String, dynamic> json) =>
-      _$AiSupportModelFromJson(json);
+  const AiSupportModel({
+    this.cookingGuide,
+    this.nutritionTips,
+    this.mealPlan,
+  });
+
+  factory AiSupportModel.fromJson(Map<String, dynamic> json) {
+    return AiSupportModel(
+      cookingGuide: json['cooking_guide'] as String?,
+      nutritionTips: json['nutrition_tips'] as String?,
+      mealPlan: json['meal_plan'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'cooking_guide': cookingGuide,
+        'nutrition_tips': nutritionTips,
+        'meal_plan': mealPlan,
+      };
 }
 
-@freezed
-abstract class RecommendationResponse with _$RecommendationResponse {
-  const factory RecommendationResponse({
-    required bool success,
-    required bool cached,
-    required RecommendationData data,
-  }) = _RecommendationResponse;
+class RecommendationResponse {
+  final bool success;
+  final bool cached;
+  final RecommendationData data;
 
-  factory RecommendationResponse.fromJson(Map<String, dynamic> json) =>
-      _$RecommendationResponseFromJson(json);
+  const RecommendationResponse({
+    required this.success,
+    required this.cached,
+    required this.data,
+  });
+
+  factory RecommendationResponse.fromJson(Map<String, dynamic> json) {
+    return RecommendationResponse(
+      success: json['success'] as bool? ?? false,
+      cached: json['cached'] as bool? ?? false,
+      data: RecommendationData.fromJson(json['data'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'success': success,
+        'cached': cached,
+        'data': data.toJson(),
+      };
 }
 
-@freezed
-abstract class RecommendationData with _$RecommendationData {
-  const factory RecommendationData({
-    @JsonKey(name: 'prediction_summary') required PredictionSummary predictionSummary,
-    @JsonKey(name: 'recommended_foods') required List<FoodModel> recommendedFoods,
-    @JsonKey(name: 'ai_support') AiSupportModel? aiSupport,
-  }) = _RecommendationData;
+class RecommendationData {
+  final PredictionSummary predictionSummary;
+  final List<FoodModel> recommendedFoods;
+  final AiSupportModel? aiSupport;
 
-  factory RecommendationData.fromJson(Map<String, dynamic> json) =>
-      _$RecommendationDataFromJson(json);
+  const RecommendationData({
+    required this.predictionSummary,
+    required this.recommendedFoods,
+    this.aiSupport,
+  });
+
+  factory RecommendationData.fromJson(Map<String, dynamic> json) {
+    return RecommendationData(
+      predictionSummary: PredictionSummary.fromJson(
+        (json['prediction_summary'] ?? json['predictionSummary'])
+            as Map<String, dynamic>,
+      ),
+      recommendedFoods: ((json['recommended_foods'] ?? json['recommendedFoods'])
+                  as List<dynamic>?)
+              ?.map((e) => FoodModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      aiSupport: json['ai_support'] != null
+          ? AiSupportModel.fromJson(json['ai_support'] as Map<String, dynamic>)
+          : (json['aiSupport'] != null
+              ? AiSupportModel.fromJson(
+                  json['aiSupport'] as Map<String, dynamic>)
+              : null),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'prediction_summary': predictionSummary.toJson(),
+        'recommended_foods': recommendedFoods.map((e) => e.toJson()).toList(),
+        'ai_support': aiSupport?.toJson(),
+      };
 }
 
-@freezed
-abstract class PredictionSummary with _$PredictionSummary {
-  const factory PredictionSummary({
-    @JsonKey(name: 'risk_label') required String riskLabel,
-    required double probability,
-  }) = _PredictionSummary;
+class PredictionSummary {
+  final String riskLabel;
+  final double probability;
 
-  factory PredictionSummary.fromJson(Map<String, dynamic> json) =>
-      _$PredictionSummaryFromJson(json);
+  const PredictionSummary({
+    required this.riskLabel,
+    required this.probability,
+  });
+
+  factory PredictionSummary.fromJson(Map<String, dynamic> json) {
+    return PredictionSummary(
+      riskLabel: (json['risk_label'] ?? json['riskLabel']) as String? ?? '',
+      probability: (json['probability'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'risk_label': riskLabel,
+        'probability': probability,
+      };
 }
 
-@freezed
-abstract class StuntingHistoryItem with _$StuntingHistoryItem {
-  const factory StuntingHistoryItem({
-    required int id,
-    @JsonKey(name: 'date') required String date,
-    required String status,
-    required int riskLevel,
-    required double score,
-  }) = _StuntingHistoryItem;
+class StuntingHistoryItem {
+  final int id;
+  final String date;
+  final String status;
+  final int riskLevel;
+  final double score;
 
-  factory StuntingHistoryItem.fromJson(Map<String, dynamic> json) =>
-      _$StuntingHistoryItemFromJson(json);
+  const StuntingHistoryItem({
+    required this.id,
+    required this.date,
+    required this.status,
+    required this.riskLevel,
+    required this.score,
+  });
+
+  factory StuntingHistoryItem.fromJson(Map<String, dynamic> json) {
+    return StuntingHistoryItem(
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      date: json['date'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      riskLevel:
+          (json['riskLevel'] ?? json['risk_level'] as num?)?.toInt() ?? 0,
+      score: (json['score'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
+        'status': status,
+        'riskLevel': riskLevel,
+        'score': score,
+      };
 }
 
-@freezed
-abstract class AiMealPlanResponse with _$AiMealPlanResponse {
-  const factory AiMealPlanResponse({
-    @JsonKey(name: 'analisis_gizi') required List<AiNutritionAnalysis> analisisGizi,
-    @JsonKey(name: 'rekomendasi_menu') required Map<String, dynamic> rekomendasiMenu,
-    @JsonKey(name: 'saran_ai') required List<String> saranAi,
-    required String catatan,
-  }) = _AiMealPlanResponse;
+class AiMealPlanResponse {
+  final List<AiNutritionAnalysis> analisisGizi;
+  final Map<String, dynamic> rekomendasiMenu;
+  final List<String> saranAi;
+  final String catatan;
 
-  factory AiMealPlanResponse.fromJson(Map<String, dynamic> json) =>
-      _$AiMealPlanResponseFromJson(json);
+  const AiMealPlanResponse({
+    required this.analisisGizi,
+    required this.rekomendasiMenu,
+    required this.saranAi,
+    required this.catatan,
+  });
+
+  factory AiMealPlanResponse.fromJson(Map<String, dynamic> json) {
+    return AiMealPlanResponse(
+      analisisGizi:
+          ((json['analisis_gizi'] ?? json['analisisGizi']) as List<dynamic>?)
+                  ?.map((e) =>
+                      AiNutritionAnalysis.fromJson(e as Map<String, dynamic>))
+                  .toList() ??
+              [],
+      rekomendasiMenu: ((json['rekomendasi_menu'] ?? json['rekomendasiMenu'])
+              as Map<String, dynamic>?) ??
+          {},
+      saranAi: ((json['saran_ai'] ?? json['saranAi']) as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
+      catatan: json['catatan'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'analisis_gizi': analisisGizi.map((e) => e.toJson()).toList(),
+        'rekomendasi_menu': rekomendasiMenu,
+        'saran_ai': saranAi,
+        'catatan': catatan,
+      };
 }
 
-@freezed
-abstract class AiNutritionAnalysis with _$AiNutritionAnalysis {
-  const factory AiNutritionAnalysis({
-    required String nutrisi,
-    required String status,
-    required String kebutuhan,
-    required String asupan,
-    required String catatan,
-  }) = _AiNutritionAnalysis;
+class AiNutritionAnalysis {
+  final String nutrisi;
+  final String status;
+  final String kebutuhan;
+  final String asupan;
+  final String catatan;
 
-  factory AiNutritionAnalysis.fromJson(Map<String, dynamic> json) =>
-      _$AiNutritionAnalysisFromJson(json);
+  const AiNutritionAnalysis({
+    required this.nutrisi,
+    required this.status,
+    required this.kebutuhan,
+    required this.asupan,
+    required this.catatan,
+  });
+
+  factory AiNutritionAnalysis.fromJson(Map<String, dynamic> json) {
+    return AiNutritionAnalysis(
+      nutrisi: json['nutrisi'] as String? ?? '',
+      status: json['status'] as String? ?? '',
+      kebutuhan: json['kebutuhan'] as String? ?? '',
+      asupan: json['asupan'] as String? ?? '',
+      catatan: json['catatan'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'nutrisi': nutrisi,
+        'status': status,
+        'kebutuhan': kebutuhan,
+        'asupan': asupan,
+        'catatan': catatan,
+      };
 }
 
-@freezed
-abstract class AiMenuRecommendation with _$AiMenuRecommendation {
-  const factory AiMenuRecommendation({
-    required AiMeal sarapan,
-    @JsonKey(name: 'makan_siang') required AiMeal makanSiang,
-    @JsonKey(name: 'makan_malam') required AiMeal makanMalam,
-  }) = _AiMenuRecommendation;
+class AiMenuRecommendation {
+  final AiMeal sarapan;
+  final AiMeal makanSiang;
+  final AiMeal makanMalam;
 
-  factory AiMenuRecommendation.fromJson(Map<String, dynamic> json) =>
-      _$AiMenuRecommendationFromJson(json);
+  const AiMenuRecommendation({
+    required this.sarapan,
+    required this.makanSiang,
+    required this.makanMalam,
+  });
+
+  factory AiMenuRecommendation.fromJson(Map<String, dynamic> json) {
+    return AiMenuRecommendation(
+      sarapan: AiMeal.fromJson(json['sarapan'] as Map<String, dynamic>? ?? {}),
+      makanSiang: AiMeal.fromJson((json['makan_siang'] ?? json['makanSiang'])
+              as Map<String, dynamic>? ??
+          {}),
+      makanMalam: AiMeal.fromJson((json['makan_malam'] ?? json['makanMalam'])
+              as Map<String, dynamic>? ??
+          {}),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'sarapan': sarapan.toJson(),
+        'makan_siang': makanSiang.toJson(),
+        'makan_malam': makanMalam.toJson(),
+      };
 }
 
-@freezed
-abstract class AiMeal with _$AiMeal {
-  const factory AiMeal({
-    required List<String> menu,
-    required String alasan,
-  }) = _AiMeal;
+class AiMeal {
+  final List<String> menu;
+  final String alasan;
 
-  factory AiMeal.fromJson(Map<String, dynamic> json) =>
-      _$AiMealFromJson(json);
+  const AiMeal({
+    required this.menu,
+    required this.alasan,
+  });
+
+  factory AiMeal.fromJson(Map<String, dynamic> json) {
+    return AiMeal(
+      menu:
+          (json['menu'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+              [],
+      alasan: json['alasan'] as String? ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'menu': menu,
+        'alasan': alasan,
+      };
 }

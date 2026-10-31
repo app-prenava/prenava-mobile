@@ -1,0 +1,7 @@
+{
+  "API_BASE": "http://10.0.2.2:8000/api",
+  "ENV": "local",
+  "LOG_LEVEL": "debug",
+  "USE_STUNTING_V2_LOCAL": true,
+  "STUNTING_V2_API_BASE": "http://10.0.2.2:8001"
+}
