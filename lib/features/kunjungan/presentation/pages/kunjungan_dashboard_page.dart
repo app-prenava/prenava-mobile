@@ -14,6 +14,15 @@ class KunjunganDashboardPage extends ConsumerStatefulWidget {
 
 class _KunjunganDashboardPageState extends ConsumerState<KunjunganDashboardPage> {
   DateTime _selectedMonth = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(kunjunganNotifierProvider.notifier).loadVisits();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(kunjunganNotifierProvider);

@@ -4,17 +4,23 @@ class Env {
   // Production URL (backend live di cloud)
   static const String prodApiBase = 'https://prenavabe.cloud/api';
 
-  // Local Development URL (laptop backend)
-  static const String localApiBase = 'http://192.168.110.64:8000/api';
+  // Local Development URLs (laptop backend)
   static const String localHostApiBase = 'http://localhost:8000/api';
+  static const String localLanApiBase = 'http://192.168.0.101:8000/api';
+  static const String androidEmulatorApiBase = 'http://10.0.2.2:8000/api';
 
-  // Otomatis mengarah ke prodApiBase saat mode release (Play Store APK & Live PWA).
-  // Saat Web lokal: jika diakses via IP Wi-Fi (iPhone), otomatis arahkan API ke IP laptop di port 8000.
+  // Backwards compatibility alias
+  static const String localApiBase = localLanApiBase;
+
+  // Otomatis mengarah ke prodApiBase saat mode release resmi di cloud.
+  // Saat Web/Desktop lokal: otomatis arahkan ke localhost:8000.
+  // Saat Android emulator/device lokal: otomatis gunakan loopback atau IP LAN laptop.
   // Dapat dioverride lewat --dart-define=API_BASE=...
   static String get apiBase {
     const defined = String.fromEnvironment('API_BASE');
     if (defined.isNotEmpty) return defined;
-    if (kReleaseMode) return prodApiBase;
+
+    // Web platform
     if (kIsWeb) {
       final host = Uri.base.host;
       if (host.isNotEmpty && host != 'localhost' && host != '127.0.0.1') {
@@ -25,7 +31,23 @@ class Env {
       }
       return localHostApiBase;
     }
-    return localApiBase;
+
+    // Release mode only defaults to cloud production if not explicitly testing local
+    const forceLocal = bool.fromEnvironment('FORCE_LOCAL', defaultValue: false);
+    if (kReleaseMode && !forceLocal) {
+      return prodApiBase;
+    }
+
+    // Desktop platforms (Windows, macOS, Linux) connect directly to localhost
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.windows ||
+         defaultTargetPlatform == TargetPlatform.macOS ||
+         defaultTargetPlatform == TargetPlatform.linux)) {
+      return localHostApiBase;
+    }
+
+    // Default to LAN IP for physical mobile devices over Wi-Fi
+    return localLanApiBase;
   }
 
   // Opt-in only: direct access to the frozen Stunting V2 local test service.

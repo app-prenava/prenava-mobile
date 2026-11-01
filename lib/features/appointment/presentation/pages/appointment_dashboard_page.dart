@@ -25,6 +25,7 @@ class _AppointmentDashboardPageState
     _notifier = ref.read(appointmentNotifierProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
+        _notifier.loadAppointments();
         _notifier.startPolling();
       }
     });
