@@ -118,17 +118,20 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/community/create'),
-        backgroundColor: const Color(0xFFFA6978),
-        elevation: 2,
-        icon: const Icon(Icons.edit_note, color: Colors.white),
-        label: const Text(
-          'Tanya di Forum',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 72),
+        child: FloatingActionButton.extended(
+          onPressed: () => context.push('/community/create'),
+          backgroundColor: const Color(0xFFFA6978),
+          elevation: 3,
+          icon: const Icon(Icons.edit_note, color: Colors.white),
+          label: const Text(
+            'Tanya di Forum',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
           ),
         ),
       ),

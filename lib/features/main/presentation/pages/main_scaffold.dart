@@ -23,8 +23,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     const AccountPage(),
   ];
 
-  // Check if we should show center add button
-  bool get _showCenterButton => _currentIndex == 1 || _currentIndex == 2;
+  // Check if we should show center add button (only for Shop page, Community has dedicated button)
+  bool get _showCenterButton => _currentIndex == 2;
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +39,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           floatingActionButton: _showCenterButton
               ? FloatingActionButton(
                   onPressed: () {
-                    final String route = _currentIndex == 1 ? '/community/create' : '/shop/add';
-                    context.push(route);
+                    context.push('/shop/add');
                   },
                   backgroundColor: const Color(0xFFFA6978),
                   elevation: 4,
