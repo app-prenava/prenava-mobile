@@ -24,8 +24,6 @@ import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
 import '../widgets/meal_plan_home_widget.dart';
 import '../../../../core/widgets/ios_pwa_guide_banner.dart';
-import '../widgets/maternal_completeness_card.dart';
-import '../providers/maternal_completeness_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -39,7 +37,6 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   final GlobalKey _dailyKey = GlobalKey();
   final GlobalKey _olahragaKey = GlobalKey();
   final GlobalKey _hidrasiKey = GlobalKey();
-  final GlobalKey _tipsKey = GlobalKey();
   final GlobalKey _anemiaKey = GlobalKey();
   final GlobalKey _depresiKey = GlobalKey();
   final GlobalKey _udaraKey = GlobalKey();
@@ -96,7 +93,6 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
     ref.read(profileNotifierProvider.notifier).loadProfile();
     // Wallet uses Notifier, rebuild it
     ref.invalidate(walletProvider);
-    ref.invalidate(maternalCompletenessProvider);
   }
 
   @override
@@ -296,7 +292,6 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
                               ),
                             ),
                                                         const IosPwaGuideBanner(),
-                            const MaternalCompletenessCard(),
                             _buildBidanAiQuickBanner(),
                             _buildPromoSection(),
                             _buildPopularPostsSection(),
@@ -421,8 +416,8 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
       _depresiKey,
       _udaraKey,
       _hidrasiKey,
-      _tipsKey,
       _hplKey,
+      _foodScannerKey,
       _lainnyaKey,
     ]);
   }
@@ -554,25 +549,10 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
         key: _foodScannerKey,
         description: 'Scan piring makan untuk analisis kepatuhan gizi Isi Piringku & pencegahan anemia.',
         child: MenuGridItem(
-          imagePath: 'assets/images/stunting icon.png',
+          icon: Icons.flatware_rounded,
           label: 'Isi Piringku',
           onTap: () {
             context.push('/food-scanner');
-          },
-        ),
-      ),
-    );
-
-    items.add(
-      Showcase(
-        key: _tipsKey,
-        description: 'Tips harian untuk kesehatan ibu dan janin.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/tips.png',
-          label: 'Tips & Gizi',
-          onTap: () {
-            ref.read(featureTrackerProvider).track(AppFeature.tips);
-            context.push('/tips');
           },
         ),
       ),
@@ -585,7 +565,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
             'Buka ini untuk melihat semua fitur tambahan yang tersedia!',
         child: MenuGridItem(
           imagePath: 'assets/images/lainnya.png',
-          label: 'Lainnya',
+          label: 'Menu Lainnya',
           onTap: () {
             showModalBottomSheet(
               context: context,
