@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../domain/entities/comment.dart';
 
 class CommentCard extends StatelessWidget {
@@ -17,51 +18,139 @@ class CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBidan = comment.isBidanReply;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isBidan ? const Color(0xFFF0FDF4) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(
+          color: isBidan ? const Color(0xFFBBF7D0) : Colors.grey.shade200,
+          width: isBidan ? 1.5 : 1,
+        ),
+        boxShadow: isBidan
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF16A34A).withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // User info
+          // Pinned Badge Header if it's a Midwife reply
+          if (isBidan || comment.isPinned) ...[
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFF86EFAC)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.push_pin, size: 12, color: Color(0xFF15803D)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Tanggapan Resmi Bidan Tersemat',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF15803D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+          ],
+
+          // User info row
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile image
+              // Profile image or Midwife Avatar
               Container(
-                width: 28,
-                height: 28,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFFFA6978).withValues(alpha: 0.1),
+                  color: isBidan
+                      ? const Color(0xFFDCFCE7)
+                      : const Color(0xFFFA6978).withValues(alpha: 0.1),
                 ),
                 child: ClipOval(
-                  child: comment.user?.profileImage != null &&
-                          comment.user!.profileImage!.isNotEmpty
-                      ? Image.network(
-                          comment.user!.profileImage!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _buildDefaultAvatar(),
+                  child: isBidan
+                      ? const Center(
+                          child: Icon(
+                            Icons.medical_services_outlined,
+                            size: 18,
+                            color: Color(0xFF16A34A),
+                          ),
                         )
-                      : _buildDefaultAvatar(),
+                      : (comment.user?.profileImage != null &&
+                              comment.user!.profileImage!.isNotEmpty
+                          ? Image.network(
+                              comment.user!.profileImage!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  _buildDefaultAvatar(),
+                            )
+                          : _buildDefaultAvatar()),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      comment.user?.name ?? 'Unknown',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            comment.user?.name ?? (isBidan ? 'Bidan Terverifikasi' : 'Pengguna Prenava'),
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isBidan ? const Color(0xFF14532D) : Colors.black87,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isBidan) ...[
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.verified,
+                            size: 15,
+                            color: Color(0xFF16A34A),
+                          ),
+                        ],
+                      ],
                     ),
-                    if (comment.createdAt != null)
+                    // If Bidan, show practice and SIPB
+                    if (isBidan && comment.bidanProfile?.tempatPraktik != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        '${comment.bidanProfile!.tempatPraktik!} • ${comment.bidanProfile?.nomorSipb ?? 'SIPB Resmi'}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.green[800],
+                        ),
+                      ),
+                    ],
+                    if (comment.createdAt != null) ...[
+                      const SizedBox(height: 2),
                       Text(
                         _formatDate(comment.createdAt!),
                         style: TextStyle(
@@ -69,48 +158,126 @@ class CommentCard extends StatelessWidget {
                           color: Colors.grey[500],
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert, size: 18, color: Colors.grey),
-                onSelected: (value) {
-                  if (value == 'reply' && onReply != null) {
-                    onReply!();
-                  } else if (value == 'delete' && onDelete != null) {
-                    onDelete!();
-                  }
-                },
-                itemBuilder: (context) {
-                  final items = <PopupMenuEntry<String>>[
-                    const PopupMenuItem(
-                      value: 'reply',
-                      child: Text('Balas'),
-                    ),
-                  ];
-                  if (isMine && onDelete != null) {
-                    items.add(
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Text('Hapus'),
-                      ),
-                    );
-                  }
-                  return items;
-                },
-              ),
+
+              if (onReply != null || (isMine && onDelete != null))
+                PopupMenuButton<String>(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.more_vert, size: 18, color: Colors.grey),
+                  onSelected: (value) {
+                    if (value == 'reply' && onReply != null) {
+                      onReply!();
+                    } else if (value == 'delete' && onDelete != null) {
+                      onDelete!();
+                    }
+                  },
+                  itemBuilder: (context) {
+                    final items = <PopupMenuEntry<String>>[];
+                    if (onReply != null) {
+                      items.add(
+                        const PopupMenuItem(
+                          value: 'reply',
+                          child: Text('Balas'),
+                        ),
+                      );
+                    }
+                    if (isMine && onDelete != null) {
+                      items.add(
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Hapus'),
+                        ),
+                      );
+                    }
+                    return items;
+                  },
+                ),
             ],
           ),
-          const SizedBox(height: 8),
-          // Comment text
+
+          const SizedBox(height: 10),
+
+          // Comment content
           Text(
             comment.komentar,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              height: 1.4,
+            style: TextStyle(
+              fontSize: 13.5,
+              color: isBidan ? const Color(0xFF0F172A) : Colors.black87,
+              height: 1.5,
             ),
           ),
+
+          // 1-Click Clinic Appointment Bridge
+          if (isBidan && comment.suggestAppointment) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFF86EFAC)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 15,
+                        color: Color(0xFF16A34A),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Rekomendasi Tindakan Klinis',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[900],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Bidan menyarankan pemeriksaan fisik langsung untuk memastikan kondisi Bunda dan janin.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        context.push('/appointments/create');
+                      },
+                      icon: const Icon(Icons.event_available, size: 16),
+                      label: const Text(
+                        'Buat Janji Temu dengan Bidan Ini',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF16A34A),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -118,10 +285,10 @@ class CommentCard extends StatelessWidget {
 
   Widget _buildDefaultAvatar() {
     return Container(
-      color: const Color(0xFFFA6978).withValues(alpha: 0.2),
+      color: const Color(0xFFFA6978).withValues(alpha: 0.15),
       child: const Icon(
         Icons.person,
-        size: 16,
+        size: 18,
         color: Color(0xFFFA6978),
       ),
     );
@@ -149,14 +316,3 @@ class CommentCard extends StatelessWidget {
     }
   }
 }
-
-
-
-
-
-
-
-
-
-
-

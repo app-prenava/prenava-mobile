@@ -13,14 +13,18 @@ class CreatePostPage extends ConsumerStatefulWidget {
 class _CreatePostPageState extends ConsumerState<CreatePostPage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-  final List<String> _categories = const [
-    'Parenting',
-    'Finansial & Keuangan',
-    'Nutrisi',
-    'Kesehatan',
-    'Lainnya',
-  ];
-  String? _selectedCategory;
+
+  static const Map<String, String> _categoryOptions = {
+    'keluhan_gejala': 'Keluhan & Gejala',
+    'nutrisi': 'Nutrisi & Gizi',
+    'persalinan': 'Persiapan Persalinan',
+    'mitos_fakta': 'Mitos & Fakta',
+    'parenting': 'Parenting & Pascapersalinan',
+    'umum': 'Diskusi Umum',
+  };
+
+  String _selectedCategoryKey = 'keluhan_gejala';
+  bool _isAnonymous = false;
   bool _isSubmitting = false;
 
   static const int _maxContentLength = 1500;
@@ -42,12 +46,14 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
 
     final title = _titleController.text.trim().isNotEmpty
         ? _titleController.text.trim()
-        : (_selectedCategory ?? 'Lainnya');
+        : _categoryOptions[_selectedCategoryKey] ?? 'Pertanyaan Ibu Hamil';
 
     final success =
         await ref.read(communityNotifierProvider.notifier).createPost(
               judul: title,
               deskripsi: _contentController.text.trim(),
+              kategori: _selectedCategoryKey,
+              isAnonymous: _isAnonymous,
             );
 
     setState(() => _isSubmitting = false);
@@ -55,15 +61,15 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Postingan berhasil dibuat!'),
-          backgroundColor: Color(0xFFFA6978),
+          content: Text('Pertanyaan berhasil dikirim ke forum!'),
+          backgroundColor: Color(0xFF16A34A),
         ),
       );
       context.pop();
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Gagal membuat postingan'),
+          content: Text('Gagal membuat postingan, coba beberapa saat lagi.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -84,15 +90,15 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
   Widget _buildCategoryBottomSheet() {
     return Container(
       padding: const EdgeInsets.all(20),
-              child: Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+            children: [
               const Text(
-                'Pilih Kategori',
+                'Pilih Kategori Topik',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -101,46 +107,46 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
               IconButton(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.close),
-                      ),
-                    ],
-                  ),
+              ),
+            ],
+          ),
           const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
+          Wrap(
+            spacing: 8,
             runSpacing: 10,
-                    children: _categories.map((category) {
-                      final isSelected = _selectedCategory == category;
-                      return GestureDetector(
+            children: _categoryOptions.entries.map((entry) {
+              final isSelected = _selectedCategoryKey == entry.key;
+              return GestureDetector(
                 onTap: () {
-                  setState(() => _selectedCategory = category);
+                  setState(() => _selectedCategoryKey = entry.key);
                   Navigator.pop(context);
                 },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
                     vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
+                  ),
+                  decoration: BoxDecoration(
                     color: isSelected ? const Color(0xFFFA6978) : Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFFFA6978)
-                                  : Colors.grey[300]!,
-                            ),
-                          ),
-                          child: Text(
-                            category,
-                            style: TextStyle(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFFA6978)
+                          : Colors.grey[300]!,
+                    ),
+                  ),
+                  child: Text(
+                    entry.value,
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                      color: isSelected ? Colors.white : Colors.grey[700],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                      color: isSelected ? Colors.white : Colors.grey[800],
+                    ),
                   ),
+                ),
+              );
+            }).toList(),
+          ),
           const SizedBox(height: 20),
         ],
       ),
@@ -160,7 +166,7 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
         ),
         title: const Text(
-          'Buat Postingan',
+          'Tanya di Forum',
           style: TextStyle(
             color: Colors.black87,
             fontSize: 18,
@@ -175,15 +181,42 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-                  // Upload Photo Area
+                  // Auto Gestational Age Context Info Banner
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildUploadPhotoArea(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0FDF4),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFBBF7D0)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.health_and_safety_outlined,
+                            color: Color(0xFF16A34A),
+                            size: 22,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              'Usia kehamilan Anda otomatis disematkan pada postingan agar Bidan dapat memberikan advis klinis yang tepat.',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green[900],
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
                   // Title Input
                   Padding(
@@ -199,14 +232,46 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
                     child: _buildContentInput(),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
 
-                  // Add Topic Option
+                  // Category Picker Option Tile
                   _buildOptionTile(
-                    icon: Icons.tag,
-                    title: 'Tambah Kategori',
-                    subtitle: _selectedCategory,
+                    icon: Icons.category_outlined,
+                    title: 'Kategori Topik',
+                    subtitle: _categoryOptions[_selectedCategoryKey],
                     onTap: _showCategoryPicker,
+                  ),
+
+                  const Divider(height: 1, indent: 16, endIndent: 16),
+
+                  // Anonymous Mode Switch Tile
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: _isAnonymous,
+                      activeTrackColor: const Color(0xFFFA6978),
+                      title: const Text(
+                        'Tanya sebagai Bunda Anonim',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Nama & foto disamarkan dari publik. Bidan tetap dapat melihat minggu kehamilan untuk kebutuhan evaluasi klinis.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                          height: 1.3,
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() => _isAnonymous = val);
+                      },
+                    ),
                   ),
 
                   const Divider(height: 1, indent: 16, endIndent: 16),
@@ -215,61 +280,9 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
             ),
           ),
 
-          // Bottom Section
+          // Bottom Submit Section
           _buildBottomSection(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildUploadPhotoArea() {
-    return Container(
-      width: double.infinity,
-      height: 140,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.grey[300]!,
-          width: 1,
-          style: BorderStyle.solid,
-        ),
-      ),
-      child: CustomPaint(
-        painter: DashedBorderPainter(
-          color: Colors.grey[400]!,
-          strokeWidth: 1,
-          gap: 5,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_photo_alternate_outlined,
-                size: 40,
-                color: Colors.grey[500],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Upload foto',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Bagikan momen spesialmu',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -284,7 +297,7 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
       child: TextField(
         controller: _titleController,
         decoration: InputDecoration(
-          hintText: 'Judul: Apa yang ingin kamu bagikan?',
+          hintText: 'Judul keluhan atau pertanyaan Anda...',
           hintStyle: TextStyle(
             color: Colors.grey[400],
             fontSize: 14,
@@ -313,11 +326,11 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
           TextField(
             controller: _contentController,
             maxLines: null,
-            minLines: 5,
+            minLines: 6,
             maxLength: _maxContentLength,
             decoration: InputDecoration(
               hintText:
-                  '• Bagikan cerita atau pengalamanmu\n• Berikan tips untuk ibu lainnya\n• Tanyakan hal yang ingin kamu ketahui',
+                  'Jelaskan keluhan secara rinci:\n• Sejak kapan keluhan dirasakan?\n• Gejala penyerta (kram, pusing, dsb.)\n• Hal yang ingin ditanyakan ke Bidan atau Bunda lainnya',
               hintStyle: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 14,
@@ -371,34 +384,21 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (subtitle == null) ...[
-                          const SizedBox(width: 4),
-                          Text(
-                            '(Opsional)',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ],
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFFA6978),
                         ),
                       ),
                     ],
@@ -437,25 +437,26 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Icon(
+                _isAnonymous ? Icons.visibility_off_outlined : Icons.public,
+                size: 15,
+                color: Colors.grey[600],
+              ),
+              const SizedBox(width: 6),
               Text(
-                'Postinganmu akan dibagikan secara publik',
+                _isAnonymous
+                    ? 'Identitas Bunda disamarkan di forum publik'
+                    : 'Akan tampil dengan profil Bunda di forum',
                 style: TextStyle(
                   fontSize: 12,
                   color: Colors.grey[600],
                 ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.info_outline,
-                size: 16,
-                color: Colors.grey[500],
               ),
             ],
           ),
           const SizedBox(height: 12),
           Row(
             children: [
-              // Cancel button
               Expanded(
                 child: OutlinedButton(
                   onPressed: () => context.pop(),
@@ -477,7 +478,6 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
                 ),
               ),
               const SizedBox(width: 12),
-              // Post button
               Expanded(
                 child: ElevatedButton(
                   onPressed: _canSubmit ? _submitPost : null,
@@ -490,24 +490,24 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: _isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                            color: Colors.white,
-                    ),
-                  )
-                      : const Text(
-                          'Posting',
-                    style: TextStyle(
-                            fontSize: 14,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Kirim Pertanyaan',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -516,53 +516,4 @@ class _CreatePostPageState extends ConsumerState<CreatePostPage> {
       ),
     );
   }
-}
-
-// Custom painter for dashed border
-class DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final double gap;
-
-  DashedBorderPainter({
-    required this.color,
-    this.strokeWidth = 1,
-    this.gap = 5,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final path = Path();
-    const radius = 12.0;
-
-    path.addRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 0, size.width, size.height),
-        const Radius.circular(radius),
-      ),
-    );
-
-    final dashPath = Path();
-    for (final metric in path.computeMetrics()) {
-      double distance = 0;
-      while (distance < metric.length) {
-        final length = gap;
-        dashPath.addPath(
-          metric.extractPath(distance, distance + length),
-          Offset.zero,
-        );
-        distance += length * 2;
-      }
-    }
-
-    canvas.drawPath(dashPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

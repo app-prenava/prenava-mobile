@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/daily_features_provider.dart';
-import 'badges_showcase_modal.dart';
 
 class DailyTasksSection extends ConsumerStatefulWidget {
   const DailyTasksSection({super.key});
@@ -133,19 +132,11 @@ class _DailyTasksSectionState extends ConsumerState<DailyTasksSection> {
         final overallProgress = totalCount > 0 ? (completedCount / totalCount) : 0.0;
 
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── 1. MATERNAL TIER & STREAK CARD ──────────────────────
-              _buildTierHeaderCard(context, progress),
-              const SizedBox(height: 16),
-
-              // ── 2. PROGRESSIVE HYDRATION TRACKER ────────────────────
-              _buildHydrationTrackerCard(context, progress.hydration),
-              const SizedBox(height: 20),
-
-              // ── 3. DAILY TASKS CHECKLIST HEADER ────────────────────
+              // ── DAILY TASKS CHECKLIST HEADER ────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -184,9 +175,9 @@ class _DailyTasksSectionState extends ConsumerState<DailyTasksSection> {
                   valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFA6978)),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
 
-              // ── 4. UNIFIED TASKS LIST ──────────────────────────────
+              // ── UNIFIED TASKS LIST ──────────────────────────────
               if (tasks.isEmpty)
                 Container(
                   padding: const EdgeInsets.all(24),
@@ -203,7 +194,7 @@ class _DailyTasksSectionState extends ConsumerState<DailyTasksSection> {
                   ),
                 )
               else
-                ...tasks.map((task) => _buildTaskItemCard(context, task)),
+                ...tasks.map((task) => _buildTaskItemCard(context, task, progress.hydration)),
             ],
           ),
         );
@@ -211,297 +202,11 @@ class _DailyTasksSectionState extends ConsumerState<DailyTasksSection> {
     );
   }
 
-  Widget _buildTierHeaderCard(BuildContext context, DailyProgress progress) {
-    final tier = progress.tierInfo;
-    final userPoints = progress.userPoints;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Tier Icon Badge
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: tier.color.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(tier.iconData, color: tier.color, size: 24),
-              ),
-              const SizedBox(width: 12),
-
-              // Tier Name & Points
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      tier.name,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: tier.color,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${userPoints.lifetimePoints} Poin Sehat Terkumpul',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF718096),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Streak Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF7ED),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFEDD5)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.local_fire_department,
-                      color: Color(0xFFEA580C),
-                      size: 18,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${progress.streak} Hari',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: Color(0xFFC2410C),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: Color(0xFFEDF2F7)),
-          const SizedBox(height: 12),
-
-          // Next Tier Progress or Max Tier
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: tier.nextTier != null
-                    ? Text(
-                        'Menuju ${tier.nextTier}: butuh ${tier.pointsNeeded} Pts & ${tier.streakNeeded} hari streak',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF718096),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      )
-                    : const Text(
-                        'Tingkat Paripurna Generasi Emas',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF38A169),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-              ),
-              InkWell(
-                onTap: () => BadgesShowcaseModal.show(context),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.military_tech_outlined,
-                        size: 16,
-                        color: Color(0xFFFA6978),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Lencana (${progress.unlockedBadgesCount})',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFFA6978),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHydrationTrackerCard(BuildContext context, HydrationStatus hydration) {
-    final current = hydration.currentGlasses;
-    final isDone = hydration.isCompletedToday;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F9FF),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFBAE6FD)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0284C7).withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.water_drop,
-                      color: Color(0xFF0284C7),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Target Hidrasi Harian',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF0369A1),
-                        ),
-                      ),
-                      Text(
-                        '$current dari 8 Gelas (${hydration.currentMl} / 2.000 ml)',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF0C4A6E),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              if (isDone)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDCFCE7),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFF86EFAC)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check, size: 14, color: Color(0xFF15803D)),
-                      SizedBox(width: 4),
-                      Text(
-                        'Tercapai (+10 Pts)',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF15803D),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // 8 Glasses Icons Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(8, (index) {
-              final isFilled = index < current;
-              return Container(
-                width: 32,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: isFilled ? const Color(0xFF0284C7) : Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isFilled ? const Color(0xFF0284C7) : const Color(0xFFBAE6FD),
-                    width: 1.5,
-                  ),
-                ),
-                child: Icon(
-                  Icons.local_drink,
-                  size: 18,
-                  color: isFilled ? Colors.white : const Color(0xFFBAE6FD),
-                ),
-              );
-            }),
-          ),
-          const SizedBox(height: 14),
-
-          // Action Button
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: _isDrinkingWater ? null : _handleDrinkWater,
-              icon: _isDrinkingWater
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Icon(Icons.add, size: 18),
-              label: Text(
-                isDone ? 'Tambah Gelas Ekstra (+250 ml)' : 'Catat 1 Gelas Air (+250 ml)',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0284C7),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTaskItemCard(BuildContext context, DailyTaskItem task) {
+  Widget _buildTaskItemCard(
+    BuildContext context,
+    DailyTaskItem task,
+    HydrationStatus hydration,
+  ) {
     final isDone = task.isCompleted;
     final isCompleting = _completingTaskId == task.id;
 
@@ -594,6 +299,45 @@ class _DailyTasksSectionState extends ConsumerState<DailyTasksSection> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check, size: 16, color: Color(0xFF16A34A)),
+            )
+          else if (task.taskType == 'hydration')
+            // Aksi khusus minum air
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0F9FF),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFBAE6FD)),
+                  ),
+                  child: Text(
+                    '${hydration.currentGlasses}/8 Gelas',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0284C7),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                IconButton(
+                  icon: _isDrinkingWater
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0284C7)),
+                        )
+                      : const Icon(
+                          Icons.add_circle,
+                          color: Color(0xFF0284C7),
+                          size: 24,
+                        ),
+                  tooltip: 'Catat 1 Gelas (+250 ml)',
+                  onPressed: _isDrinkingWater ? null : _handleDrinkWater,
+                ),
+              ],
             )
           else if (task.actionRoute != null && task.actionRoute!.isNotEmpty && task.isAuto)
             // Tombol pintas navigasi ke fitur

@@ -11,6 +11,7 @@ import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../community/domain/entities/post.dart';
 import '../providers/popular_posts_providers.dart';
 import '../widgets/user_header.dart';
+import '../widgets/badges_showcase_modal.dart';
 import '../widgets/menu_grid_item.dart';
 import '../widgets/banner_carousel.dart';
 import '../widgets/lainnya_modal.dart';
@@ -49,14 +50,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   Timer? _autoRefreshTimer;
   static const _refreshInterval = Duration(minutes: 1);
 
-  String _getGreeting() {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 7));
-    final hour = now.hour;
-    if (hour < 12) return 'Selamat Pagi';
-    if (hour < 15) return 'Selamat Siang';
-    if (hour < 18) return 'Selamat Sore';
-    return 'Selamat Malam';
-  }
+
 
   @override
   void initState() {
@@ -122,6 +116,15 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
         final user = authState.user;
         final profileState = ref.watch(profileNotifierProvider);
         final profilePhoto = profileState.profile?.photoUrl;
+        final dailyProgress = ref.watch(dailyProgressProvider).valueOrNull;
+
+        final badgeName = dailyProgress?.tierInfo.name ?? 'Bunda Perunggu';
+        final badgeIcon = dailyProgress?.tierInfo.iconData ?? Icons.shield_outlined;
+        final points = dailyProgress != null
+            ? (dailyProgress.userPoints.currentBalance > 0
+                ? dailyProgress.userPoints.currentBalance
+                : dailyProgress.userPoints.lifetimePoints)
+            : 0;
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -174,9 +177,15 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
                                             onTap: () =>
                                                 context.push('/profile'),
                                             child: UserHeader(
-                                              greeting: _getGreeting(),
                                               userName: user?.name ?? 'User',
                                               avatarUrl: profilePhoto,
+                                              badgeName: badgeName,
+                                              badgeIcon: badgeIcon,
+                                              points: points,
+                                              onBadgeTap: () =>
+                                                  BadgesShowcaseModal.show(context),
+                                              onPointsTap:
+                                                  _showDailyTasksBottomSheet,
                                             ),
                                           ),
                                         ),

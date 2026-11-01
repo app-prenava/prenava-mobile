@@ -9,8 +9,20 @@ class CommunityRepositoryImpl implements CommunityRepository {
   CommunityRepositoryImpl({required this.remoteDatasource});
 
   @override
-  Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10}) {
-    return remoteDatasource.getAllPosts(page: page, limit: limit);
+  Future<Map<String, dynamic>> getAllPosts({
+    int page = 1,
+    int limit = 10,
+    String? kategori,
+    String? filter,
+    String? search,
+  }) {
+    return remoteDatasource.getAllPosts(
+      page: page,
+      limit: limit,
+      kategori: kategori,
+      filter: filter,
+      search: search,
+    );
   }
 
   @override
@@ -22,11 +34,15 @@ class CommunityRepositoryImpl implements CommunityRepository {
   Future<Post> createPost({
     required String judul,
     required String deskripsi,
+    String? kategori,
+    bool isAnonymous = false,
     String? gambar,
   }) {
     return remoteDatasource.createPost(
       judul: judul,
       deskripsi: deskripsi,
+      kategori: kategori,
+      isAnonymous: isAnonymous,
       gambar: gambar,
     );
   }
@@ -64,4 +80,3 @@ class CommunityRepositoryImpl implements CommunityRepository {
     return remoteDatasource.deleteAllPosts();
   }
 }
-

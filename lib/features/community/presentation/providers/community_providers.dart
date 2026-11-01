@@ -27,7 +27,8 @@ class CommunityState {
   final List<Post> posts;
   final String? error;
   final String searchQuery;
-  final String selectedCategory;
+  final String activeTab; // 'all' or 'my_posts'
+  final String selectedCategory; // 'semua', 'keluhan_gejala', 'nutrisi', 'persalinan', 'mitos_fakta', 'parenting'
   final int currentPage;
   final int lastPage;
   final int total;
@@ -38,7 +39,8 @@ class CommunityState {
     this.posts = const [],
     this.error,
     this.searchQuery = '',
-    this.selectedCategory = 'Terbaru',
+    this.activeTab = 'all',
+    this.selectedCategory = 'semua',
     this.currentPage = 1,
     this.lastPage = 1,
     this.total = 0,
@@ -50,7 +52,8 @@ class CommunityState {
         posts = const [],
         error = null,
         searchQuery = '',
-        selectedCategory = 'Terbaru',
+        activeTab = 'all',
+        selectedCategory = 'semua',
         currentPage = 1,
         lastPage = 1,
         total = 0;
@@ -62,6 +65,7 @@ class CommunityState {
     String? error,
     bool clearError = false,
     String? searchQuery,
+    String? activeTab,
     String? selectedCategory,
     int? currentPage,
     int? lastPage,
@@ -73,6 +77,7 @@ class CommunityState {
       posts: posts ?? this.posts,
       error: clearError ? null : (error ?? this.error),
       searchQuery: searchQuery ?? this.searchQuery,
+      activeTab: activeTab ?? this.activeTab,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       currentPage: currentPage ?? this.currentPage,
       lastPage: lastPage ?? this.lastPage,
@@ -82,11 +87,11 @@ class CommunityState {
 
   bool get hasMore => currentPage < lastPage;
 
-  /// Get filtered posts based on search query and category
+  /// Display posts (already filtered by backend, client fallback filter if needed)
   List<Post> get displayPosts {
     var filtered = posts;
 
-    // Filter by search query
+    // Filter by search query if any
     if (searchQuery.isNotEmpty) {
       filtered = filtered.where((post) {
         return post.judul.toLowerCase().contains(searchQuery.toLowerCase()) ||
@@ -94,21 +99,6 @@ class CommunityState {
             post.user.name.toLowerCase().contains(searchQuery.toLowerCase());
       }).toList();
     }
-
-    // Filter by selected category (except 'Terbaru')
-    if (selectedCategory != 'Terbaru') {
-      filtered = filtered
-          .where(
-            (post) =>
-                post.judul.toLowerCase() ==
-                selectedCategory.toLowerCase(),
-          )
-          .toList();
-    }
-
-    // Always sort by newest first
-    filtered = List.from(filtered)
-      ..sort((a, b) => (b.createdAt ?? '').compareTo(a.createdAt ?? ''));
 
     return filtered;
   }
@@ -119,7 +109,6 @@ class CommunityState {
 class CommunityNotifier extends Notifier<CommunityState> {
   @override
   CommunityState build() {
-    // Load posts when initialized
     Future.microtask(() => loadPosts());
     return const CommunityState.initial();
   }
@@ -138,7 +127,10 @@ class CommunityNotifier extends Notifier<CommunityState> {
       final repository = ref.read(communityRepositoryProvider);
       final result = await repository.getAllPosts(
         page: loadMore ? state.currentPage + 1 : 1,
-        limit: 5,
+        limit: 10,
+        kategori: state.selectedCategory != 'semua' ? state.selectedCategory : null,
+        filter: state.activeTab != 'all' ? state.activeTab : null,
+        search: state.searchQuery.isNotEmpty ? state.searchQuery : null,
       );
 
       final newPosts = result['posts'] as List<Post>;
@@ -148,6 +140,7 @@ class CommunityNotifier extends Notifier<CommunityState> {
         isLoadingMore: false,
         posts: loadMore ? [...state.posts, ...newPosts] : newPosts,
         searchQuery: state.searchQuery,
+        activeTab: state.activeTab,
         selectedCategory: state.selectedCategory,
         currentPage: result['current_page'] as int,
         lastPage: result['last_page'] as int,
@@ -166,17 +159,29 @@ class CommunityNotifier extends Notifier<CommunityState> {
     await loadPosts(loadMore: false);
   }
 
-  void setSearchQuery(String query) {
-    state = state.copyWith(searchQuery: query);
+  void setActiveTab(String tab) {
+    if (state.activeTab == tab) return;
+    state = state.copyWith(activeTab: tab);
+    refreshPosts();
   }
 
   void setCategory(String category) {
+    if (state.selectedCategory == category) return;
     state = state.copyWith(selectedCategory: category);
+    refreshPosts();
+  }
+
+  void setSearchQuery(String query) {
+    state = state.copyWith(searchQuery: query);
+    // Trigger debounce or reload
+    refreshPosts();
   }
 
   Future<bool> createPost({
     required String judul,
     required String deskripsi,
+    String? kategori,
+    bool isAnonymous = false,
     String? gambar,
   }) async {
     state = state.copyWith(isLoading: true, clearError: true);
@@ -186,6 +191,8 @@ class CommunityNotifier extends Notifier<CommunityState> {
       await repository.createPost(
         judul: judul,
         deskripsi: deskripsi,
+        kategori: kategori,
+        isAnonymous: isAnonymous,
         gambar: gambar,
       );
 
@@ -206,7 +213,6 @@ class CommunityNotifier extends Notifier<CommunityState> {
       final repository = ref.read(communityRepositoryProvider);
       final result = await repository.toggleLike(postId);
 
-      // Update local state
       final updatedPosts = state.posts.map((post) {
         if (post.id == postId) {
           return post.copyWith(
@@ -218,9 +224,7 @@ class CommunityNotifier extends Notifier<CommunityState> {
       }).toList();
 
       state = state.copyWith(posts: updatedPosts);
-    } catch (e) {
-      // Silently fail or show error
-    }
+    } catch (_) {}
   }
 
   Future<bool> deletePost(int postId) async {
@@ -228,16 +232,14 @@ class CommunityNotifier extends Notifier<CommunityState> {
       final repository = ref.read(communityRepositoryProvider);
       await repository.deletePost(postId);
       
-      // Remove from local state
       final updatedPosts = state.posts.where((p) => p.id != postId).toList();
       state = state.copyWith(posts: updatedPosts);
       return true;
-    } catch (e) {
+    } catch (_) {
       return false;
     }
   }
 
-  /// Update a single post in the list (used for syncing detail with list)
   void updatePost(Post updatedPost) {
     final updatedPosts = state.posts.map((post) {
       if (post.id == updatedPost.id) {
@@ -248,14 +250,11 @@ class CommunityNotifier extends Notifier<CommunityState> {
     state = state.copyWith(posts: updatedPosts);
   }
 
-  /// Optimistic like update - immediately update UI, then sync with server
   Future<Map<String, dynamic>> optimisticToggleLike(int postId) async {
-    // Get current state
     final currentPost = state.posts.firstWhere((p) => p.id == postId);
     final wasLiked = currentPost.isLiked;
     final oldCount = currentPost.apresiasi;
     
-    // Optimistic update
     final newLiked = !wasLiked;
     final newCount = newLiked ? oldCount + 1 : oldCount - 1;
     
@@ -268,11 +267,9 @@ class CommunityNotifier extends Notifier<CommunityState> {
     state = state.copyWith(posts: optimisticPosts);
     
     try {
-      // Call API
       final repository = ref.read(communityRepositoryProvider);
       final result = await repository.toggleLike(postId);
       
-      // Sync with actual server response
       final syncedPosts = state.posts.map((post) {
         if (post.id == postId) {
           return post.copyWith(
@@ -286,7 +283,6 @@ class CommunityNotifier extends Notifier<CommunityState> {
       
       return result;
     } catch (e) {
-      // Revert on error
       final revertedPosts = state.posts.map((post) {
         if (post.id == postId) {
           return post.copyWith(isLiked: wasLiked, apresiasi: oldCount);
@@ -298,7 +294,6 @@ class CommunityNotifier extends Notifier<CommunityState> {
     }
   }
 
-  /// Increment comment count for a post
   void incrementCommentCount(int postId) {
     final updatedPosts = state.posts.map((post) {
       if (post.id == postId) {
@@ -309,7 +304,6 @@ class CommunityNotifier extends Notifier<CommunityState> {
     state = state.copyWith(posts: updatedPosts);
   }
 
-  /// Decrement comment count for a post (used when deleting a comment)
   void decrementCommentCount(int postId) {
     final updatedPosts = state.posts.map((post) {
       if (post.id == postId && post.komentar > 0) {
@@ -320,7 +314,6 @@ class CommunityNotifier extends Notifier<CommunityState> {
     state = state.copyWith(posts: updatedPosts);
   }
 
-  /// Set exact comment count for a post (sync with backend)
   void setCommentCount(int postId, int count) {
     final updatedPosts = state.posts.map((post) {
       if (post.id == postId) {
@@ -335,51 +328,8 @@ class CommunityNotifier extends Notifier<CommunityState> {
 final communityNotifierProvider =
     NotifierProvider<CommunityNotifier, CommunityState>(CommunityNotifier.new);
 
-// ==================== Post Detail State ====================
+// ==================== Post Detail Service & Providers ====================
 
-class PostDetailState {
-  final bool isLoading;
-  final Post? post;
-  final List<Comment> comments;
-  final bool isLoadingComments;
-  final String? error;
-
-  const PostDetailState({
-    this.isLoading = false,
-    this.post,
-    this.comments = const [],
-    this.isLoadingComments = false,
-    this.error,
-  });
-
-  const PostDetailState.initial()
-      : isLoading = false,
-        post = null,
-        comments = const [],
-        isLoadingComments = false,
-        error = null;
-
-  PostDetailState copyWith({
-    bool? isLoading,
-    Post? post,
-    List<Comment>? comments,
-    bool? isLoadingComments,
-    String? error,
-    bool clearError = false,
-  }) {
-    return PostDetailState(
-      isLoading: isLoading ?? this.isLoading,
-      post: post ?? this.post,
-      comments: comments ?? this.comments,
-      isLoadingComments: isLoadingComments ?? this.isLoadingComments,
-      error: clearError ? null : (error ?? this.error),
-    );
-  }
-}
-
-// ==================== Post Detail Service ====================
-
-/// Service class for post detail operations
 class PostDetailService {
   final Ref _ref;
   final int postId;
@@ -409,16 +359,12 @@ class PostDetailService {
   }
 }
 
-/// Provider for post detail service
 final postDetailServiceProvider = Provider.family<PostDetailService, int>(
   (ref, postId) => PostDetailService(ref, postId),
 );
 
-/// Provider for loading post detail
-/// First checks local cache (from list), then fetches from API if needed
 final postDetailProvider = FutureProvider.autoDispose.family<Post, int>(
   (ref, postId) async {
-    // First try to get from local cache (community list)
     final communityState = ref.read(communityNotifierProvider);
     final cachedPost = communityState.posts.where((p) => p.id == postId).firstOrNull;
     
@@ -426,20 +372,17 @@ final postDetailProvider = FutureProvider.autoDispose.family<Post, int>(
       return cachedPost;
     }
     
-    // No cache, fetch from API
     final service = ref.read(postDetailServiceProvider(postId));
     return await service.getPost();
   },
 );
 
-/// Provider for loading comments
 final postCommentsProvider = FutureProvider.autoDispose.family<List<Comment>, int>(
   (ref, postId) async {
     try {
       final service = ref.read(postDetailServiceProvider(postId));
       final comments = await service.getComments();
 
-      // Sync comment count with actual comments length
       ref
           .read(communityNotifierProvider.notifier)
           .setCommentCount(postId, comments.length);
@@ -451,4 +394,3 @@ final postCommentsProvider = FutureProvider.autoDispose.family<List<Comment>, in
     }
   },
 );
-

@@ -7,14 +7,32 @@ class CommunityRemoteDatasource {
 
   CommunityRemoteDatasource(this._dio);
 
-  Future<Map<String, dynamic>> getAllPosts({int page = 1, int limit = 10}) async {
+  Future<Map<String, dynamic>> getAllPosts({
+    int page = 1,
+    int limit = 10,
+    String? kategori,
+    String? filter,
+    String? search,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
+      };
+
+      if (kategori != null && kategori.isNotEmpty && kategori != 'semua' && kategori != 'all') {
+        queryParams['kategori'] = kategori;
+      }
+      if (filter != null && filter.isNotEmpty && filter != 'all') {
+        queryParams['filter'] = filter;
+      }
+      if (search != null && search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
       final response = await _dio.get(
         '/komunitas',
-        queryParameters: {
-          'page': page,
-          'limit': limit,
-        },
+        queryParameters: queryParams,
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -77,12 +95,16 @@ class CommunityRemoteDatasource {
   Future<PostModel> createPost({
     required String judul,
     required String deskripsi,
+    String? kategori,
+    bool isAnonymous = false,
     String? gambar,
   }) async {
     try {
-      final data = {
+      final data = <String, dynamic>{
         'judul': judul,
         'deskripsi': deskripsi,
+        'kategori': kategori ?? 'umum',
+        'is_anonymous': isAnonymous,
       };
       
       if (gambar != null && gambar.isNotEmpty) {
@@ -115,15 +137,17 @@ class CommunityRemoteDatasource {
           id: 0,
           judul: judul,
           deskripsi: deskripsi,
+          kategori: kategori ?? 'umum',
+          isAnonymous: isAnonymous,
           apresiasi: 0,
           komentar: 0,
           user: const PostUserModel(id: 0, name: 'User'),
         );
       }
 
-      throw Exception('Gagal membuat postingan');
+      throw Exception('Gagal membuat post');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal membuat postingan');
+      throw Exception(e.response?.data['message'] ?? 'Gagal membuat post');
     }
   }
 
@@ -131,12 +155,11 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.post('/komunitas/like/add/$postId');
 
-      // 200 = unlike, 201 = like baru
-      if ((response.statusCode == 200 || response.statusCode == 201) &&
-          response.data != null) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data as Map<String, dynamic>;
         return {
-          'is_liked': response.data['is_liked'] as bool? ?? false,
-          'apresiasi': response.data['apresiasi'] as int? ?? 0,
+          'is_liked': data['is_liked'] ?? false,
+          'apresiasi': data['apresiasi'] ?? 0,
         };
       }
 
@@ -151,20 +174,7 @@ class CommunityRemoteDatasource {
       final response = await _dio.get('/komunitas/komen/$postId');
 
       if (response.statusCode == 200 && response.data != null) {
-        final List<dynamic> items;
-        
-        if (response.data is Map) {
-          final responseMap = response.data as Map<String, dynamic>;
-          items = responseMap['komen'] ?? 
-                  responseMap['comments'] ?? 
-                  responseMap['data'] ?? 
-                  [];
-        } else if (response.data is List) {
-          items = response.data as List<dynamic>;
-        } else {
-          items = [];
-        }
-        
+        final List<dynamic> items = response.data['data'] ?? [];
         return items
             .map((item) => CommentModel.fromJson(Map<String, dynamic>.from(item as Map)))
             .toList();
@@ -183,42 +193,17 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.post(
         '/komunitas/komen/add/$postId',
-        data: {
-          'komentar': komentar,
-        },
+        data: {'komentar': komentar},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (response.data is Map<String, dynamic>) {
-          final responseMap = response.data as Map<String, dynamic>;
-          
-          Map<String, dynamic>? commentData;
-          if (responseMap.containsKey('data')) {
-            commentData = responseMap['data'] as Map<String, dynamic>?;
-          } else if (responseMap.containsKey('komen')) {
-            commentData = responseMap['komen'] as Map<String, dynamic>?;
-          } else if (responseMap.containsKey('comment')) {
-            commentData = responseMap['comment'] as Map<String, dynamic>?;
-          } else if (responseMap.containsKey('id')) {
-            commentData = responseMap;
-          }
-          
-          if (commentData != null) {
-            return CommentModel.fromJson(commentData);
-          }
-        }
-        
-        return CommentModel(
-          id: 0,
-          postId: postId,
-          userId: 0,
-          komentar: komentar,
-        );
+        final data = response.data['data'] as Map<String, dynamic>;
+        return CommentModel.fromJson(data);
       }
 
-      throw Exception('Gagal menambah komentar');
+      throw Exception('Gagal menambahkan komentar');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menambah komentar');
+      throw Exception(e.response?.data['message'] ?? 'Gagal menambahkan komentar');
     }
   }
 
@@ -226,8 +211,8 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.delete('/komunitas/komen/delete/$commentId');
 
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Gagal menghapus komentar');
+      if (response.statusCode != 200) {
+        throw Exception(response.data['message'] ?? 'Gagal menghapus komentar');
       }
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Gagal menghapus komentar');
@@ -238,11 +223,11 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.delete('/komunitas/history/$postId');
 
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Gagal menghapus postingan');
+      if (response.statusCode != 200) {
+        throw Exception(response.data['message'] ?? 'Gagal menghapus post');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus postingan');
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus post');
     }
   }
 
@@ -250,11 +235,11 @@ class CommunityRemoteDatasource {
     try {
       final response = await _dio.delete('/komunitas/history/deleteAll');
 
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Gagal menghapus semua postingan');
+      if (response.statusCode != 200) {
+        throw Exception(response.data['message'] ?? 'Gagal menghapus semua post');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus semua postingan');
+      throw Exception(e.response?.data['message'] ?? 'Gagal menghapus semua post');
     }
   }
 }

@@ -19,12 +19,14 @@ class CommunityPage extends ConsumerStatefulWidget {
 class _CommunityPageState extends ConsumerState<CommunityPage> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _categories = const [
-    'Terbaru',
-    'Parenting',
-    'Finansial & Keuangan',
-    'Nutrisi',
-    'Kesehatan',
+
+  static const List<Map<String, String>> _categoryFilters = [
+    {'key': 'semua', 'label': 'Semua'},
+    {'key': 'keluhan_gejala', 'label': 'Keluhan & Gejala'},
+    {'key': 'nutrisi', 'label': 'Nutrisi & Gizi'},
+    {'key': 'persalinan', 'label': 'Persiapan Persalinan'},
+    {'key': 'mitos_fakta', 'label': 'Mitos & Fakta'},
+    {'key': 'parenting', 'label': 'Parenting'},
   ];
 
   bool _hasSeenGuide = true;
@@ -82,34 +84,29 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     if (_guideChecked && !_hasSeenGuide) {
       return FeatureGuidePage(
         title: 'Komunitas Prenava',
-        subtitle: 'Forum diskusi sesama Bunda',
+        subtitle: 'Forum konsultasi & tanya jawab kehamilan',
         accentColor: const Color(0xFFFA6978),
         onDone: _dismissGuide,
         items: const [
           GuideItem(
-            title: 'Berbagi Cerita',
-            description: 'Ceritakan pengalaman kehamilan, tips parenting, atau curhat ke sesama Bunda di komunitas.',
+            title: 'Tanya Bidan & Komunitas',
+            description: 'Tanyakan keluhan fisik atau kebingungan seputar kehamilan Anda.',
             icon: Icons.chat_bubble_outline,
           ),
           GuideItem(
-            title: 'Kategori Topik',
-            description: 'Pilih topik seperti Parenting, Nutrisi, Kesehatan, atau Finansial untuk menemukan postingan yang relevan.',
-            icon: Icons.category_outlined,
+            title: 'Validasi Klinis Bidan',
+            description: 'Bidan terdaftar akan memvalidasi jawaban dan menyematkan edukasi medis.',
+            icon: Icons.verified_user_outlined,
           ),
           GuideItem(
-            title: 'Buat Postingan',
-            description: 'Ketuk tombol (+) di bawah untuk membuat postingan baru. Bisa menambahkan gambar dan memilih kategori.',
-            icon: Icons.add_circle_outline,
+            title: 'Tanya sebagai Bunda Anonim',
+            description: 'Keluhan sensitif dapat ditanyakan secara anonim tanpa menampilkan profil.',
+            icon: Icons.visibility_off_outlined,
           ),
           GuideItem(
-            title: 'Apresiasi & Komentar',
-            description: 'Berikan apresiasi (❤️) dan komentar untuk mendukung sesama Bunda di komunitas.',
-            icon: Icons.favorite_border,
-          ),
-          GuideItem(
-            title: 'Cari Postingan',
-            description: 'Gunakan fitur pencarian untuk menemukan postingan berdasarkan kata kunci tertentu.',
-            icon: Icons.search,
+            title: 'Pantau Pertanyaan Saya',
+            description: 'Gunakan tab Pertanyaan Saya untuk melihat status respon bidan.',
+            icon: Icons.assignment_outlined,
           ),
         ],
       );
@@ -120,19 +117,38 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     final currentUserId = authState.user?.id;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/community/create'),
+        backgroundColor: const Color(0xFFFA6978),
+        elevation: 2,
+        icon: const Icon(Icons.edit_note, color: Colors.white),
+        label: const Text(
+          'Tanya di Forum',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
+      ),
       body: Column(
         children: [
           // Header
           _buildHeader(),
 
+          // Main Tabs: "Semua Diskusi" & "Pertanyaan Saya"
+          _buildMainSegmentTabs(communityState),
+
           // Search bar
           _buildSearchBar(),
 
-          // Category tabs
-          _buildCategoryTabs(communityState),
+          // Category Chips
+          _buildCategoryChips(communityState),
 
-          // Posts list
+          const SizedBox(height: 8),
+
+          // Posts List
           Expanded(
             child: RefreshIndicator(
               onRefresh: () =>
@@ -141,14 +157,14 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
               child: communityState.isLoading && communityState.posts.isEmpty
                   ? ListView.builder(
                       padding: const EdgeInsets.only(top: 8, bottom: 80),
-                      itemCount: 5,
+                      itemCount: 4,
                       itemBuilder: (context, index) => const PostSkeleton(),
                     )
                   : communityState.displayPosts.isEmpty
-                      ? _buildEmptyState()
+                      ? _buildEmptyState(communityState)
                       : ListView.builder(
                           controller: _scrollController,
-                          padding: const EdgeInsets.only(top: 8, bottom: 80),
+                          padding: const EdgeInsets.only(top: 4, bottom: 80),
                           itemCount: communityState.displayPosts.length +
                               (communityState.hasMore ? 1 : 0),
                           itemBuilder: (context, index) {
@@ -157,6 +173,7 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
                                 child: Padding(
                                   padding: EdgeInsets.all(16),
                                   child: CircularProgressIndicator(
+                                    strokeWidth: 2,
                                     color: Color(0xFFFA6978),
                                   ),
                                 ),
@@ -195,8 +212,8 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
         return AlertDialog(
           title: const Text('Hapus Postingan'),
           content: const Text(
-            'Apakah kamu yakin ingin menghapus postingan ini? '
-            'Komentar dan like juga akan terhapus.',
+            'Apakah Bunda yakin ingin menghapus postingan ini? '
+            'Komentar dan tanggapan juga akan terhapus.',
           ),
           actions: [
             TextButton(
@@ -236,31 +253,111 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 52, 16, 16),
       decoration: const BoxDecoration(
         color: Color(0xFFFA6978),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Komunitas',
+            'Forum Ibu Hamil',
             style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 4),
+          SizedBox(height: 3),
           Text(
-            'Berbagi Cerita, Tanya Apa Saja',
+            'Konsultasi keluhan kehamilan & validasi medis bersama Bidan',
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainSegmentTabs(CommunityState state) {
+    final isAll = state.activeTab == 'all';
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () =>
+                  ref.read(communityNotifierProvider.notifier).setActiveTab('all'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: isAll ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: isAll
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          )
+                        ]
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Semua Diskusi',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isAll ? FontWeight.bold : FontWeight.w500,
+                    color: isAll ? Colors.black87 : Colors.grey[600],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => ref
+                  .read(communityNotifierProvider.notifier)
+                  .setActiveTab('my_posts'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: !isAll ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: !isAll
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          )
+                        ]
+                      : null,
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Pertanyaan Saya',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: !isAll ? FontWeight.bold : FontWeight.w500,
+                    color: !isAll ? const Color(0xFFFA6978) : Colors.grey[600],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -270,28 +367,29 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
       child: TextField(
         controller: _searchController,
         onChanged: _onSearchChanged,
-        style: const TextStyle(color: Colors.black87),
+        style: const TextStyle(color: Colors.black87, fontSize: 13),
         decoration: InputDecoration(
-          hintText: 'Cari Postingan',
-          hintStyle: TextStyle(color: Colors.grey[400]),
-          prefixIcon: Icon(Icons.search, color: Colors.grey[500]),
+          hintText: 'Cari pertanyaan atau gejala...',
+          hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+          prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.grey[300]!),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-            borderSide: BorderSide(color: Colors.grey[300]!),
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[200]!),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFFFA6978)),
           ),
         ),
@@ -299,91 +397,99 @@ class _CommunityPageState extends ConsumerState<CommunityPage> {
     );
   }
 
-  Widget _buildCategoryTabs(CommunityState state) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        height: 36,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: _categories.length,
-          separatorBuilder: (context, index) => const SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final category = _categories[index];
-            final bool active = state.selectedCategory == category;
-            return GestureDetector(
-              onTap: () => ref
-                  .read(communityNotifierProvider.notifier)
-                  .setCategory(category),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: active ? const Color(0xFFFA6978) : Colors.grey[300]!,
-                    width: active ? 1.5 : 1,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  category,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                    color: active ? const Color(0xFFFA6978) : Colors.black87,
-                  ),
+  Widget _buildCategoryChips(CommunityState state) {
+    return SizedBox(
+      height: 32,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: _categoryFilters.length,
+        separatorBuilder: (context, index) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final cat = _categoryFilters[index];
+          final bool active = state.selectedCategory == cat['key'];
+          return GestureDetector(
+            onTap: () => ref
+                .read(communityNotifierProvider.notifier)
+                .setCategory(cat['key']!),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFFFA6978) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: active ? const Color(0xFFFA6978) : Colors.grey[300]!,
                 ),
               ),
-            );
-          },
-        ),
+              alignment: Alignment.center,
+              child: Text(
+                cat['label']!,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: active ? FontWeight.bold : FontWeight.w500,
+                  color: active ? Colors.white : Colors.grey[800],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(CommunityState state) {
+    final isMyPosts = state.activeTab == 'my_posts';
+
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.forum_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Kami sedang menyiapkan ini untuk kamu',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isMyPosts ? Icons.assignment_outlined : Icons.forum_outlined,
+              size: 64,
+              color: Colors.grey[300],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'nantikan ya Bunda! 💕',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => context.push('/community/create'),
-            icon: const Icon(Icons.add),
-            label: const Text('Buat Postingan'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFA6978),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
+            const SizedBox(height: 14),
+            Text(
+              isMyPosts
+                  ? 'Belum Ada Pertanyaan Saya'
+                  : 'Belum Ada Diskusi Ditemukan',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[700],
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              isMyPosts
+                  ? 'Bunda belum pernah mengajukan pertanyaan di forum. Ketuk tombol di bawah untuk menanyakan keluhan ke Bidan.'
+                  : 'Gunakan kata kunci atau kategori lain untuk melihat diskusi sesama Bunda.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12.5,
+                color: Colors.grey[500],
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton.icon(
+              onPressed: () => context.push('/community/create'),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Buat Pertanyaan Sekarang'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFA6978),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

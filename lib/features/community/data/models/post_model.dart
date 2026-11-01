@@ -47,6 +47,11 @@ class PostModel extends Post {
     required super.user,
     super.createdAt,
     super.isLiked,
+    super.kategori,
+    super.kategoriLabel,
+    super.isAnonymous,
+    super.gestationalContextLabel,
+    super.hasBidanReply,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
@@ -67,6 +72,14 @@ class PostModel extends Post {
       komentarCount = komentarValue.length;
     }
 
+    // Gestational context resolution
+    String? gContextLabel;
+    if (json['gestational_context'] is Map) {
+      gContextLabel = json['gestational_context']['label']?.toString();
+    } else if (json['gestational_age_weeks'] != null) {
+      gContextLabel = "Mg ${json['gestational_age_weeks']}";
+    }
+
     return PostModel(
       id: _parseInt(json['id'] ?? json['post_id']),
       judul: json['judul']?.toString() ?? '',
@@ -77,6 +90,11 @@ class PostModel extends Post {
       user: user,
       createdAt: json['created_at']?.toString(),
       isLiked: json['is_liked'] as bool? ?? false,
+      kategori: json['kategori']?.toString() ?? 'umum',
+      kategoriLabel: json['kategori_label']?.toString() ?? 'Diskusi Umum',
+      isAnonymous: json['is_anonymous'] == true || json['is_anonymous'] == 1,
+      gestationalContextLabel: gContextLabel,
+      hasBidanReply: json['has_bidan_reply'] == true || json['has_bidan_reply'] == 1,
     );
   }
 
@@ -124,6 +142,11 @@ class PostModel extends Post {
       likesCount = likesValue.length;
     }
 
+    String? gContextLabel;
+    if (json['gestational_context'] is Map) {
+      gContextLabel = json['gestational_context']['label']?.toString();
+    }
+
     return PostModel(
       id: _parseInt(json['id'] ?? json['thread_id'] ?? json['post_id']),
       judul: json['title']?.toString() ?? json['judul']?.toString() ?? '',
@@ -134,6 +157,11 @@ class PostModel extends Post {
       user: user,
       createdAt: json['created_at']?.toString(),
       isLiked: json['is_liked'] as bool? ?? json['liked'] as bool? ?? false,
+      kategori: json['kategori']?.toString() ?? 'umum',
+      kategoriLabel: json['kategori_label']?.toString() ?? 'Diskusi Umum',
+      isAnonymous: json['is_anonymous'] == true || json['is_anonymous'] == 1,
+      gestationalContextLabel: gContextLabel,
+      hasBidanReply: json['has_bidan_reply'] == true || json['has_bidan_reply'] == 1,
     );
   }
 
@@ -148,6 +176,11 @@ class PostModel extends Post {
       'user': (user as PostUserModel).toJson(),
       'created_at': createdAt,
       'is_liked': isLiked,
+      'kategori': kategori,
+      'kategori_label': kategoriLabel,
+      'is_anonymous': isAnonymous,
+      'gestational_context': gestationalContextLabel != null ? {'label': gestationalContextLabel} : null,
+      'has_bidan_reply': hasBidanReply,
     };
   }
 }

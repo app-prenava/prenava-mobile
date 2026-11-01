@@ -36,6 +36,11 @@ class Post {
   final PostUser user;
   final String? createdAt;
   final bool isLiked;
+  final String kategori;
+  final String kategoriLabel;
+  final bool isAnonymous;
+  final String? gestationalContextLabel;
+  final bool hasBidanReply;
 
   const Post({
     required this.id,
@@ -47,6 +52,11 @@ class Post {
     required this.user,
     this.createdAt,
     this.isLiked = false,
+    this.kategori = 'umum',
+    this.kategoriLabel = 'Diskusi Umum',
+    this.isAnonymous = false,
+    this.gestationalContextLabel,
+    this.hasBidanReply = false,
   });
 
   Post copyWith({
@@ -59,6 +69,11 @@ class Post {
     PostUser? user,
     String? createdAt,
     bool? isLiked,
+    String? kategori,
+    String? kategoriLabel,
+    bool? isAnonymous,
+    String? gestationalContextLabel,
+    bool? hasBidanReply,
   }) {
     return Post(
       id: id ?? this.id,
@@ -70,6 +85,11 @@ class Post {
       user: user ?? this.user,
       createdAt: createdAt ?? this.createdAt,
       isLiked: isLiked ?? this.isLiked,
+      kategori: kategori ?? this.kategori,
+      kategoriLabel: kategoriLabel ?? this.kategoriLabel,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
+      gestationalContextLabel: gestationalContextLabel ?? this.gestationalContextLabel,
+      hasBidanReply: hasBidanReply ?? this.hasBidanReply,
     );
   }
 
@@ -79,25 +99,35 @@ class Post {
       other is Post &&
           runtimeType == other.runtimeType &&
           id == other.id &&
-          apresiasi == other.apresiasi &&
-          komentar == other.komentar &&
-          isLiked == other.isLiked &&
           judul == other.judul &&
           deskripsi == other.deskripsi &&
           gambar == other.gambar &&
+          apresiasi == other.apresiasi &&
+          komentar == other.komentar &&
           user == other.user &&
-          createdAt == other.createdAt;
+          createdAt == other.createdAt &&
+          isLiked == other.isLiked &&
+          kategori == other.kategori &&
+          kategoriLabel == other.kategoriLabel &&
+          isAnonymous == other.isAnonymous &&
+          gestationalContextLabel == other.gestationalContextLabel &&
+          hasBidanReply == other.hasBidanReply;
 
   @override
   int get hashCode => Object.hash(
         id,
-        apresiasi,
-        komentar,
-        isLiked,
         judul,
         deskripsi,
         gambar,
+        apresiasi,
+        komentar,
         user,
         createdAt,
+        isLiked,
+        kategori,
+        kategoriLabel,
+        isAnonymous,
+        gestationalContextLabel,
+        hasBidanReply,
       );
 }

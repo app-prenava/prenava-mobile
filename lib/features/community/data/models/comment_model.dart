@@ -11,6 +11,11 @@ class CommentModel extends Comment {
     required super.komentar,
     super.createdAt,
     super.user,
+    super.isBidanReply,
+    super.isPinned,
+    super.suggestAppointment,
+    super.bidanUserId,
+    super.bidanProfile,
   });
 
   static int _parseInt(dynamic value, [int defaultValue = 0]) {
@@ -41,7 +46,6 @@ class CommentModel extends Comment {
     } else if (userData != null) {
       user = PostUserModel.fromJson(userData);
     } else {
-      // Some APIs might return user info flattened on the comment object
       final flattenedName = json['name']?.toString() ??
           json['nama']?.toString() ??
           json['username']?.toString();
@@ -61,6 +65,20 @@ class CommentModel extends Comment {
       }
     }
 
+    BidanProfileMeta? bProfile;
+    if (json['bidan_profile'] is Map) {
+      final bp = json['bidan_profile'] as Map<String, dynamic>;
+      bProfile = BidanProfileMeta(
+        bidanId: _parseInt(bp['bidan_id']),
+        name: bp['name']?.toString(),
+        tempatPraktik: bp['tempat_praktik']?.toString(),
+        alamatPraktik: bp['alamat_praktik']?.toString(),
+        kota: bp['kota']?.toString(),
+        spesialisasi: bp['spesialisasi']?.toString(),
+        nomorSipb: bp['nomor_sipb']?.toString(),
+      );
+    }
+
     return CommentModel(
       id: _parseInt(json['id'] ?? json['comment_id']),
       postId: _parseInt(json['post_id'] ?? json['thread_id']),
@@ -68,6 +86,11 @@ class CommentModel extends Comment {
       komentar: json['content']?.toString() ?? json['komentar']?.toString() ?? json['body']?.toString() ?? '',
       createdAt: json['created_at']?.toString(),
       user: user,
+      isBidanReply: json['is_bidan_reply'] == true || json['is_bidan_reply'] == 1,
+      isPinned: json['is_pinned'] == true || json['is_pinned'] == 1,
+      suggestAppointment: json['suggest_appointment'] == true || json['suggest_appointment'] == 1,
+      bidanUserId: json['bidan_user_id'] != null ? _parseInt(json['bidan_user_id']) : null,
+      bidanProfile: bProfile,
     );
   }
 
@@ -78,6 +101,10 @@ class CommentModel extends Comment {
       'user_id': userId,
       'komentar': komentar,
       'created_at': createdAt,
+      'is_bidan_reply': isBidanReply,
+      'is_pinned': isPinned,
+      'suggest_appointment': suggestAppointment,
+      'bidan_user_id': bidanUserId,
     };
   }
 }
