@@ -18,15 +18,16 @@ final tipsRepositoryProvider = Provider<TipsRepository>((ref) {
   return TipsRepositoryImpl(datasource);
 });
 
-// Categories Provider
+// Categories Provider (autoDispose to fetch fresh categories)
 final categoriesProvider =
-    FutureProvider<List<TipCategory>>((ref) async {
+    FutureProvider.autoDispose<List<TipCategory>>((ref) async {
   final repository = ref.watch(tipsRepositoryProvider);
   return await repository.getCategories();
 });
 
-// Tips Provider dengan parameter
-final tipsProvider = FutureProvider.family<List<PregnancyTip>, TipsParams>(
+// Tips Provider dengan parameter (autoDispose to sync changes from Admin/Bidan)
+final tipsProvider =
+    FutureProvider.autoDispose.family<List<PregnancyTip>, TipsParams>(
   (ref, params) async {
     final repository = ref.watch(tipsRepositoryProvider);
     return await repository.getTips(
@@ -38,7 +39,8 @@ final tipsProvider = FutureProvider.family<List<PregnancyTip>, TipsParams>(
 );
 
 // Tip Detail Provider
-final tipDetailProvider = FutureProvider.family<PregnancyTip, int>(
+final tipDetailProvider =
+    FutureProvider.autoDispose.family<PregnancyTip, int>(
   (ref, tipId) async {
     final repository = ref.watch(tipsRepositoryProvider);
     return await repository.getTipById(tipId);
@@ -67,8 +69,6 @@ class TipsParams {
           search == other.search;
 
   @override
-  int get hashCode => categoryId.hashCode ^
-      categorySlug.hashCode ^
-      search.hashCode;
+  int get hashCode =>
+      categoryId.hashCode ^ categorySlug.hashCode ^ search.hashCode;
 }
-

@@ -62,9 +62,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     if (!mounted) return;
 
-    // If user is authenticated, check for profile completion
-    if (authState.isAuthenticated) {
-      await ref.read(profileNotifierProvider.notifier).loadProfile();
+    // Jika user terbukti memiliki sesi aktif dan data user valid
+    if (authState.isAuthenticated && authState.user != null) {
+      try {
+        await ref.read(profileNotifierProvider.notifier).loadProfile();
+      } catch (_) {}
       final profileState = ref.read(profileNotifierProvider);
 
       if (!mounted) return;
@@ -129,4 +131,3 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
-

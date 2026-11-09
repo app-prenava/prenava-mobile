@@ -17,6 +17,22 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
   int? _selectedCategoryId;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.invalidate(categoriesProvider);
+      ref.invalidate(
+        tipsProvider(
+          TipsParams(
+            categoryId: _selectedCategoryId,
+            search: _searchQuery.isEmpty ? null : _searchQuery,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -302,42 +318,53 @@ class _TipsListPageState extends ConsumerState<TipsListPage> {
   }
 
   Widget _buildTipsList(List tips) {
-    if (tips.isEmpty) {
-      return Container(
-        color: Colors.white,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.search_off,
-                size: 64,
-                color: Colors.grey[300],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Tidak ada tips ditemukan',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+    final tipsParams = TipsParams(
+      categoryId: _selectedCategoryId,
+      search: _searchQuery.isEmpty ? null : _searchQuery,
+    );
 
-    return Container(
-      color: Colors.white,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: tips.length,
-        itemBuilder: (context, index) {
-          final tip = tips[index];
-          return _buildTipCard(tip);
-        },
-      ),
+    return RefreshIndicator(
+      color: const Color(0xFFFA6978),
+      onRefresh: () async {
+        ref.invalidate(categoriesProvider);
+        ref.invalidate(tipsProvider(tipsParams));
+      },
+      child: tips.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.search_off,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Tidak ada tips ditemukan',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              itemCount: tips.length,
+              itemBuilder: (context, index) {
+                final tip = tips[index];
+                return _buildTipCard(tip);
+              },
+            ),
     );
   }
 

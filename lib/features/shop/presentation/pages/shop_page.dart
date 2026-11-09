@@ -35,6 +35,9 @@ class _ShopPageState extends ConsumerState<ShopPage> {
     super.initState();
     _scrollController.addListener(_onScroll);
     _checkGuide();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(shopNotifierProvider.notifier).loadProducts();
+    });
   }
 
   Future<void> _checkGuide() async {

@@ -1,6 +1,9 @@
+import 'package:google_sign_in/google_sign_in.dart';
+import 'dart:convert';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
+import '../models/user_model.dart';
 import '../../../../shared/services/secure_store.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -19,6 +22,7 @@ class AuthRepositoryImpl implements AuthRepository {
     // so the provider layer can handle navigation to OTP screen.
     final loginResponse = await _remoteDatasource.login(email, password);
     await _secureStore.write('jwt_token', loginResponse.token);
+    await _saveCachedUser(loginResponse.user);
     return loginResponse.user;
   }
 
@@ -31,6 +35,12 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } finally {
       await _secureStore.delete('jwt_token');
+      await _secureStore.delete('cached_user');
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {
+        // Ignore Google signOut errors if no active Google session
+      }
     }
   }
 
@@ -60,11 +70,49 @@ class AuthRepositoryImpl implements AuthRepository {
         return null;
       }
 
-      return await _remoteDatasource.getCurrentUser(token);
-    } catch (e) {
-      // If token is invalid (401), we do not clear it automatically anymore
-      return null;
+      try {
+        final remoteUser = await _remoteDatasource.getCurrentUser(token);
+        await _saveCachedUser(remoteUser);
+        return remoteUser;
+      } catch (e) {
+        final errStr = e.toString();
+        if (errStr.contains('401') || errStr.contains('Unauthorized')) {
+          await clearToken();
+          return null;
+        }
+
+        // On network error or offline, fallback to cached user session
+        final cached = await _getCachedUser();
+        if (cached != null) {
+          return cached;
+        }
+        return null;
+      }
+    } catch (_) {
+      return await _getCachedUser();
     }
+  }
+
+  Future<void> _saveCachedUser(User user) async {
+    try {
+      final model = UserModel(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        category: user.category,
+      );
+      await _secureStore.write('cached_user', jsonEncode(model.toJson()));
+    } catch (_) {}
+  }
+
+  Future<User?> _getCachedUser() async {
+    try {
+      final jsonStr = await _secureStore.read('cached_user');
+      if (jsonStr != null && jsonStr.isNotEmpty) {
+        return UserModel.fromJson(jsonDecode(jsonStr) as Map<String, dynamic>);
+      }
+    } catch (_) {}
+    return null;
   }
 
   @override
@@ -75,6 +123,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> clearToken() async {
     await _secureStore.delete('jwt_token');
+    await _secureStore.delete('cached_user');
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {
+        // Ignore Google signOut errors if no active Google session
+      }
   }
 
   @override
@@ -100,6 +154,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<User> verifyEmail(String email, String otp) async {
     final loginResponse = await _remoteDatasource.verifyEmail(email, otp);
     await _secureStore.write('jwt_token', loginResponse.token);
+    await _saveCachedUser(loginResponse.user);
     return loginResponse.user;
   }
 
@@ -140,6 +195,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final loginResponse = await _remoteDatasource.loginWithGoogle(idToken);
       await _secureStore.write('jwt_token', loginResponse.token);
+      await _saveCachedUser(loginResponse.user);
       return loginResponse.user;
     } catch (e) {
       rethrow;
