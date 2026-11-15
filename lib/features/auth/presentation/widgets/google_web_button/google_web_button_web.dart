@@ -15,8 +15,8 @@ Widget buildGoogleWebButton({
           theme: web.GSIButtonTheme.outline,
           size: web.GSIButtonSize.large,
           text: isSignUp
-              ? web.GSIButtonText.signup_with
-              : web.GSIButtonText.signin_with,
+              ? web.GSIButtonText.signupWith
+              : web.GSIButtonText.signinWith,
           shape: web.GSIButtonShape.rectangular,
           logoAlignment: web.GSIButtonLogoAlignment.left,
           minimumWidth: 320,
