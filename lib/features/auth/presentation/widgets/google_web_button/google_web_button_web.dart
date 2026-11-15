@@ -19,7 +19,7 @@ Widget buildGoogleWebButton({
               : web.GSIButtonText.signinWith,
           shape: web.GSIButtonShape.rectangular,
           logoAlignment: web.GSIButtonLogoAlignment.left,
-          minimumWidth: 320,
+          minimumWidth: 280,
         ),
       ),
     ),

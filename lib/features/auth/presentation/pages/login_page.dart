@@ -49,6 +49,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           debugPrint('[GOOGLE WEB] onCurrentUserChanged error: $err');
         },
       );
+      _googleSignIn.signInSilently();
     }
   }
 

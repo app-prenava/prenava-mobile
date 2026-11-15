@@ -50,6 +50,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           debugPrint('[GOOGLE WEB SIGNUP] onCurrentUserChanged error: $err');
         },
       );
+      _googleSignIn.signInSilently();
     }
   }
 
