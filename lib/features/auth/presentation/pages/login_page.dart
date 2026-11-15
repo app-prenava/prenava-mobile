@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../core/widgets/ios_pwa_guide_banner.dart';
 import '../providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../widgets/google_web_button/google_web_button.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -22,9 +24,37 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _obscurePassword = true;
   String? _emailVerificationError;
   bool _isGoogleLoading = false;
+  StreamSubscription<GoogleSignInAccount?>? _googleSignInSubscription;
+  late final GoogleSignIn _googleSignIn;
+
+  @override
+  void initState() {
+    super.initState();
+    final isAndroid =
+        !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+    _googleSignIn = GoogleSignIn(
+      scopes: ['email'],
+      serverClientId: isAndroid ? Env.googleWebClientId : null,
+      clientId: kIsWeb ? Env.googleWebClientId : null,
+    );
+
+    if (kIsWeb) {
+      _googleSignInSubscription = _googleSignIn.onCurrentUserChanged.listen(
+        (GoogleSignInAccount? account) {
+          if (account != null) {
+            _processGoogleAuth(account);
+          }
+        },
+        onError: (err) {
+          debugPrint('[GOOGLE WEB] onCurrentUserChanged error: $err');
+        },
+      );
+    }
+  }
 
   @override
   void dispose() {
+    _googleSignInSubscription?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -83,23 +113,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  Future<void> _handleGoogleLogin() async {
+  Future<void> _processGoogleAuth(GoogleSignInAccount googleUser) async {
+    if (_isGoogleLoading) return;
     setState(() => _isGoogleLoading = true);
     try {
-      final isAndroid =
-          !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
-      final googleSignIn = GoogleSignIn(
-        scopes: ['email'],
-        serverClientId: isAndroid ? Env.googleWebClientId : null,
-        clientId: kIsWeb ? Env.googleWebClientId : null,
-      );
-
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) {
-        // User cancelled account picker
-        return;
-      }
-
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final String? idToken = googleAuth.idToken;
@@ -148,6 +165,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           ),
         );
       }
+    } catch (e) {
+      debugPrint('[GOOGLE] Auth error: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Terjadi kendala saat menghubungkan akun Google.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled account picker
+        return;
+      }
+      await _processGoogleAuth(googleUser);
     } catch (e) {
       debugPrint('[GOOGLE] Error: $e');
       if (!mounted) return;
@@ -502,6 +544,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Widget _buildGoogleLoginButton(AuthState authState) {
+    if (kIsWeb) {
+      return buildGoogleWebButton(isSignUp: false);
+    }
     final isDisabled = authState.isLoading || _isGoogleLoading;
     return SizedBox(
       width: double.infinity,
