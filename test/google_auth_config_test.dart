@@ -1,7 +1,10 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:prenava_mobile/core/config/env.dart';
 import 'package:prenava_mobile/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:prenava_mobile/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:prenava_mobile/features/auth/presentation/pages/register_page.dart';
 import 'package:prenava_mobile/shared/services/secure_store.dart';
 
 class MockSecureStore implements SecureStore {
@@ -67,6 +70,21 @@ void main() {
       expect(await secureStore.read('jwt_token'), isNull);
       expect(await secureStore.read('cached_user'), isNull);
       expect(remoteDatasource.logoutCalled, isTrue);
+    });
+
+    testWidgets('RegisterPage renders Daftar dengan Google button and divider',
+        (tester) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: RegisterPage(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Atau daftar dengan'), findsOneWidget);
+      expect(find.text('Daftar dengan Google'), findsOneWidget);
     });
   });
 }
