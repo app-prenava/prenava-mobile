@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../home/presentation/providers/wallet_provider.dart';
@@ -23,14 +24,14 @@ class AccountPage extends ConsumerWidget {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'Profile',
+          'Profil & Akun',
           style: TextStyle(
-            color: Colors.black,
+            color: Color(0xFF0F172A),
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -41,13 +42,18 @@ class AccountPage extends ConsumerWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               _buildUserProfileCard(context, user, profileState),
-              const SizedBox(height: 16),
-              _buildMenuCard1(context, ref, currencyFormat, walletState),
-              const SizedBox(height: 16),
-              _buildMenuCard2(context, ref),
+              const SizedBox(height: 24),
+              _buildSectionHeader('Layanan Medis & Aktivitas'),
+              const SizedBox(height: 8),
+              _buildMedicalServicesCard(context, currencyFormat, walletState),
+              const SizedBox(height: 24),
+              _buildSectionHeader('Pengaturan & Dukungan'),
+              const SizedBox(height: 8),
+              _buildSettingsAndSupportCard(context, ref),
               const SizedBox(height: 32),
             ],
           ),
@@ -56,150 +62,162 @@ class AccountPage extends ConsumerWidget {
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF475569),
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+
   Widget _buildUserProfileCard(BuildContext context, dynamic user, ProfileState profileState) {
-    return GestureDetector(
-      onTap: () => context.push('/profile'),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: const Color(0xFFF0F0F0),
-              backgroundImage: (profileState.profile?.photoUrl != null &&
-                      profileState.profile!.photoUrl!.isNotEmpty)
-                  ? NetworkImage(profileState.profile!.photoUrl!)
-                  : null,
-              child: (profileState.profile?.photoUrl == null ||
-                      profileState.profile!.photoUrl!.isEmpty)
-                  ? Icon(Icons.person, size: 30, color: Colors.grey[400])
-                  : null,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    user?.name ?? 'Pengguna',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Lihat profil',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
+    final statusKandungan = profileState.profile?.statusKandungan;
+    final subtext = (statusKandungan != null && statusKandungan.isNotEmpty)
+        ? 'Status: $statusKandungan'
+        : 'Ketuk untuk melihat dan mengedit data pribadi';
+
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      child: InkWell(
+        onTap: () => context.push('/profile'),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: const Color(0xFFFFF1F2),
+                backgroundImage: (profileState.profile?.photoUrl != null &&
+                        profileState.profile!.photoUrl!.isNotEmpty)
+                    ? NetworkImage(profileState.profile!.photoUrl!)
+                    : null,
+                child: (profileState.profile?.photoUrl == null ||
+                        profileState.profile!.photoUrl!.isEmpty)
+                    ? const Icon(Icons.person, size: 34, color: Color(0xFFFA6978))
+                    : null,
               ),
-            ),
-            Icon(Icons.chevron_right, color: Colors.grey[400]),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.name ?? 'Pengguna Prenava',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0F172A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtext,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF64748B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 24),
+            ],
+          ),
         ),
       ),
     );
   }
 
-
-  Widget _buildMenuCard1(BuildContext context, WidgetRef ref, NumberFormat format, WalletState walletState) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+  Widget _buildMedicalServicesCard(BuildContext context, NumberFormat format, WalletState walletState) {
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
           _buildListItem(
-            icon: Icons.favorite_outline,
-            title: 'Favorit',
-            onTap: () {},
+            icon: Icons.person_outline,
+            iconColor: const Color(0xFFFA6978),
+            iconBgColor: const Color(0xFFFFF1F2),
+            title: 'Data Pribadi & Profil',
+            subtitle: 'Informasi demografi, domisili, dan golongan darah',
+            onTap: () => context.push('/profile'),
           ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
+          const Divider(height: 1, indent: 64, color: Color(0xFFF1F5F9)),
           _buildListItem(
             icon: Icons.account_balance_wallet_outlined,
-            title: 'Wallet',
+            iconColor: const Color(0xFFD97706),
+            iconBgColor: const Color(0xFFFEF3C7),
+            title: 'Dompet & Poin Sehat',
+            subtitle: 'Koin reward penyelesaian misi hidrasi dan gizi',
             trailingText: format.format(walletState.balance),
             onTap: () => context.push('/wallet'),
           ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
+          const Divider(height: 1, indent: 64, color: Color(0xFFF1F5F9)),
           _buildListItem(
-            icon: Icons.receipt_long_outlined,
-            title: 'Pesanan',
-            onTap: () {},
-          ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
-          _buildListItem(
-            icon: Icons.help_outline,
-            title: 'Help Desk',
-            onTap: () => _showHelpDeskBottomSheet(context),
+            icon: Icons.book_outlined,
+            iconColor: const Color(0xFF0284C7),
+            iconBgColor: const Color(0xFFE0F2FE),
+            title: 'Buku KIA & Catatan Ibu',
+            subtitle: 'Riwayat rekam medis kunjungan pemeriksaan kehamilan',
+            onTap: () => context.push('/kunjungan'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMenuCard2(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
+  Widget _buildSettingsAndSupportCard(BuildContext context, WidgetRef ref) {
+    return Material(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       child: Column(
         children: [
           _buildListItem(
             icon: Icons.settings_outlined,
-            title: 'Settings',
-            onTap: () {},
+            iconColor: const Color(0xFF475569),
+            iconBgColor: const Color(0xFFF1F5F9),
+            title: 'Pengaturan & Keamanan',
+            subtitle: 'Ubah kata sandi dan preferensi pengingat',
+            onTap: () => context.push('/settings'),
           ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
+          const Divider(height: 1, indent: 64, color: Color(0xFFF1F5F9)),
           _buildListItem(
-            icon: Icons.tune,
-            title: 'Personalisasi',
-            onTap: () {},
+            icon: Icons.help_outline,
+            iconColor: const Color(0xFF059669),
+            iconBgColor: const Color(0xFFECFDF5),
+            title: 'Pusat Bantuan & Panduan',
+            subtitle: 'Informasi fitur klinis dan kontak tim support',
+            onTap: () => _showHelpDeskBottomSheet(context),
           ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
-          _buildListItem(
-            icon: Icons.share_outlined,
-            title: 'Share shop',
-            onTap: () {},
-          ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
-          _buildListItem(
-            icon: Icons.wb_sunny_outlined,
-            title: 'Mode liburan',
-            trailingWidget: Switch(
-              value: false,
-              onChanged: (val) {},
-              activeThumbColor: const Color(0xFFFA6978),
-            ),
-            onTap: () {},
-          ),
-          Divider(height: 1, indent: 48, color: Colors.grey[100]),
+          const Divider(height: 1, indent: 64, color: Color(0xFFF1F5F9)),
           _buildListItem(
             icon: Icons.logout,
-            title: 'Log Out',
-            titleColor: Colors.red,
-            iconColor: Colors.red,
+            iconColor: const Color(0xFFDC2626),
+            iconBgColor: const Color(0xFFFEF2F2),
+            title: 'Keluar Akun',
+            subtitle: 'Akhiri sesi aktif di perangkat ini',
+            titleColor: const Color(0xFFDC2626),
             hideChevron: true,
-            onTap: () async {
-              ref.read(profileNotifierProvider.notifier).clearProfile();
-              await ref.read(authNotifierProvider.notifier).logout();
-              if (context.mounted) {
-                context.go('/login');
-              }
-            },
+            onTap: () => _showLogoutDialog(context, ref),
           ),
         ],
       ),
@@ -210,43 +228,97 @@ class AccountPage extends ConsumerWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    String? subtitle,
     String? trailingText,
-    Widget? trailingWidget,
     Color? titleColor,
     Color? iconColor,
+    Color? iconBgColor,
     bool hideChevron = false,
   }) {
     return ListTile(
-      leading: Icon(icon, color: iconColor ?? Colors.grey[700], size: 24),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: iconBgColor ?? const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: iconColor ?? const Color(0xFF475569), size: 22),
+      ),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: titleColor ?? Colors.black87,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: titleColor ?? const Color(0xFF0F172A),
         ),
       ),
-      trailing: trailingWidget ??
-          (hideChevron
-              ? null
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (trailingText != null)
-                      Text(
-                        trailingText,
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 14,
-                        ),
-                      ),
-                    if (trailingText != null) const SizedBox(width: 8),
-                    Icon(Icons.chevron_right, color: Colors.grey[400], size: 20),
-                  ],
-                )),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
+              ),
+            )
+          : null,
+      trailing: hideChevron
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (trailingText != null)
+                  Text(
+                    trailingText,
+                    style: const TextStyle(
+                      color: Color(0xFF059669),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                if (trailingText != null) const SizedBox(width: 6),
+                const Icon(Icons.chevron_right, color: Color(0xFF94A3B8), size: 20),
+              ],
+            ),
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(
+          'Konfirmasi Keluar',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        content: const Text(
+          'Apakah Anda yakin ingin keluar dari akun Prenava? Anda dapat masuk kembali kapan saja.',
+          style: TextStyle(fontSize: 14, color: Color(0xFF334155)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal', style: TextStyle(color: Color(0xFF64748B))),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              ref.read(profileNotifierProvider.notifier).clearProfile();
+              await ref.read(authNotifierProvider.notifier).logout();
+              if (context.mounted) {
+                context.go('/login');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+            ),
+            child: const Text('Keluar'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -256,7 +328,7 @@ class AccountPage extends ConsumerWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
+        initialChildSize: 0.75,
         minChildSize: 0.5,
         maxChildSize: 0.95,
         builder: (_, controller) => Container(
@@ -277,71 +349,60 @@ class AccountPage extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Help Desk',
+                'Pusat Bantuan Prenava',
                 style: TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Panduan fitur-fitur di aplikasi Prenava',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              const SizedBox(height: 6),
+              const Text(
+                'Panduan fitur pemantauan kesehatan ibu hamil',
+                style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
               ),
               const SizedBox(height: 16),
-              Divider(height: 1, color: Colors.grey[200]),
+              const Divider(height: 1, color: Color(0xFFE2E8F0)),
               Expanded(
                 child: ListView(
                   controller: controller,
                   padding: const EdgeInsets.all(16),
                   children: [
                     _buildHelpItem(
-                      icon: Icons.local_fire_department,
-                      color: Colors.amber,
-                      title: 'Misi Harian & Streak',
-                      description: 'Selesaikan misi harian untuk menjaga streak dan mendapatkan poin.',
+                      icon: Icons.support_agent,
+                      color: const Color(0xFFFA6978),
+                      title: 'Tanya Bidan AI (Voice RAG)',
+                      description: 'Konsultasi keluhan kehamilan via suara atau teks dengan panduan Buku KIA Kemenkes.',
                     ),
                     _buildHelpItem(
-                      icon: Icons.accessibility_new,
-                      color: Colors.blue,
-                      title: 'Rekomendasi Olahraga',
-                      description: 'Gerakan senam hamil dan yoga yang aman sesuai usia kandungan.',
-                    ),
-                    _buildHelpItem(
-                      icon: Icons.face,
-                      color: Colors.purple,
-                      title: 'Prediksi Depresi',
-                      description: 'Skrining risiko depresi pasca melahirkan melalui analisis wajah AI.',
+                      icon: Icons.camera_alt,
+                      color: const Color(0xFF0284C7),
+                      title: 'Food Vision Isi Piringku',
+                      description: 'Foto piring makanan Anda untuk menganalisis kecukupan gizi dan zat besi.',
                     ),
                     _buildHelpItem(
                       icon: Icons.bloodtype,
-                      color: Colors.red,
-                      title: 'Prediksi Anemia',
-                      description: 'Observasi dini gejala anemia pada ibu hamil.',
+                      color: const Color(0xFFDC2626),
+                      title: 'Skrining Anemia Konjungtiva',
+                      description: 'Observasi dini risiko anemia melalui foto kelopak mata bawah.',
                     ),
                     _buildHelpItem(
                       icon: Icons.child_care,
-                      color: Colors.green,
-                      title: 'Risiko Stunting',
-                      description: 'Cek potensi stunting pada anak dan dapatkan rekomendasi asupan gizinya.',
+                      color: const Color(0xFF059669),
+                      title: 'Skrining Risiko Stunting',
+                      description: 'Pemeriksaan faktor risiko maternal untuk mencegah kejadian stunting sejak masa kehamilan.',
                     ),
                     _buildHelpItem(
                       icon: Icons.water_drop,
-                      color: Colors.lightBlue,
-                      title: 'Rekomendasi Hidrasi',
-                      description: 'Pantau jumlah air minum harian agar tubuh tetap terhidrasi.',
+                      color: const Color(0xFF0284C7),
+                      title: 'Target Hidrasi Harian',
+                      description: 'Pencatatan konsumsi air minum untuk menjaga cairan tubuh optimal.',
                     ),
                     _buildHelpItem(
-                      icon: Icons.calendar_month,
-                      color: Colors.teal,
-                      title: 'Kalkulator HPL',
-                      description: 'Hitung Hari Perkiraan Lahir dan pantau perkembangan janin setiap minggu.',
-                    ),
-                    _buildHelpItem(
-                      icon: Icons.shopping_bag,
-                      color: Colors.orange,
-                      title: 'Belanja & Jual',
-                      description: 'Marketplace untuk kebutuhan ibu hamil, bayi, dan preloved items.',
+                      icon: Icons.local_fire_department,
+                      color: const Color(0xFFD97706),
+                      title: 'Misi Sehat & Poin Reward',
+                      description: 'Kumpulkan poin dengan menyelesaikan target aktivitas harian.',
                     ),
                   ],
                 ),
@@ -350,18 +411,30 @@ class AccountPage extends ConsumerWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: 48,
                   child: ElevatedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Membuka WhatsApp Support...')),
+                      final Uri whatsappUri = Uri.parse(
+                        'https://wa.me/6281234567890?text=Halo%20Tim%20Support%20Prenava%2C%20saya%20memerlukan%20bantuan%20terkait%20aplikasi.',
                       );
+                      if (await canLaunchUrl(whatsappUri)) {
+                        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+                      } else {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tidak dapat membuka WhatsApp. Silakan hubungi 0812-3456-7890.'),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                        }
+                      }
                     },
-                    icon: const Icon(Icons.support_agent),
+                    icon: const Icon(Icons.support_agent, size: 20),
                     label: const Text(
-                      'Hubungi Support',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      'Hubungi WhatsApp Support',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFA6978),
@@ -388,7 +461,7 @@ class AccountPage extends ConsumerWidget {
     required String description,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -398,9 +471,9 @@ class AccountPage extends ConsumerWidget {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 24),
+            child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -409,15 +482,16 @@ class AccountPage extends ConsumerWidget {
                   title,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 14,
+                    color: Color(0xFF0F172A),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 Text(
                   description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
+                  style: const TextStyle(
+                    color: Color(0xFF64748B),
+                    fontSize: 12,
                     height: 1.4,
                   ),
                 ),
@@ -429,4 +503,3 @@ class AccountPage extends ConsumerWidget {
     );
   }
 }
-

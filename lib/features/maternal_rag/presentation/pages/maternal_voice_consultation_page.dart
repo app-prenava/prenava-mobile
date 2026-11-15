@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/audio/voice_recorder.dart';
+import '../../data/models/maternal_rag_model.dart';
 import '../providers/maternal_rag_providers.dart';
 import '../widgets/danger_catalog_bottom_sheet.dart';
 import '../widgets/emergency_alert_banner.dart';
-import '../../data/models/maternal_rag_model.dart';
+import '../widgets/nearby_faskes_referral_section.dart';
 
 class MaternalVoiceConsultationPage extends ConsumerStatefulWidget {
   const MaternalVoiceConsultationPage({super.key});
@@ -28,11 +29,11 @@ class _MaternalVoiceConsultationPageState
   Timer? _recordTimer;
 
   final List<String> _quickPrompts = [
-    'Berapa banyak tablet tambah darah (TTD) yang wajib diminum?',
-    'Bagaimana tanda gerakan janin yang sehat dan aktif?',
-    'Cara mengatasi mual muntah di pagi hari saat hamil muda',
-    'Tolong bidan, keluar darah segar dari jalan lahir!',
-    'Berapa kali jadwal periksa ANC dan USG ke dokter?',
+    'Aturan minum tablet tambah darah (TTD)',
+    'Jadwal periksa kehamilan (ANC) & USG',
+    'Keluar bercak atau darah segar saat hamil',
+    'Kepala pusing hebat & pandangan kabur',
+    'Gerakan janin terasa lebih jarang',
   ];
 
   @override
@@ -79,9 +80,8 @@ class _MaternalVoiceConsultationPageState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Izin mikrofon belum aktif atau tidak didukung di browser ini. Mohon izinkan akses mikrofon atau ketik pertanyaan Anda.',
+            'Izin mikrofon belum aktif. Silakan izinkan akses mikrofon atau ketik pertanyaan Bunda di kolom bawah.',
           ),
-          backgroundColor: Color(0xFFD32F2F),
         ),
       );
       return;
@@ -117,7 +117,7 @@ class _MaternalVoiceConsultationPageState
     if (bytes == null || bytes.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Rekaman suara kosong. Silakan coba kembali.'),
+          content: Text('Rekaman suara belum terdengar. Silakan coba kembali.'),
         ),
       );
       return;
@@ -149,6 +149,7 @@ class _MaternalVoiceConsultationPageState
       backgroundColor: Colors.transparent,
       builder: (context) => DangerCatalogBottomSheet(
         catalog: state.dangerCatalog,
+        onSelectSymptomQuery: _sendQuestion,
       ),
     );
   }
@@ -166,82 +167,85 @@ class _MaternalVoiceConsultationPageState
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFA6978),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: const Color(0xFFE2E8F0),
+          ),
+        ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Tanya Bidan AI (Buku KIA)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              'Tanya Bidan (Buku KIA)',
+              style: TextStyle(
+                fontSize: 15.5,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1E293B),
+              ),
             ),
             Text(
-              'Standar Medis Kemenkes RI',
-              style: TextStyle(fontSize: 11, color: Colors.white70),
+              'Panduan Resmi KIA Kemenkes RI',
+              style: TextStyle(
+                fontSize: 11,
+                color: Color(0xFF475569),
+              ),
             ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.menu_book_rounded),
-            tooltip: 'Katalog Tanda Bahaya KIA',
-            onPressed: _showDangerCatalog,
+          Padding(
+            padding: const EdgeInsets.only(right: 10),
+            child: TextButton.icon(
+              onPressed: _showDangerCatalog,
+              icon: const Icon(
+                Icons.menu_book_rounded,
+                size: 15,
+                color: Color(0xFF334155),
+              ),
+              label: const Text(
+                'Panduan KIA',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF334155),
+                ),
+              ),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFFF1F5F9),
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
           ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Banner Tanda Bahaya Aktif jika ada
+            // Banner merah HANYA tampil jika baru saja terjadi deteksi tanda bahaya aktif
             if (state.activeEmergency != null)
               EmergencyAlertBanner(
                 consultation: state.activeEmergency!,
-                onDismiss: () =>
-                    ref.read(maternalRagNotifierProvider.notifier).dismissEmergency(),
+                onDismiss: () => ref
+                    .read(maternalRagNotifierProvider.notifier)
+                    .dismissEmergency(),
               ),
 
-            // Quick Question Chips
-            Container(
-              height: 48,
-              margin: const EdgeInsets.only(top: 8, bottom: 4),
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: _quickPrompts.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final prompt = _quickPrompts[index];
-                  final isEmergencySample = prompt.contains('darah segar');
-                  return ActionChip(
-                    backgroundColor: isEmergencySample
-                        ? const Color(0xFFFFEBEE)
-                        : Colors.white,
-                    side: BorderSide(
-                      color: isEmergencySample
-                          ? const Color(0xFFFFCDD2)
-                          : const Color(0xFFE0E0E0),
-                    ),
-                    label: Text(
-                      prompt,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isEmergencySample
-                            ? const Color(0xFFB71C1C)
-                            : const Color(0xFF424242),
-                        fontWeight: isEmergencySample
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    onPressed: state.isLoading ? null : () => _sendQuestion(prompt),
-                  );
-                },
-              ),
-            ),
-
-            // Message Stream Area
+            // Area Daftar Percakapan
             Expanded(
               child: state.consultations.isEmpty && !state.isLoading
                   ? _buildEmptyState()
@@ -260,30 +264,79 @@ class _MaternalVoiceConsultationPageState
                     ),
             ),
 
-            // Loading indicator bar
+            // Saran pertanyaan ringkas di atas kolom ketik (hanya saat sudah ada obrolan)
+            if (state.consultations.isNotEmpty && !state.isLoading)
+              Container(
+                height: 36,
+                margin: const EdgeInsets.only(bottom: 6),
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _quickPrompts.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 6),
+                  itemBuilder: (context, index) {
+                    final prompt = _quickPrompts[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _sendQuestion(prompt),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Text(
+                          prompt,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF334155),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+            // Bar Indikator Loading (R-27)
             if (state.isLoading)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                color: const Color(0xFFFFF0F2),
-                child: const Row(
-                  children: [
+                padding:
+                    const EdgeInsets.symmetric(vertical: 9, horizontal: 16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF1F5F9),
+                  border: Border(
+                    top: BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                ),
+                child: Row(
+                  children: const [
                     SizedBox(
                       width: 16,
                       height: 16,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFFFA6978),
+                        strokeWidth: 2.0,
+                        color: Color(0xFF334155),
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Bidan AI sedang mencari rujukan resmi di Buku KIA...',
+                        'Memeriksa pedoman Buku KIA...',
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFFFA6978),
-                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF334155),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -291,19 +344,28 @@ class _MaternalVoiceConsultationPageState
                 ),
               ),
 
-            // Error Bar
+            // Bar Error (R-27)
             if (state.errorMessage != null)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                color: const Color(0xFFFFEBEE),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                color: const Color(0xFFFEF2F2),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, size: 16, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 16,
+                      color: Color(0xFF991B1B),
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         state.errorMessage!,
-                        style: const TextStyle(fontSize: 12, color: Colors.red),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF991B1B),
+                        ),
                       ),
                     ),
                   ],
@@ -311,7 +373,9 @@ class _MaternalVoiceConsultationPageState
               ),
 
             // Bottom Input Bar
-            _isRecording ? _buildRecordingBar() : _buildInputBar(state.isLoading),
+            _isRecording
+                ? _buildRecordingBar()
+                : _buildInputBar(state.isLoading),
           ],
         ),
       ),
@@ -319,80 +383,160 @@ class _MaternalVoiceConsultationPageState
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: const BoxDecoration(
-                color: Color(0xFFFFF0F2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.support_agent_rounded,
-                size: 50,
-                color: Color(0xFFFA6978),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Kartu Pengantar yang Tenang (Tanpa Warna Merah)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFE2E8F0),
+                width: 1.0,
               ),
             ),
-            const SizedBox(height: 14),
-            const Text(
-              'Konsultasi Medis Buku KIA',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF263238),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFECFDF5),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: const Icon(
+                        Icons.health_and_safety_outlined,
+                        size: 20,
+                        color: Color(0xFF065F46),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Halo Bunda, ada yang ingin ditanyakan hari ini?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Tanyakan seputar gizi, jadwal pemeriksaan, atau keluhan yang dirasakan lewat suara maupun tulisan. Seluruh penjelasan mengacu pada Buku KIA Kemenkes RI.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.45,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Contoh pertanyaan:',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF475569),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: _quickPrompts.map((prompt) {
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: () => _sendQuestion(prompt),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFE2E8F0),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Text(
+                          prompt,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF334155),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
-            const SizedBox(height: 6),
-            const Text(
-              'Ajukan pertanyaan seputar nutrisi, jadwal pemeriksaan, dan keluhan kehamilan melalui suara atau teks. Bidan AI akan memberikan rujukan resmi dari Buku KIA Kemenkes RI.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, height: 1.4, color: Color(0xFF757575)),
-            ),
-          ],
-        ),
+          ),
+
+          // Daftar Bidan & Faskes Terdekat dalam tampilan tenang (isEmergencyContext: false)
+          const NearbyFaskesReferralSection(
+            maxVisibleItems: 2,
+            isEmergencyContext: false,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildConsultationCard(MaternalConsultationItem item) {
+    final firstAidList = item.effectiveFirstAidSteps;
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // User Query Bubble
+          // Gelembung Pertanyaan Ibu Hamil (Tenang & Proporsional)
           Align(
             alignment: Alignment.centerRight,
             child: Container(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.8,
+                maxWidth: MediaQuery.of(context).size.width * 0.80,
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               decoration: BoxDecoration(
-                color: const Color(0xFFFA6978),
-                borderRadius: BorderRadius.circular(16).copyWith(
-                  bottomRight: const Radius.circular(0),
+                color: const Color(0xFF334155),
+                borderRadius: BorderRadius.circular(12).copyWith(
+                  bottomRight: const Radius.circular(2),
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (item.transcribedText != null && item.transcribedText!.isNotEmpty)
+                  if (item.transcribedText != null &&
+                      item.transcribedText!.isNotEmpty)
                     const Padding(
                       padding: EdgeInsets.only(right: 6),
-                      child: Icon(Icons.mic, size: 14, color: Colors.white70),
+                      child: Icon(
+                        Icons.mic_rounded,
+                        size: 14,
+                        color: Colors.white,
+                      ),
                     ),
                   Flexible(
                     child: Text(
                       item.query,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 13,
-                        height: 1.3,
+                        fontSize: 12.5,
+                        height: 1.35,
                       ),
                     ),
                   ),
@@ -400,90 +544,56 @@ class _MaternalVoiceConsultationPageState
               ),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
 
-          // AI Bidan Answer Bubble
+          // Kartu Respons Bidan (Warna merah HANYA saat item.isEmergency == true)
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
               constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.9,
+                maxWidth: MediaQuery.of(context).size.width * 0.96,
               ),
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(13),
               decoration: BoxDecoration(
-                color: item.isEmergency
-                    ? const Color(0xFFFFEBEE)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(16).copyWith(
-                  topLeft: const Radius.circular(0),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12).copyWith(
+                  topLeft: const Radius.circular(2),
                 ),
                 border: Border.all(
                   color: item.isEmergency
-                      ? const Color(0xFFFFCDD2)
-                      : const Color(0xFFE0E0E0),
-                  width: item.isEmergency ? 1.5 : 1,
+                      ? const Color(0xFFFECACA)
+                      : const Color(0xFFE2E8F0),
+                  width: 1.0,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Card Bidan AI
+                  // Tingkat 1 Hierarki: Header Status Konsultasi
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: item.isEmergency
-                              ? const Color(0xFFD32F2F)
-                              : const Color(0xFFFA6978),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          item.isEmergency
-                              ? Icons.emergency
-                              : Icons.health_and_safety_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
+                      Icon(
+                        item.isEmergency
+                            ? Icons.warning_amber_rounded
+                            : Icons.health_and_safety_outlined,
+                        size: 16,
+                        color: item.isEmergency
+                            ? const Color(0xFF991B1B)
+                            : const Color(0xFF065F46),
                       ),
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           item.isEmergency
-                              ? 'Bidan Prenava (Deteksi Bahaya)'
-                              : 'Bidan Prenava AI',
+                              ? 'Panduan Rujukan Tanda Bahaya'
+                              : 'Penjelasan Bidan (Buku KIA)',
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
                             color: item.isEmergency
-                                ? const Color(0xFFB71C1C)
-                                : const Color(0xFF424242),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item.providerUsed.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF757575),
+                                ? const Color(0xFF7F1D1D)
+                                : const Color(0xFF1E293B),
                           ),
                         ),
                       ),
@@ -491,38 +601,139 @@ class _MaternalVoiceConsultationPageState
                   ),
                   const SizedBox(height: 8),
 
-                  // Markdown Content
-                  MarkdownBody(
-                    data: item.aiAnswer,
-                    shrinkWrap: true,
-                    styleSheet: MarkdownStyleSheet(
-                      p: const TextStyle(fontSize: 13, height: 1.45, color: Color(0xFF263238)),
-                      strong: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF263238)),
-                      listBullet: const TextStyle(color: Color(0xFFFA6978)),
+                  // Tingkat 2 Hierarki: Penjelasan Klinis & Langkah Awal (Jika Tanda Bahaya)
+                  if (item.isEmergency) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(11),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(9),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (item.dangerKeywords.isNotEmpty) ...[
+                            Text(
+                              'Gejala terdeteksi: ${item.dangerKeywords.join(", ")}',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF991B1B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                          ],
+                          Text(
+                            item.effectiveRecommendedAction,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              height: 1.4,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item.effectiveClinicalRisk,
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              height: 1.4,
+                              color: Color(0xFF475569),
+                            ),
+                          ),
+                          if (firstAidList.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            const Divider(height: 1, color: Color(0xFFFECACA)),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Langkah Awal Sebelum Berangkat ke Faskes:',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            for (int i = 0; i < firstAidList.length; i++)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 3),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${i + 1}. ',
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF7F1D1D),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        firstAidList[i],
+                                        style: const TextStyle(
+                                          fontSize: 11.5,
+                                          height: 1.35,
+                                          color: Color(0xFF1E293B),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ],
+                      ),
                     ),
-                  ),
 
-                  const SizedBox(height: 10),
-                  const Divider(height: 1),
+                    // Tingkat 3 Hierarki: Daftar Faskes Terdekat (Mode Darurat)
+                    const NearbyFaskesReferralSection(
+                      maxVisibleItems: 3,
+                      isEmergencyContext: true,
+                    ),
+                  ] else ...[
+                    // Konten Markdown Jawaban Konsultasi Normal
+                    MarkdownBody(
+                      data: item.aiAnswer,
+                      shrinkWrap: true,
+                      styleSheet: MarkdownStyleSheet(
+                        p: const TextStyle(
+                          fontSize: 12.5,
+                          height: 1.45,
+                          color: Color(0xFF1E293B),
+                        ),
+                        strong: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E293B),
+                        ),
+                        listBullet: const TextStyle(
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+
                   const SizedBox(height: 8),
+                  const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  const SizedBox(height: 6),
 
-                  // Rujukan Resmi Kemenkes Badge
+                  // Kutipan Sumber Halaman Buku KIA (Ringkas & Tenang)
                   Row(
                     children: [
                       const Icon(
-                        Icons.verified_rounded,
-                        size: 14,
-                        color: Color(0xFF2E7D32),
+                        Icons.menu_book_outlined,
+                        size: 13,
+                        color: Color(0xFF475569),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 5),
                       Expanded(
                         child: Text(
-                          'Rujukan: ${item.referenceSource}',
+                          'Referensi: ${item.kiaPageRef ?? item.referenceSource}',
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2E7D32),
+                            color: Color(0xFF475569),
                           ),
                         ),
                       ),
@@ -539,43 +750,53 @@ class _MaternalVoiceConsultationPageState
 
   Widget _buildRecordingBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: const BoxDecoration(
-        color: Color(0xFFFFF0F2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, -2),
-          ),
-        ],
+        color: Color(0xFFF8FAFC),
+        border: Border(
+          top: BorderSide(color: Color(0xFFE2E8F0)),
+        ),
       ),
       child: Row(
         children: [
-          const Icon(Icons.fiber_manual_record, color: Colors.red, size: 16),
+          const Icon(
+            Icons.fiber_manual_record_rounded,
+            color: Color(0xFFB91C1C),
+            size: 16,
+          ),
           const SizedBox(width: 8),
           Text(
-            'Merekam Suara: ${_formatTimer(_recordSeconds)}',
+            'Merekam suara (${_formatTimer(_recordSeconds)})',
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFFB71C1C),
-              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+              fontSize: 12.5,
             ),
           ),
           const Spacer(),
           TextButton(
             onPressed: _cancelRecording,
-            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF475569),
+              visualDensity: VisualDensity.compact,
+            ),
+            child: const Text('Batal', style: TextStyle(fontSize: 12)),
           ),
           const SizedBox(width: 6),
-          ElevatedButton.icon(
+          ElevatedButton(
             onPressed: _stopAndSubmitRecording,
-            icon: const Icon(Icons.stop, size: 16),
-            label: const Text('Kirim'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFA6978),
+              backgroundColor: const Color(0xFF334155),
               foregroundColor: Colors.white,
+              visualDensity: VisualDensity.compact,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Kirim',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -585,57 +806,92 @@ class _MaternalVoiceConsultationPageState
 
   Widget _buildInputBar(bool isLoading) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+      decoration: const BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        border: Border(
+          top: BorderSide(color: Color(0xFFE2E8F0)),
+        ),
       ),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.mic, color: Color(0xFFFA6978)),
-            tooltip: 'Mulai Rekam Suara',
+            visualDensity: VisualDensity.compact,
+            icon: const Icon(
+              Icons.mic_none_rounded,
+              color: Color(0xFF334155),
+              size: 21,
+            ),
+            tooltip: 'Rekam pertanyaan suara',
             onPressed: isLoading ? null : _toggleRecording,
           ),
+          const SizedBox(width: 4),
           Expanded(
-            child: TextField(
-              controller: _textController,
-              textInputAction: TextInputAction.send,
-              enabled: !isLoading,
-              onSubmitted: _sendQuestion,
-              decoration: InputDecoration(
-                hintText: 'Tanyakan keluhan atau gizi kehamilan...',
-                hintStyle: const TextStyle(fontSize: 13, color: Color(0xFF9E9E9E)),
-                filled: true,
-                fillColor: const Color(0xFFF5F5F5),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
+            child: Semantics(
+              label: 'Kolom input keluhan atau pertanyaan kehamilan',
+              textField: true,
+              child: TextField(
+                controller: _textController,
+                textInputAction: TextInputAction.send,
+                enabled: !isLoading,
+                onSubmitted: _sendQuestion,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF1E293B),
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  borderSide: BorderSide.none,
+                decoration: InputDecoration(
+                  hintText: 'Tulis keluhan atau pertanyaan Bunda...',
+                  hintStyle: const TextStyle(
+                    fontSize: 12.5,
+                    color: Color(0xFF475569),
+                  ),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: Color(0xFFE2E8F0),
+                      width: 1.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
+                      color: Color(0xFF334155),
+                      width: 1.2,
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFFFA6978),
-              shape: BoxShape.circle,
-            ),
-            child: IconButton(
-              icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+          SizedBox(
+            width: 38,
+            height: 38,
+            child: ElevatedButton(
               onPressed: isLoading
                   ? null
                   : () => _sendQuestion(_textController.text),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF334155),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.zero,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Icon(
+                Icons.send_rounded,
+                color: Colors.white,
+                size: 17,
+              ),
             ),
           ),
         ],

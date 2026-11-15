@@ -6,6 +6,10 @@
 	<string>Aplikasi ini memerlukan akses kamera untuk mengambil foto profil dan memindai data kesehatan (Machine Learning).</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses mikrofon jika Anda ingin merekam video tutorial atau konsultasi.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses lokasi untuk mencari Praktik Mandiri Bidan, IGD Rumah Sakit PONEK, dan Puskesmas terdekat dari posisi Anda.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses lokasi untuk mencari Praktik Mandiri Bidan, IGD Rumah Sakit PONEK, dan Puskesmas terdekat dari posisi Anda.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

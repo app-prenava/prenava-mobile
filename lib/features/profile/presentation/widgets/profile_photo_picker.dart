@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 class ProfilePhotoPicker extends StatelessWidget {
   final String? photoUrl;
   final File? selectedImage;
+  final Uint8List? selectedImageBytes;
   final VoidCallback onPickImage;
   final VoidCallback? onDeletePhoto;
 
@@ -11,12 +13,15 @@ class ProfilePhotoPicker extends StatelessWidget {
     super.key,
     this.photoUrl,
     this.selectedImage,
+    this.selectedImageBytes,
     required this.onPickImage,
     this.onDeletePhoto,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasNewImage = selectedImageBytes != null || selectedImage != null;
+
     return Column(
       children: [
         GestureDetector(
@@ -62,7 +67,7 @@ class ProfilePhotoPicker extends StatelessWidget {
             ],
           ),
         ),
-        if (photoUrl != null && selectedImage == null) ...[
+        if (photoUrl != null && !hasNewImage) ...[
           const SizedBox(height: 12),
           TextButton.icon(
             onPressed: onDeletePhoto,
@@ -78,7 +83,14 @@ class ProfilePhotoPicker extends StatelessWidget {
   }
 
   Widget _buildPhoto() {
-    if (selectedImage != null) {
+    if (selectedImageBytes != null) {
+      return Image.memory(
+        selectedImageBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    } else if (selectedImage != null) {
       return Image.file(
         selectedImage!,
         fit: BoxFit.cover,
@@ -108,4 +120,3 @@ class ProfilePhotoPicker extends StatelessWidget {
     );
   }
 }
-
