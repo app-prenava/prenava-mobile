@@ -89,7 +89,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final isAndroid =
           !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
       final googleSignIn = GoogleSignIn(
-        scopes: ['email', 'profile'],
+        scopes: ['email'],
         serverClientId: isAndroid ? Env.googleWebClientId : null,
         clientId: kIsWeb ? Env.googleWebClientId : null,
       );

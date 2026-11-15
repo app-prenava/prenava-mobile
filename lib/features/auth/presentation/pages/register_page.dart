@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import '../../../../core/config/env.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/auth_providers.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -18,6 +22,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final _passwordConfirmationController = TextEditingController();
   bool _obscurePassword = true;
   bool _obscurePasswordConfirmation = true;
+  bool _isGoogleLoading = false;
 
   @override
   void dispose() {
@@ -65,6 +70,109 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     }
   }
 
+  Future<void> _handleGoogleSignUp() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      final isAndroid =
+          !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      final googleSignIn = GoogleSignIn(
+        scopes: ['email'],
+        serverClientId: isAndroid ? Env.googleWebClientId : null,
+        clientId: kIsWeb ? Env.googleWebClientId : null,
+      );
+
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+      if (googleUser == null) {
+        // User cancelled account picker
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      debugPrint('[GOOGLE SIGNUP] accessToken: ${googleAuth.accessToken != null}');
+      debugPrint('[GOOGLE SIGNUP] idToken: ${idToken != null}');
+
+      if (idToken == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Gagal mendapatkan token autentikasi Google. Silakan coba lagi.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+
+      final success = await ref
+          .read(authNotifierProvider.notifier)
+          .loginWithGoogle(idToken);
+
+      if (!mounted) return;
+
+      if (success) {
+        await ref.read(profileNotifierProvider.notifier).loadProfile();
+        final profileState = ref.read(profileNotifierProvider);
+
+        if (!mounted) return;
+
+        if (profileState.hasProfile) {
+          context.go('/home');
+        } else {
+          context.go('/profile-onboarding');
+        }
+      } else {
+        final error = ref.read(authNotifierProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                error ?? 'Daftar dengan Google gagal. Silakan coba lagi.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('[GOOGLE SIGNUP] Error: $e');
+      if (!mounted) return;
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('sign_in_canceled') ||
+          errorStr.contains('canceled') ||
+          errorStr.contains('popup_closed_by_user')) {
+        return;
+      }
+
+      String friendlyMessage;
+      if (errorStr.contains('network_error') ||
+          errorStr.contains('socketexception') ||
+          errorStr.contains('connection')) {
+        friendlyMessage =
+            'Koneksi internet bermasalah. Periksa jaringan Anda dan coba lagi.';
+      } else if (errorStr.contains('apiexception: 10') ||
+          errorStr.contains('developer_error')) {
+        friendlyMessage =
+            'Konfigurasi autentikasi Google belum sesuai dengan tanda tangan aplikasi.';
+      } else {
+        friendlyMessage =
+            'Terjadi kendala saat mendaftar dengan Google. Silakan coba lagi.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(friendlyMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGoogleLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
@@ -100,6 +208,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   _buildPasswordConfirmationField(),
                   const SizedBox(height: 32),
                   _buildRegisterButton(authState),
+                  const SizedBox(height: 20),
+                  _buildCustomDivider(),
+                  const SizedBox(height: 20),
+                  _buildGoogleSignUpButton(authState),
                   const SizedBox(height: 24),
                   _buildLoginLink(),
                   const SizedBox(height: 24),
@@ -409,6 +521,90 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   color: Colors.white,
                   letterSpacing: 0.5,
                 ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildCustomDivider() {
+    return Row(
+      children: [
+        const Expanded(
+            child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Atau daftar dengan',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const Expanded(
+            child: Divider(color: Color(0xFFE0E0E0), thickness: 1)),
+      ],
+    );
+  }
+
+  Widget _buildGoogleSignUpButton(AuthState authState) {
+    final isDisabled = authState.isLoading || _isGoogleLoading;
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: OutlinedButton(
+        onPressed: isDisabled ? null : _handleGoogleSignUp,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFFE0E0E0), width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: _isGoogleLoading
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFFA6978)),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Menghubungkan Akun Google...',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF424242),
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/google_logo.png',
+                    height: 24,
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Daftar dengan Google',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF424242),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
       ),
     );
