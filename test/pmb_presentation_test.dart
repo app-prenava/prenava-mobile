@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:prenava_mobile/features/appointment/data/models/appointment_model.dart';
 import 'package:prenava_mobile/features/appointment/data/models/bidan_profile_model.dart';
 import 'package:prenava_mobile/features/appointment/domain/entities/bidan_profile.dart';
 
@@ -59,6 +60,26 @@ void main() {
       expect(model.operatingHoursLabel, equals('Senin - Sabtu (08:00 - 20:00 WIB)'));
       expect(model.distanceKm, equals(2.4));
       expect(model.serviceBadge, equals('Mitra Resmi Prenava'));
+    });
+
+    test('parses AppointmentModel safely from create appointment response without preferred_time', () {
+      final json = {
+        'appointment_id': 20,
+        'status': 'requested',
+        'bidan_name': 'Bidan Rita',
+        'preferred_date': '2026-11-17',
+        'consent_id': 12,
+      };
+
+      // Must not throw TypeError
+      final appt = AppointmentModel.fromJson(json);
+
+      expect(appt.id, equals(20));
+      expect(appt.status, equals('requested'));
+      expect(appt.preferredTime, equals('09:00'));
+      expect(appt.preferredDate.year, equals(2026));
+      expect(appt.preferredDate.month, equals(11));
+      expect(appt.preferredDate.day, equals(17));
     });
   });
 }
