@@ -14,6 +14,10 @@ class BidanProfileModel extends BidanProfile {
     super.specialization,
     super.workingHoursStart,
     super.workingHoursEnd,
+    super.operatingHoursLabel,
+    super.distanceKm,
+    super.notes,
+    super.serviceBadge,
   });
 
   factory BidanProfileModel.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,10 @@ class BidanProfileModel extends BidanProfile {
       specialization: json['specialization'] as String?,
       workingHoursStart: json['working_hours_start'] as String?,
       workingHoursEnd: json['working_hours_end'] as String?,
+      operatingHoursLabel: json['operating_hours_label'] as String?,
+      distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      notes: json['notes'] as String?,
+      serviceBadge: json['service_badge'] as String?,
     );
   }
 
@@ -54,6 +62,10 @@ class BidanProfileModel extends BidanProfile {
       'specialization': specialization,
       'working_hours_start': workingHoursStart,
       'working_hours_end': workingHoursEnd,
+      'operating_hours_label': operatingHoursLabel,
+      'distance_km': distanceKm,
+      'notes': notes,
+      'service_badge': serviceBadge,
     };
   }
 
@@ -71,6 +83,10 @@ class BidanProfileModel extends BidanProfile {
       specialization: specialization,
       workingHoursStart: workingHoursStart,
       workingHoursEnd: workingHoursEnd,
+      operatingHoursLabel: operatingHoursLabel,
+      distanceKm: distanceKm,
+      notes: notes,
+      serviceBadge: serviceBadge,
     );
   }
 
@@ -88,6 +104,10 @@ class BidanProfileModel extends BidanProfile {
       specialization: entity.specialization,
       workingHoursStart: entity.workingHoursStart,
       workingHoursEnd: entity.workingHoursEnd,
+      operatingHoursLabel: entity.operatingHoursLabel,
+      distanceKm: entity.distanceKm,
+      notes: entity.notes,
+      serviceBadge: entity.serviceBadge,
     );
   }
 }
