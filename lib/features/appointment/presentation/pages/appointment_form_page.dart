@@ -95,38 +95,58 @@ class _AppointmentFormPageState extends ConsumerState<AppointmentFormPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Bidan yang Dipilih',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF757575),
-            ),
+          Row(
+            children: const [
+              Icon(Icons.local_hospital_rounded, size: 16, color: Color(0xFFFA6978)),
+              SizedBox(width: 6),
+              Text(
+                'Fasilitas PMB & Bidan yang Dipilih',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF757575),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
+          Text(
+            _bidan!.pmbFacilityName,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF212121),
+            ),
+          ),
+          const SizedBox(height: 4),
           Row(
             children: [
-              const Icon(Icons.person, size: 20, color: Color(0xFFFA6978)),
-              const SizedBox(width: 8),
+              const Icon(Icons.person, size: 16, color: Color(0xFFFA6978)),
+              const SizedBox(width: 6),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _bidan!.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF212121),
-                      ),
-                    ),
-                    Text(
-                      _bidan!.address,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: Text(
+                  'Bidan Praktik: ${_bidan!.name}',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF424242),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _bidan!.pmbAddressDetail,
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
