@@ -56,11 +56,13 @@ class AppointmentModel extends Appointment {
           json['bidan']?['bidan_id'] as int? ??
           0,
       locationId: json['bidan_location_id'] as int? ?? json['location_id'] as int?,
-      preferredDate: DateTime.parse(json['preferred_date'] as String),
-      preferredTime: json['preferred_time'] as String,
+      preferredDate: json['preferred_date'] != null
+          ? (DateTime.tryParse(json['preferred_date'].toString()) ?? DateTime.now())
+          : DateTime.now(),
+      preferredTime: json['preferred_time'] as String? ?? '09:00',
       confirmedDate: parseDateTime(json['confirmed_date']),
       confirmedTime: json['confirmed_time'] as String?,
-      status: json['status'] as String,
+      status: json['status'] as String? ?? 'requested',
       notes: json['notes'] as String?,
       bidanNotes: json['bidan_notes'] as String?,
       consultationType: json['consultation_type'] as String? ?? 'consultation',
