@@ -313,6 +313,69 @@ class _FoodScannerPageState extends ConsumerState<FoodScannerPage> {
                   ),
                 ),
 
+              // Non-blocking Async Progress Card (Redis Queue)
+              if (state.isScanning)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: AppColors.primaryPink.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Status Antrean AI (Non-Blocking)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            '${state.progressPercentage}%',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryPink,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: (state.progressPercentage / 100.0).clamp(0.0, 1.0),
+                          minHeight: 8,
+                          backgroundColor: Colors.white,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            AppColors.primaryPink,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.progressMessage.isNotEmpty
+                            ? state.progressMessage
+                            : 'Memproses segmentasi piring di antrean AI...',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               const SizedBox(height: 8),
 
               // Call To Action: Analisis Gizi Piring
@@ -340,18 +403,18 @@ class _FoodScannerPageState extends ConsumerState<FoodScannerPage> {
                   disabledBackgroundColor: Colors.grey.shade300,
                 ),
                 child: state.isScanning
-                    ? const Row(
+                    ? Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
                           ),
-                          SizedBox(width: 12),
+                          const SizedBox(width: 12),
                           Text(
-                            'AI Menganalisis Piring...',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                            'AI Menganalisis Piring (${state.progressPercentage}%)...',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ],
                       )

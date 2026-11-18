@@ -14,6 +14,8 @@ class FoodScanState {
   final String? error;
   final String? selectedImagePath;
   final bool showBoundingBoxes;
+  final int progressPercentage;
+  final String progressMessage;
 
   const FoodScanState({
     this.isScanning = false,
@@ -21,6 +23,8 @@ class FoodScanState {
     this.error,
     this.selectedImagePath,
     this.showBoundingBoxes = true,
+    this.progressPercentage = 0,
+    this.progressMessage = '',
   });
 
   const FoodScanState.initial()
@@ -28,7 +32,9 @@ class FoodScanState {
         result = null,
         error = null,
         selectedImagePath = null,
-        showBoundingBoxes = true;
+        showBoundingBoxes = true,
+        progressPercentage = 0,
+        progressMessage = '';
 
   FoodScanState copyWith({
     bool? isScanning,
@@ -39,6 +45,8 @@ class FoodScanState {
     String? selectedImagePath,
     bool clearImage = false,
     bool? showBoundingBoxes,
+    int? progressPercentage,
+    String? progressMessage,
   }) {
     return FoodScanState(
       isScanning: isScanning ?? this.isScanning,
@@ -46,6 +54,8 @@ class FoodScanState {
       error: clearError ? null : (error ?? this.error),
       selectedImagePath: clearImage ? null : (selectedImagePath ?? this.selectedImagePath),
       showBoundingBoxes: showBoundingBoxes ?? this.showBoundingBoxes,
+      progressPercentage: progressPercentage ?? this.progressPercentage,
+      progressMessage: progressMessage ?? this.progressMessage,
     );
   }
 }
@@ -60,6 +70,8 @@ class FoodScanNotifier extends StateNotifier<FoodScanState> {
       selectedImagePath: path,
       clearError: true,
       clearResult: true,
+      progressPercentage: 0,
+      progressMessage: '',
     );
   }
 
@@ -74,18 +86,35 @@ class FoodScanNotifier extends StateNotifier<FoodScanState> {
       return null;
     }
 
-    state = state.copyWith(isScanning: true, clearError: true);
+    state = state.copyWith(
+      isScanning: true,
+      clearError: true,
+      progressPercentage: 15,
+      progressMessage: 'Citra piring diterima dan dijadwalkan ke antrean Redis AI...',
+    );
 
     try {
-      final response = await _datasource.analyzePlate(path);
+      final response = await _datasource.analyzePlate(
+        path,
+        onProgress: (pct, msg) {
+          state = state.copyWith(
+            progressPercentage: pct,
+            progressMessage: msg,
+          );
+        },
+      );
       state = state.copyWith(
         isScanning: false,
         result: response,
+        progressPercentage: 100,
+        progressMessage: 'Analisis gizi piring makan berhasil.',
       );
       return response;
     } catch (e) {
       state = state.copyWith(
         isScanning: false,
+        progressPercentage: 0,
+        progressMessage: '',
         error: e.toString().replaceFirst('Exception: ', ''),
       );
       return null;
@@ -98,6 +127,6 @@ class FoodScanNotifier extends StateNotifier<FoodScanState> {
 }
 
 final foodScanNotifierProvider = StateNotifierProvider<FoodScanNotifier, FoodScanState>((ref) {
-  final ds = ref.watch(foodScanDatasourceProvider);
-  return FoodScanNotifier(ds);
+  final datasource = ref.watch(foodScanDatasourceProvider);
+  return FoodScanNotifier(datasource);
 });

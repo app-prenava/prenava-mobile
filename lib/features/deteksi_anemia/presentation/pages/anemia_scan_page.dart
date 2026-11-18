@@ -334,6 +334,69 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                   ),
                 ),
 
+              // Non-blocking Async Progress Card (Redis Queue)
+              if (state.isScanning)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF1F2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFA6978).withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Status Antrean AI (Non-Blocking)',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+                          Text(
+                            '${state.progressPercentage}%',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFFA6978),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: (state.progressPercentage / 100.0).clamp(0.0, 1.0),
+                          minHeight: 8,
+                          backgroundColor: Colors.white,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFFFA6978),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        state.progressMessage.isNotEmpty
+                            ? state.progressMessage
+                            : 'Memproses inferensi AI latar belakang...',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF475569),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Scan button
               SizedBox(
                 width: double.infinity,
@@ -354,10 +417,10 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                     elevation: 0,
                   ),
                   child: state.isScanning
-                      ? const Row(
+                      ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            SizedBox(
+                            const SizedBox(
                               width: 22,
                               height: 22,
                               child: CircularProgressIndicator(
@@ -365,10 +428,10 @@ class _AnemiaScanPageState extends ConsumerState<AnemiaScanPage> {
                                 strokeWidth: 2.5,
                               ),
                             ),
-                            SizedBox(width: 14),
+                            const SizedBox(width: 14),
                             Text(
-                              'Menganalisis...',
-                              style: TextStyle(
+                              'Menganalisis (${state.progressPercentage}%)...',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),

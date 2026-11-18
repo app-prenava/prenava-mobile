@@ -29,19 +29,25 @@ class AnemiaScanState {
   final AnemiaScanResult? result;
   final String? error;
   final String? selectedImagePath;
+  final int progressPercentage;
+  final String progressMessage;
 
   const AnemiaScanState({
     this.isScanning = false,
     this.result,
     this.error,
     this.selectedImagePath,
+    this.progressPercentage = 0,
+    this.progressMessage = '',
   });
 
   const AnemiaScanState.initial()
     : isScanning = false,
       result = null,
       error = null,
-      selectedImagePath = null;
+      selectedImagePath = null,
+      progressPercentage = 0,
+      progressMessage = '';
 
   AnemiaScanState copyWith({
     bool? isScanning,
@@ -51,6 +57,8 @@ class AnemiaScanState {
     bool clearError = false,
     String? selectedImagePath,
     bool clearImage = false,
+    int? progressPercentage,
+    String? progressMessage,
   }) {
     return AnemiaScanState(
       isScanning: isScanning ?? this.isScanning,
@@ -59,6 +67,8 @@ class AnemiaScanState {
       selectedImagePath: clearImage
           ? null
           : (selectedImagePath ?? this.selectedImagePath),
+      progressPercentage: progressPercentage ?? this.progressPercentage,
+      progressMessage: progressMessage ?? this.progressMessage,
     );
   }
 }
@@ -72,6 +82,8 @@ class AnemiaScanNotifier extends Notifier<AnemiaScanState> {
       selectedImagePath: path,
       clearError: true,
       clearResult: true,
+      progressPercentage: 0,
+      progressMessage: '',
     );
   }
 
@@ -82,11 +94,22 @@ class AnemiaScanNotifier extends Notifier<AnemiaScanState> {
       isScanning: true,
       clearError: true,
       clearResult: true,
+      progressPercentage: 15,
+      progressMessage: 'Citra diterima dan dijadwalkan ke antrean Redis AI...',
     );
 
     try {
-      final repository = ref.read(anemiaScanRepositoryProvider);
-      final result = await repository.scanEye(state.selectedImagePath!);
+      final datasource = ref.read(anemiaScanDatasourceProvider);
+      final model = await datasource.scanEye(
+        state.selectedImagePath!,
+        onProgress: (pct, msg) {
+          state = state.copyWith(
+            progressPercentage: pct,
+            progressMessage: msg,
+          );
+        },
+      );
+      final result = model.toEntity();
       final historyId = result.historyId;
       if (historyId != null) {
         final imageStore = ref.read(healthHistoryImageStoreProvider);
@@ -95,10 +118,17 @@ class AnemiaScanNotifier extends Notifier<AnemiaScanState> {
         );
         await imageStore.saveHistoryImagePath(historyId, localPath);
       }
-      state = state.copyWith(isScanning: false, result: result);
+      state = state.copyWith(
+        isScanning: false,
+        result: result,
+        progressPercentage: 100,
+        progressMessage: 'Inferensi selesai.',
+      );
     } catch (e) {
       state = state.copyWith(
         isScanning: false,
+        progressPercentage: 0,
+        progressMessage: '',
         error: e.toString().replaceAll('Exception: ', ''),
       );
     }
