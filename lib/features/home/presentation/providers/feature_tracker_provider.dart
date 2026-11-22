@@ -15,6 +15,7 @@ enum AppFeature {
   kunjungan,
   appointment,
   localWisdom,
+  bidanMap,
 }
 
 extension AppFeatureSlug on AppFeature {
@@ -42,8 +43,17 @@ extension AppFeatureSlug on AppFeature {
         return 'appointment';
       case AppFeature.localWisdom:
         return 'local_wisdom';
+      case AppFeature.bidanMap:
+        return 'bidan_map';
     }
   }
+}
+
+AppFeature? appFeatureFromSlug(String slug) {
+  for (final feature in AppFeature.values) {
+    if (feature.slug == slug) return feature;
+  }
+  return null;
 }
 
 /// Provider that exposes a trackFeature function.

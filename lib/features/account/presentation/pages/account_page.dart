@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../home/presentation/providers/wallet_provider.dart';
+import '../../../screening/presentation/providers/screening_providers.dart';
 
 class AccountPage extends ConsumerWidget {
   const AccountPage({super.key});
@@ -166,8 +167,8 @@ class AccountPage extends ConsumerWidget {
           Divider(height: 1, indent: 48, color: Colors.grey[100]),
           _buildListItem(
             icon: Icons.tune,
-            title: 'Personalisasi',
-            onTap: () {},
+            title: 'Personalisasi & Skrining',
+            onTap: () => context.push('/screening/history'),
           ),
           Divider(height: 1, indent: 48, color: Colors.grey[100]),
           _buildListItem(
@@ -195,6 +196,7 @@ class AccountPage extends ConsumerWidget {
             hideChevron: true,
             onTap: () async {
               ref.read(profileNotifierProvider.notifier).clearProfile();
+              ref.read(screeningNotifierProvider.notifier).clear();
               await ref.read(authNotifierProvider.notifier).logout();
               if (context.mounted) {
                 context.go('/login');

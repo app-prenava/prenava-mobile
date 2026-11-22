@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../screening/presentation/providers/screening_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -47,7 +48,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
 
       if (profileState.hasProfile) {
-        context.go('/home');
+        final screeningResult =
+            await ref.read(screeningNotifierProvider.notifier).loadLatest();
+        if (!mounted) return;
+        if (screeningResult != null && !screeningResult.hasCompletedScreening) {
+          context.go('/screening', extra: {'isInitial': true});
+        } else {
+          context.go('/home');
+        }
       } else {
         context.go('/profile-onboarding');
       }
@@ -127,7 +135,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
 
         if (profileState.hasProfile) {
-          context.go('/home');
+          final screeningResult =
+              await ref.read(screeningNotifierProvider.notifier).loadLatest();
+          if (!mounted) return;
+          if (screeningResult != null && !screeningResult.hasCompletedScreening) {
+            context.go('/screening', extra: {'isInitial': true});
+          } else {
+            context.go('/home');
+          }
         } else {
           context.go('/profile-onboarding');
         }

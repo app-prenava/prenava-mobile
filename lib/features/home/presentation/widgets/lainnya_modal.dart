@@ -3,10 +3,25 @@ import 'package:go_router/go_router.dart';
 import 'menu_grid_item.dart';
 
 class LainnyaModal extends StatelessWidget {
-  const LainnyaModal({super.key});
+  final List<Widget>? items;
+
+  const LainnyaModal({super.key, this.items});
 
   @override
   Widget build(BuildContext context) {
+    final children = (items != null && items!.isNotEmpty)
+        ? items!
+        : [
+            MenuGridItem(
+              imagePath: 'assets/images/calendar.png',
+              label: 'Janji Temu',
+              onTap: () {
+                context.pop();
+                context.push('/appointments');
+              },
+            ),
+          ];
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -19,7 +34,6 @@ class LainnyaModal extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Center(
               child: Container(
                 margin: const EdgeInsets.only(top: 12, bottom: 20),
@@ -52,20 +66,11 @@ class LainnyaModal extends StatelessWidget {
                 crossAxisCount: 4,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                mainAxisSpacing: 8,
+                mainAxisSpacing: 10,
                 crossAxisSpacing: 6,
                 childAspectRatio: 0.85,
                 padding: EdgeInsets.zero,
-                children: [
-                  MenuGridItem(
-                    imagePath: 'assets/images/calendar.png',
-                    label: 'Janji Temu',
-                    onTap: () {
-                      context.pop(); // Close modal first
-                      context.push('/appointments');
-                    },
-                  ),
-                ],
+                children: children,
               ),
             ),
           ],

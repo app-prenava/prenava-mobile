@@ -72,7 +72,7 @@ class _ProfileOnboardingPageState extends ConsumerState<ProfileOnboardingPage> {
     final success = await ref.read(profileNotifierProvider.notifier).saveProfile(data);
 
     if (success && mounted) {
-      context.go('/home');
+      context.go('/screening', extra: {'isInitial': true});
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Gagal menyimpan profil, coba lagi nanti')),

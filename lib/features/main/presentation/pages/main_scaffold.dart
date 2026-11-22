@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/providers/guide_provider.dart';
+import '../providers/main_tab_provider.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../community/presentation/pages/community_page.dart';
 import '../../../shop/presentation/pages/shop_page.dart';
@@ -15,6 +16,28 @@ class MainScaffold extends StatefulWidget {
 
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = mainTabIndexNotifier.value;
+    mainTabIndexNotifier.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    mainTabIndexNotifier.removeListener(_onTabChanged);
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (!mounted) return;
+    if (_currentIndex != mainTabIndexNotifier.value) {
+      setState(() {
+        _currentIndex = mainTabIndexNotifier.value;
+      });
+    }
+  }
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -130,6 +153,7 @@ class _MainScaffoldState extends State<MainScaffold> {
       ),
       child: InkWell(
         onTap: () {
+          mainTabIndexNotifier.value = index;
           setState(() {
             _currentIndex = index;
           });

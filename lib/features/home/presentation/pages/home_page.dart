@@ -21,7 +21,11 @@ import '../providers/wallet_provider.dart';
 import '../../../../features/local_wisdom/presentation/widgets/wisdom_checklist_section.dart';
 import '../../../pregnancy/presentation/providers/pregnancy_providers.dart';
 import '../../../pregnancy/presentation/widgets/pregnancy_onboarding_sheet.dart';
+import '../../../main/presentation/providers/main_tab_provider.dart';
+import '../../../screening/data/models/screening_models.dart';
+import '../../../screening/presentation/providers/screening_providers.dart';
 import '../widgets/meal_plan_home_widget.dart';
+import '../widgets/recommended_features_section.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -58,8 +62,13 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    homePendingActionNotifier.addListener(_consumePendingHomeAction);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(profileNotifierProvider.notifier).loadProfile();
+      if (!ref.read(screeningNotifierProvider).isLoaded) {
+        ref.read(screeningNotifierProvider.notifier).loadLatest();
+      }
+      _consumePendingHomeAction();
     });
     _startAutoRefresh();
   }
@@ -67,8 +76,22 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   @override
   void dispose() {
     _autoRefreshTimer?.cancel();
+    homePendingActionNotifier.removeListener(_consumePendingHomeAction);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  void _consumePendingHomeAction() {
+    if (!mounted) return;
+    final action = homePendingActionNotifier.value;
+    if (action == 'local_wisdom') {
+      homePendingActionNotifier.value = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showDailyTasksBottomSheet(initialTabIndex: 2);
+        }
+      });
+    }
   }
 
   @override
@@ -96,6 +119,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
     ref.invalidate(popularPostsProvider);
     ref.invalidate(dailyProgressProvider);
     ref.read(profileNotifierProvider.notifier).loadProfile();
+    ref.read(screeningNotifierProvider.notifier).loadLatest();
     // Wallet uses Notifier, rebuild it
     ref.invalidate(walletProvider);
   }
@@ -117,6 +141,16 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
         final user = authState.user;
         final profileState = ref.watch(profileNotifierProvider);
         final profilePhoto = profileState.profile?.photoUrl;
+        final screeningState = ref.watch(screeningNotifierProvider);
+
+        // Mandatory screening guard if user somehow enters /home without completing screening
+        if (screeningState.isLoaded && !screeningState.hasCompletedScreening) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              context.go('/screening', extra: {'isInitial': true});
+            }
+          });
+        }
 
         return Scaffold(
           backgroundColor: Colors.white,
@@ -276,11 +310,17 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
                                     ],
                                   ),
                                   const SizedBox(height: 16),
-                                  _buildMenuGrid(user?.category ?? 'umum'),
+                                  _buildMenuGrid(screeningState.latest),
                                   const SizedBox(height: 16),
                                 ],
                               ),
                             ),
+                            if (screeningState.latest != null &&
+                                screeningState.latest!.hasCompletedScreening)
+                              RecommendedFeaturesSection(
+                                screening: screeningState.latest!,
+                                onFeatureTap: _openRecommendedFeature,
+                              ),
                             _buildPromoSection(),
                             _buildPopularPostsSection(),
                           ],
@@ -298,13 +338,14 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
 
 
 
-  void _showDailyTasksBottomSheet() {
+  void _showDailyTasksBottomSheet({int initialTabIndex = 0}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => DefaultTabController(
         length: 3,
+        initialIndex: initialTabIndex,
         child: DraggableScrollableSheet(
           initialChildSize: 0.65,
           minChildSize: 0.4,
@@ -396,7 +437,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
   }
 
   void _startTutorial(BuildContext context) {
-    ShowCaseWidget.of(context).startShowCase([
+    final keys = [
       _headerKey,
       _dailyKey,
       _olahragaKey,
@@ -407,7 +448,10 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
       _tipsKey,
       _hplKey,
       _lainnyaKey,
-    ]);
+    ].where((k) => k.currentContext != null).toList();
+    if (keys.isNotEmpty) {
+      ShowCaseWidget.of(context).startShowCase(keys);
+    }
   }
 
   void _handleMenuTap(
@@ -441,110 +485,210 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
     context.push(route);
   }
 
-  Widget _buildMenuGrid(String category) {
-    final List<Widget> items = [];
+  void _openRecommendedFeature(RecommendedFeatureModel feature) {
+    final tracked = appFeatureFromSlug(feature.featureSlug);
+    if (tracked != null) {
+      ref.read(featureTrackerProvider).track(tracked);
+    }
 
-    items.add(
-      Showcase(
-        key: _olahragaKey,
+    if (feature.route == 'tab:community') {
+      mainTabIndexNotifier.value = 1;
+      return;
+    }
+    if (feature.route == 'action:local_wisdom') {
+      _showDailyTasksBottomSheet(initialTabIndex: 2);
+      return;
+    }
+    if (feature.route.startsWith('/')) {
+      _handleMenuTap(feature.route);
+    }
+  }
+
+  Map<String, _HomeMenuEntry> _buildMenuCatalog() {
+    return {
+      'olahraga': _HomeMenuEntry(
+        slug: 'olahraga',
+        label: 'Rekomendasi Olahraga',
+        imagePath: 'assets/images/kunjungan.png',
         description: 'Dapatkan rekomendasi olahraga ringan yang aman.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/kunjungan.png',
-          label: 'Rekomendasi Olahraga',
-          onTap: () => _handleMenuTap(
-            '/rekomendasi-olahraga',
-            requiresPregnancy: false,
-            feature: AppFeature.olahraga,
-          ),
+        showcaseKey: _olahragaKey,
+        onTap: () => _handleMenuTap(
+          '/rekomendasi-olahraga',
+          requiresPregnancy: false,
+          feature: AppFeature.olahraga,
         ),
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _anemiaKey,
+      'anemia': _HomeMenuEntry(
+        slug: 'anemia',
+        label: 'Prediksi Anemia',
+        imagePath: 'assets/images/anemia.png',
         description: 'Ketahui risiko Anemia dengan mengisi form observasi.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/anemia.png',
-          label: 'Prediksi Anemia',
-          onTap: () =>
-              _handleMenuTap('/deteksi-anemia', feature: AppFeature.anemia),
-        ),
+        showcaseKey: _anemiaKey,
+        onTap: () =>
+            _handleMenuTap('/deteksi-anemia', feature: AppFeature.anemia),
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _depresiKey,
+      'depresi': _HomeMenuEntry(
+        slug: 'depresi',
+        label: 'Prediksi Depresi',
+        imagePath: 'assets/images/deteksi depresi.png',
         description:
             'Deteksi risiko depresi pasca melahirkan melalui analisis foto wajah menggunakan AI.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/deteksi depresi.png',
-          label: 'Prediksi Depresi',
-          onTap: () =>
-              _handleMenuTap('/deteksi-depresi', feature: AppFeature.depresi),
-        ),
+        showcaseKey: _depresiKey,
+        onTap: () =>
+            _handleMenuTap('/deteksi-depresi', feature: AppFeature.depresi),
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _udaraKey,
+      'stunting': _HomeMenuEntry(
+        slug: 'stunting',
+        label: 'Risiko Stunting',
+        imagePath: 'assets/images/stunting icon.png',
         description: 'Dapatkan analisis risiko stunting anak menggunakan AI.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/stunting icon.png',
-          label: 'Risiko Stunting',
-          onTap: () =>
-              _handleMenuTap('/stunting/history', feature: AppFeature.stunting),
-        ),
+        showcaseKey: _udaraKey,
+        onTap: () =>
+            _handleMenuTap('/stunting/history', feature: AppFeature.stunting),
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _hidrasiKey,
+      'hidrasi': _HomeMenuEntry(
+        slug: 'hidrasi',
+        label: 'Rekomendasi Hidrasi',
+        imagePath: 'assets/images/glass water.png',
         description: 'Pantau asupan air harian Anda agar tetap terhidrasi.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/glass water.png',
-          label: 'Rekomendasi Hidrasi',
-          onTap: () {
-            ref.read(featureTrackerProvider).track(AppFeature.hidrasi);
-            context.push('/hydration');
-          },
-        ),
+        showcaseKey: _hidrasiKey,
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.hidrasi);
+          context.push('/hydration');
+        },
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _hplKey,
+      'kalkulator_hpl': _HomeMenuEntry(
+        slug: 'kalkulator_hpl',
+        label: 'Kalkulator HPL',
+        imagePath: 'assets/images/kalkulator hpl.png',
         description:
             'Hitung dan pantau Hari Perkiraan Lahir (HPL) serta perkembangan janin.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/kalkulator hpl.png',
-          label: 'Kalkulator HPL',
-          onTap: () {
-            ref.read(featureTrackerProvider).track(AppFeature.kalkulatorHpl);
-            context.push('/pregnancy-calculator');
-          },
-        ),
+        showcaseKey: _hplKey,
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.kalkulatorHpl);
+          context.push('/pregnancy-calculator');
+        },
       ),
-    );
-
-    items.add(
-      Showcase(
-        key: _tipsKey,
+      'tips': _HomeMenuEntry(
+        slug: 'tips',
+        label: 'Tips & Gizi',
+        imagePath: 'assets/images/tips.png',
         description: 'Tips harian untuk kesehatan ibu dan janin.',
-        child: MenuGridItem(
-          imagePath: 'assets/images/tips.png',
-          label: 'Tips & Gizi',
-          onTap: () {
-            ref.read(featureTrackerProvider).track(AppFeature.tips);
-            context.push('/tips');
-          },
-        ),
+        showcaseKey: _tipsKey,
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.tips);
+          context.push('/tips');
+        },
       ),
-    );
+      'appointment': _HomeMenuEntry(
+        slug: 'appointment',
+        label: 'Janji Temu',
+        imagePath: 'assets/images/calendar.png',
+        description: 'Atur jadwal konsultasi kehamilan dengan bidan.',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.appointment);
+          context.push('/appointments');
+        },
+      ),
+      'kunjungan': _HomeMenuEntry(
+        slug: 'kunjungan',
+        label: 'Catatan Kunjungan',
+        icon: Icons.assignment_rounded,
+        description: 'Catat riwayat pemeriksaan kehamilan Bunda.',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.kunjungan);
+          context.push('/kunjungan');
+        },
+      ),
+      'bidan_map': _HomeMenuEntry(
+        slug: 'bidan_map',
+        label: 'Peta Bidan',
+        icon: Icons.location_on_rounded,
+        description: 'Temukan lokasi bidan terdekat dari tempat tinggal Bunda.',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.bidanMap);
+          context.push('/bidan-map');
+        },
+      ),
+      'local_wisdom': _HomeMenuEntry(
+        slug: 'local_wisdom',
+        label: 'Kearifan Lokal',
+        icon: Icons.lightbulb_outline_rounded,
+        description: 'Pahami mitos vs fakta kehamilan secara medis.',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.localWisdom);
+          _showDailyTasksBottomSheet(initialTabIndex: 2);
+        },
+      ),
+      'komunitas': _HomeMenuEntry(
+        slug: 'komunitas',
+        label: 'Komunitas Bunda',
+        icon: Icons.groups_rounded,
+        description: 'Berbagi pengalaman dan bertanya bersama sesama Bunda.',
+        onTap: () {
+          ref.read(featureTrackerProvider).track(AppFeature.komunitas);
+          mainTabIndexNotifier.value = 1;
+        },
+      ),
+    };
+  }
+
+  Widget _buildMenuGrid(ScreeningResultModel? screening) {
+    final catalog = _buildMenuCatalog();
+    const defaultOrder = [
+      'olahraga',
+      'anemia',
+      'depresi',
+      'stunting',
+      'hidrasi',
+      'kalkulator_hpl',
+      'tips',
+      'appointment',
+      'kunjungan',
+      'bidan_map',
+      'local_wisdom',
+      'komunitas',
+    ];
+
+    final recommendedSlugs = <String>[];
+    if (screening != null && screening.hasCompletedScreening) {
+      for (final f in screening.recommendedFeatures) {
+        if (catalog.containsKey(f.featureSlug) &&
+            !recommendedSlugs.contains(f.featureSlug)) {
+          recommendedSlugs.add(f.featureSlug);
+        }
+        if (recommendedSlugs.length == 4) break;
+      }
+    }
+
+    final orderedSlugs = [
+      ...recommendedSlugs,
+      ...defaultOrder.where((slug) => !recommendedSlugs.contains(slug)),
+    ];
+
+    final primarySlugs = orderedSlugs.take(7).toList();
+    final overflowSlugs = orderedSlugs.skip(7).toList();
+
+    final List<Widget> items = primarySlugs.map((slug) {
+      final entry = catalog[slug]!;
+      final isRec = recommendedSlugs.contains(slug);
+      final tile = MenuGridItem(
+        imagePath: entry.imagePath,
+        icon: entry.icon,
+        label: entry.label,
+        isRecommended: isRec,
+        badgeText: 'Utama',
+        onTap: entry.onTap,
+      );
+      if (entry.showcaseKey != null) {
+        return Showcase(
+          key: entry.showcaseKey!,
+          description: entry.description,
+          child: tile,
+        );
+      }
+      return tile;
+    }).toList();
 
     items.add(
       Showcase(
@@ -555,11 +699,24 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
           imagePath: 'assets/images/lainnya.png',
           label: 'Lainnya',
           onTap: () {
+            final overflowWidgets = overflowSlugs.map((slug) {
+              final entry = catalog[slug]!;
+              return MenuGridItem(
+                imagePath: entry.imagePath,
+                icon: entry.icon,
+                label: entry.label,
+                onTap: () {
+                  context.pop();
+                  entry.onTap();
+                },
+              );
+            }).toList();
+
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
               backgroundColor: Colors.transparent,
-              builder: (context) => const LainnyaModal(),
+              builder: (context) => LainnyaModal(items: overflowWidgets),
             );
           },
         ),
@@ -573,7 +730,7 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
         borderRadius: BorderRadius.circular(24),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
         child: GridView.count(
           crossAxisCount: 4,
           shrinkWrap: true,
@@ -784,4 +941,24 @@ class _HomePageState extends ConsumerState<HomePage> with WidgetsBindingObserver
       ),
     );
   }
+}
+
+class _HomeMenuEntry {
+  final String slug;
+  final String label;
+  final String? imagePath;
+  final IconData? icon;
+  final String description;
+  final GlobalKey? showcaseKey;
+  final VoidCallback onTap;
+
+  const _HomeMenuEntry({
+    required this.slug,
+    required this.label,
+    this.imagePath,
+    this.icon,
+    required this.description,
+    this.showcaseKey,
+    required this.onTap,
+  });
 }

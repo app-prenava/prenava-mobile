@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/shared_prefs_helper.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../screening/presentation/providers/screening_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -70,7 +71,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       if (!mounted) return;
 
       if (profileState.hasProfile) {
-        context.go('/home');
+        final screeningResult =
+            await ref.read(screeningNotifierProvider.notifier).loadLatest();
+        if (!mounted) return;
+        if (screeningResult != null && !screeningResult.hasCompletedScreening) {
+          context.go('/screening', extra: {'isInitial': true});
+        } else {
+          context.go('/home');
+        }
       } else {
         context.go('/profile-onboarding');
       }

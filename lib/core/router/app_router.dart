@@ -52,6 +52,10 @@ import '../../features/stunting_food/presentation/pages/meal_plan_progress_page.
 import '../../features/stunting_food/presentation/pages/preferences_page.dart';
 import '../../features/stunting_food/recipes/presentation/pages/recipe_home_page.dart';
 import '../../features/wallet/presentation/pages/wallet_page.dart';
+import '../../features/screening/data/models/screening_models.dart';
+import '../../features/screening/presentation/pages/screening_page.dart';
+import '../../features/screening/presentation/pages/screening_result_page.dart';
+import '../../features/screening/presentation/pages/screening_history_page.dart';
 
 import 'package:prenava_mobile/core/network/dio_client.dart';
 
@@ -113,6 +117,27 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile-onboarding',
         builder: (context, state) => const ProfileOnboardingPage(),
+      ),
+      GoRoute(
+        path: '/screening',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final isInitial = extra?['isInitial'] as bool? ?? true;
+          return ScreeningPage(isInitial: isInitial);
+        },
+      ),
+      GoRoute(
+        path: '/screening/result',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          final result = extra['result'] as ScreeningResultModel;
+          final isInitial = extra['isInitial'] as bool? ?? true;
+          return ScreeningResultPage(result: result, isInitial: isInitial);
+        },
+      ),
+      GoRoute(
+        path: '/screening/history',
+        builder: (context, state) => const ScreeningHistoryPage(),
       ),
       GoRoute(
         path: '/change-password',
