@@ -164,14 +164,28 @@ class AppointmentNotifier extends Notifier<AppointmentState> {
     }
   }
 
-  Future<void> loadBidanList() async {
+  Future<void> loadBidanList({
+    double? lat,
+    double? lng,
+    double? radiusKm,
+    String? search,
+  }) async {
+    state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(appointmentRepositoryProvider);
-      final bidans = await repository.getBidanProfiles();
+      final bidans = await repository.getBidanProfiles(
+        lat: lat,
+        lng: lng,
+        radiusKm: radiusKm,
+        search: search,
+      );
 
-      state = state.copyWith(bidans: bidans);
+      state = state.copyWith(isLoading: false, bidans: bidans);
     } catch (e) {
-      state = state.copyWith(error: e.toString().replaceAll('Exception: ', ''));
+      state = state.copyWith(
+        isLoading: false,
+        error: e.toString().replaceAll('Exception: ', ''),
+      );
     }
   }
 

@@ -6,7 +6,12 @@ import '../entities/consultation_type.dart';
 abstract class AppointmentRepository {
   Future<List<Appointment>> getAppointments();
   Future<Appointment> getAppointmentById(int id);
-  Future<List<BidanProfile>> getBidanProfiles();
+  Future<List<BidanProfile>> getBidanProfiles({
+    double? lat,
+    double? lng,
+    double? radiusKm,
+    String? search,
+  });
   Future<BidanProfile> getBidanProfileById(int id);
   Future<ConsentInfo> getConsentInfo();
   Future<List<ConsultationType>> getConsultationTypes();

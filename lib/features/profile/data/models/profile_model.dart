@@ -15,16 +15,20 @@ class ProfileModel extends Profile {
     super.pendapatanKeluarga,
     super.statusKandungan,
     super.provinsi,
+    super.provinceCode,
     super.kota,
+    super.regencyCode,
     super.kecamatan,
+    super.districtCode,
+    super.latitude,
+    super.longitude,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
-    // Normalize image URL using helper
     final photoUrl = ImageUrlHelper.normalizeImageUrl(json['photo']?.toString());
-    
+
     return ProfileModel(
-      id: _parseInt(json['id']),
+      id: _parseInt(json['id'] ?? json['user_profile_id']),
       tanggalLahir: json['tanggal_lahir']?.toString(),
       usia: _parseInt(json['usia']),
       alamat: json['alamat']?.toString(),
@@ -36,8 +40,13 @@ class ProfileModel extends Profile {
       pendapatanKeluarga: json['pendapatan_keluarga']?.toString(),
       statusKandungan: json['status_kandungan']?.toString(),
       provinsi: json['provinsi']?.toString(),
+      provinceCode: json['province_code']?.toString(),
       kota: json['kota']?.toString(),
+      regencyCode: json['regency_code']?.toString(),
       kecamatan: json['kecamatan']?.toString(),
+      districtCode: json['district_code']?.toString(),
+      latitude: _parseDouble(json['lat']),
+      longitude: _parseDouble(json['lng']),
     );
   }
 
@@ -48,24 +57,10 @@ class ProfileModel extends Profile {
     return null;
   }
 
-  @override
-  Map<String, dynamic> toJson() {
-    final map = <String, dynamic>{};
-    if (id != null) map['id'] = id;
-    if (tanggalLahir != null) map['tanggal_lahir'] = tanggalLahir;
-    if (usia != null) map['usia'] = usia;
-    if (alamat != null) map['alamat'] = alamat;
-    if (noTelepon != null) map['no_telepon'] = noTelepon;
-    if (pendidikanTerakhir != null) map['pendidikan_terakhir'] = pendidikanTerakhir;
-    if (pekerjaan != null) map['pekerjaan'] = pekerjaan;
-    if (golonganDarah != null) map['golongan_darah'] = golonganDarah;
-    if (photoUrl != null) map['photo'] = photoUrl;
-    if (pendapatanKeluarga != null) map['pendapatan_keluarga'] = pendapatanKeluarga;
-    if (statusKandungan != null) map['status_kandungan'] = statusKandungan;
-    if (provinsi != null) map['provinsi'] = provinsi;
-    if (kota != null) map['kota'] = kota;
-    if (kecamatan != null) map['kecamatan'] = kecamatan;
-    return map;
+  static double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 }
-

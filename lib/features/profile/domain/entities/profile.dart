@@ -11,8 +11,13 @@ class Profile {
   final String? pendapatanKeluarga;
   final String? statusKandungan;
   final String? provinsi;
+  final String? provinceCode;
   final String? kota;
+  final String? regencyCode;
   final String? kecamatan;
+  final String? districtCode;
+  final double? latitude;
+  final double? longitude;
 
   const Profile({
     this.id,
@@ -27,8 +32,13 @@ class Profile {
     this.pendapatanKeluarga,
     this.statusKandungan,
     this.provinsi,
+    this.provinceCode,
     this.kota,
+    this.regencyCode,
     this.kecamatan,
+    this.districtCode,
+    this.latitude,
+    this.longitude,
   });
 
   Map<String, dynamic> toJson() {
@@ -38,16 +48,24 @@ class Profile {
     if (usia != null) map['usia'] = usia;
     if (alamat != null) map['alamat'] = alamat;
     if (noTelepon != null) map['no_telepon'] = noTelepon;
-    if (pendidikanTerakhir != null) map['pendidikan_terakhir'] = pendidikanTerakhir;
+    if (pendidikanTerakhir != null) {
+      map['pendidikan_terakhir'] = pendidikanTerakhir;
+    }
     if (pekerjaan != null) map['pekerjaan'] = pekerjaan;
     if (golonganDarah != null) map['golongan_darah'] = golonganDarah;
     if (photoUrl != null) map['photo'] = photoUrl;
-    if (pendapatanKeluarga != null) map['pendapatan_keluarga'] = pendapatanKeluarga;
+    if (pendapatanKeluarga != null) {
+      map['pendapatan_keluarga'] = pendapatanKeluarga;
+    }
     if (statusKandungan != null) map['status_kandungan'] = statusKandungan;
     if (provinsi != null) map['provinsi'] = provinsi;
+    if (provinceCode != null) map['province_code'] = provinceCode;
     if (kota != null) map['kota'] = kota;
+    if (regencyCode != null) map['regency_code'] = regencyCode;
     if (kecamatan != null) map['kecamatan'] = kecamatan;
+    if (districtCode != null) map['district_code'] = districtCode;
+    if (latitude != null) map['lat'] = latitude;
+    if (longitude != null) map['lng'] = longitude;
     return map;
   }
 }
-

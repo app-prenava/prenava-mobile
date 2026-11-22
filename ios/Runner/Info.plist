@@ -4,6 +4,8 @@
 <dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses kamera untuk mengambil foto profil dan memindai data kesehatan (Machine Learning).</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Prenava memerlukan izin lokasi GPS untuk menampilkan klinik bidan mitra terverifikasi terdekat di sekitar Anda.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses mikrofon jika Anda ingin merekam video tutorial atau konsultasi.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

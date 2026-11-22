@@ -93,9 +93,29 @@ class AppointmentRemoteDatasource {
     }
   }
 
-  Future<List<BidanProfileModel>> getBidanProfiles() async {
+  Future<List<BidanProfileModel>> getBidanProfiles({
+    double? lat,
+    double? lng,
+    double? radiusKm,
+    String? search,
+  }) async {
     try {
-      final response = await _dio.get('/user/bidans/locations');
+      final queryParams = <String, dynamic>{};
+      if (lat != null && lng != null) {
+        queryParams['lat'] = lat;
+        queryParams['lng'] = lng;
+      }
+      if (radiusKm != null && radiusKm > 0) {
+        queryParams['radius_km'] = radiusKm;
+      }
+      if (search != null && search.trim().isNotEmpty) {
+        queryParams['search'] = search.trim();
+      }
+
+      final response = await _dio.get(
+        '/user/bidans/locations',
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
 
       if (response.statusCode == 200) {
         final data = response.data;

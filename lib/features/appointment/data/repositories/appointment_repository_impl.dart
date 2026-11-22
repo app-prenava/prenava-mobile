@@ -23,8 +23,18 @@ class AppointmentRepositoryImpl implements AppointmentRepository {
   }
 
   @override
-  Future<List<BidanProfile>> getBidanProfiles() async {
-    final models = await _datasource.getBidanProfiles();
+  Future<List<BidanProfile>> getBidanProfiles({
+    double? lat,
+    double? lng,
+    double? radiusKm,
+    String? search,
+  }) async {
+    final models = await _datasource.getBidanProfiles(
+      lat: lat,
+      lng: lng,
+      radiusKm: radiusKm,
+      search: search,
+    );
     return models.map((model) => model.toEntity()).toList();
   }
 

@@ -26,7 +26,6 @@ import '../../features/pregnancy/presentation/pages/pregnancy_calculator_page.da
 import '../../features/kunjungan/presentation/pages/kunjungan_dashboard_page.dart';
 import '../../features/kunjungan/presentation/pages/visit_form_page.dart';
 import '../../features/kunjungan/presentation/pages/visit_detail_page.dart';
-import '../../features/bidan/presentation/pages/bidan_map_page.dart';
 import '../../features/appointment/presentation/pages/appointment_dashboard_page.dart';
 import '../../features/appointment/presentation/pages/bidan_selection_page.dart';
 import '../../features/appointment/presentation/pages/consent_page.dart';
@@ -199,10 +198,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           return VisitDetailPage(visitId: id);
         },
       ),
-      // Bidan routes
+      // Redirect legacy standalone bidan-map route into unified Appointment flow
       GoRoute(
         path: '/bidan-map',
-        builder: (context, state) => const BidanMapPage(),
+        redirect: (context, state) => '/appointments/create',
       ),
       // Appointment routes
       GoRoute(

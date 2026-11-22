@@ -5,89 +5,76 @@ class BidanProfileModel extends BidanProfile {
     required super.id,
     super.locationId,
     required super.name,
+    super.bidanName,
+    super.tempatPraktik,
     required super.phone,
     required super.address,
     required super.latitude,
     required super.longitude,
+    super.distanceKm,
     super.averageRating,
     super.totalReviews,
     super.specialization,
     super.workingHoursStart,
     super.workingHoursEnd,
+    super.operatingHours,
+    super.provinceName,
+    super.regencyName,
+    super.districtName,
+    super.strNumber,
+    super.sipNumber,
+    super.isVerifiedPartner,
+    super.photoUrl,
+    super.notes,
   });
 
   factory BidanProfileModel.fromJson(Map<String, dynamic> json) {
+    Map<String, dynamic>? parsedHours;
+    final rawHours = json['operating_hours'];
+    if (rawHours is Map<String, dynamic>) {
+      parsedHours = rawHours;
+    }
+
     return BidanProfileModel(
-      id: json['id'] as int? ?? json['bidan_id'] as int? ?? 0,
-      locationId: json['location_id'] as int?,
-      name: json['name'] as String? ?? json['bidan_name'] as String? ?? '',
-      phone: json['phone'] as String? ?? json['no_hp'] as String? ?? '',
-      address:
-          json['address'] as String? ?? json['address_label'] as String? ?? '',
-      latitude:
-          (json['latitude'] as num?)?.toDouble() ??
+      id: (json['bidan_id'] as num?)?.toInt() ??
+          (json['id'] as num?)?.toInt() ??
+          0,
+      locationId: (json['location_id'] as num?)?.toInt(),
+      name: json['name']?.toString() ??
+          json['tempat_praktik']?.toString() ??
+          json['bidan_name']?.toString() ??
+          '',
+      bidanName: json['bidan_name']?.toString(),
+      tempatPraktik: json['tempat_praktik']?.toString(),
+      phone: json['phone']?.toString() ?? json['no_hp']?.toString() ?? '',
+      address: json['address']?.toString() ??
+          json['address_label']?.toString() ??
+          json['alamat_praktik']?.toString() ??
+          '',
+      latitude: (json['latitude'] as num?)?.toDouble() ??
           (json['lat'] as num?)?.toDouble() ??
           0.0,
-      longitude:
-          (json['longitude'] as num?)?.toDouble() ??
+      longitude: (json['longitude'] as num?)?.toDouble() ??
           (json['lng'] as num?)?.toDouble() ??
           0.0,
+      distanceKm: (json['distance_km'] as num?)?.toDouble(),
       averageRating: (json['average_rating'] as num?)?.toDouble(),
-      totalReviews: json['total_reviews'] as int?,
-      specialization: json['specialization'] as String?,
-      workingHoursStart: json['working_hours_start'] as String?,
-      workingHoursEnd: json['working_hours_end'] as String?,
+      totalReviews: (json['total_reviews'] as num?)?.toInt(),
+      specialization:
+          json['specialization']?.toString() ?? json['spesialisasi']?.toString(),
+      workingHoursStart: json['working_hours_start']?.toString(),
+      workingHoursEnd: json['working_hours_end']?.toString(),
+      operatingHours: parsedHours,
+      provinceName: json['province_name']?.toString(),
+      regencyName: json['regency_name']?.toString(),
+      districtName: json['district_name']?.toString(),
+      strNumber: json['str_number']?.toString(),
+      sipNumber: json['sip_number']?.toString(),
+      isVerifiedPartner: json['is_verified_partner'] == true,
+      photoUrl: json['photo_url']?.toString(),
+      notes: json['notes']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'location_id': locationId,
-      'name': name,
-      'phone': phone,
-      'address': address,
-      'latitude': latitude,
-      'longitude': longitude,
-      'average_rating': averageRating,
-      'total_reviews': totalReviews,
-      'specialization': specialization,
-      'working_hours_start': workingHoursStart,
-      'working_hours_end': workingHoursEnd,
-    };
-  }
-
-  BidanProfile toEntity() {
-    return BidanProfile(
-      id: id,
-      locationId: locationId,
-      name: name,
-      phone: phone,
-      address: address,
-      latitude: latitude,
-      longitude: longitude,
-      averageRating: averageRating,
-      totalReviews: totalReviews,
-      specialization: specialization,
-      workingHoursStart: workingHoursStart,
-      workingHoursEnd: workingHoursEnd,
-    );
-  }
-
-  static BidanProfileModel fromEntity(BidanProfile entity) {
-    return BidanProfileModel(
-      id: entity.id,
-      locationId: entity.locationId,
-      name: entity.name,
-      phone: entity.phone,
-      address: entity.address,
-      latitude: entity.latitude,
-      longitude: entity.longitude,
-      averageRating: entity.averageRating,
-      totalReviews: entity.totalReviews,
-      specialization: entity.specialization,
-      workingHoursStart: entity.workingHoursStart,
-      workingHoursEnd: entity.workingHoursEnd,
-    );
-  }
+  BidanProfile toEntity() => this;
 }
